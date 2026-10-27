@@ -286,6 +286,31 @@ export async function muxTracks(videoFile, audioFile, opts, onProgress) {
  * @param {number} width 输出宽度，高度按比例
  * @returns {Promise<(string|null)[]>} 图片 blob URL，取不到的为 null
  */
+/**
+ * 按时间点依次取帧（画面遮挡检查用）：从头到尾顺序解码一遍，比 <video> 逐个跳转快很多——
+ * 跳转每次都要从前一个关键帧重新解码，画面复杂、CPU 忙的时候每帧要 1 秒左右。
+ * 画布长边不超过 maxSide；会按视频的旋转信息摆正。
+ * @param {(canvas, t, i) => Promise|void} onFrame  返回 Promise 时会等它（控制排队数量）
+ * @returns {Promise<{width:number, height:number}>} 抽帧画布的尺寸
+ */
+export async function sampleFramesWebCodecs(file, times, maxSide, onFrame, canceled = () => false) {
+  const { CanvasSink } = await lib();
+  const input = await openInput(file);
+  const v = await input.getPrimaryVideoTrack();
+  if (!v || !(await v.canDecode())) throw new Error('浏览器无法解码该视频');
+  const W = v.displayWidth, H = v.displayHeight;
+  const scale = Math.min(1, maxSide / Math.max(W, H));
+  const width = Math.round(W * scale), height = Math.round(H * scale);
+  const sink = new CanvasSink(v, { width, height, fit: 'fill' });
+  let i = 0;
+  for await (const wc of sink.canvasesAtTimestamps(times)) {
+    if (canceled()) break;
+    if (wc) await onFrame(wc.canvas, times[i], i);
+    i++;
+  }
+  return { width, height };
+}
+
 export async function captureFramesWebCodecs(file, times, width = 480) {
   const { CanvasSink } = await lib();
   const input = await openInput(file);

@@ -11,6 +11,7 @@ import { state, subscribe, notify, currentPlatform, autoChecksEnabled } from '..
 import { $, esc, fmtClock, addTiming } from '../../core/ui.js';
 import { FULL_AREA, videoRectOnScreen } from '../../lib/overlay-geometry.js';
 import { openVideo, sampleTimes, sampleFrames } from '../../lib/frame-sampler.js';
+import { sampleFramesWebCodecs } from '../../lib/webcodecs.js';
 import { ensureOCR, disposeOCR, recognizeText, suggestedOcrWorkers } from '../../lib/detectors.js';
 import { analyzeFrames, describeEvent, fmtAt } from './analyze.js';
 import { attachBoxEditor, boxHtml } from '../../core/box-editor.js';
@@ -19,11 +20,13 @@ export const id = 'occlusion';
 export const title = '画面遮挡检查';
 
 const MAX_SIDE = 960;           // 抽帧画布长边（竖屏 1080×1920 → 540×960）
-const EST_OCR_SEC = 1.2;        // 估算用：每帧文字识别约 1.2 秒（单线程、原图 + 亮字遮罩两遍；实测 3 线程平均 0.25~0.45 秒）
+// 估算用：3 个线程时平均每帧 0.2 ~ 1.6 秒（实测：干净背景 0.25 秒；人站在写满字的白板前 1.57 秒——画面里“像字的纹理”越多越慢）
+const EST_FRAME_SEC = [0.2, 1.6];
 
 const S = {
   src: 'original',   // 检查哪个版本：original / fixed
   interval: 1,
+  intervalManual: false, // 用户手动改过抽帧间隔：换视频前不再自动调整
   th: 0.3,
   previewOnly: false,
   showZones: true,
@@ -40,7 +43,10 @@ const S = {
   autoPending: false, // 新视频分析完后，等技术体检空闲下来自动检查一次
 };
 
-const AUTO_MAX_SEC = 600; // 自动检查只对 10 分钟以内的视频做，更长的手动点“开始检查”
+const AUTO_MAX_SEC = 300; // 自动检查只对 5 分钟以内的视频做，更长的手动点“开始检查”（避免后台长时间占满 CPU）
+
+/** 按时长自动选抽帧间隔：字幕一般至少停留 2 秒，长视频隔 2~3 秒抽一帧基本不会漏，时间减半 */
+const autoInterval = (dur) => (dur <= 60 ? 1 : dur <= 300 ? 2 : 3);
 
 const MANUAL_LABEL = '标记文字';
 
@@ -300,6 +306,7 @@ function renderSettings() {
   $('#occSrcField').hidden = !hasFixed;
   document.querySelectorAll('#occSrcSeg button').forEach((b) => b.classList.toggle('on', b.dataset.src === S.src));
   $('#occThVal').textContent = `${Math.round(S.th * 100)}%`;
+  $('#occInterval').value = String(S.interval);
   $('.occ-settings').classList.toggle('off', S.running || S.previewOnly);
   const blocked = state.busy ? '技术体检正在处理视频，完成后再检查' : '';
   $('#occRun').disabled = S.running || !!blocked;
@@ -309,8 +316,9 @@ function renderSettings() {
   if (blocked) $('#occEstimate').textContent = blocked;
   else if (dur) {
     const n = sampleTimes(dur, S.interval).length;
-    const sec = n * (EST_OCR_SEC / suggestedOcrWorkers() + 0.1) + 3;
-    $('#occEstimate').textContent = `约 ${n} 帧，预计 ${sec < 60 ? Math.ceil(sec) + ' 秒' : Math.ceil(sec / 60) + ' 分钟'}`;
+    const k = 3 / suggestedOcrWorkers(); // 估算值按 3 个线程测的
+    const t = (sec) => (sec < 60 ? `${Math.ceil(sec)} 秒` : `${Math.round(sec / 6) / 10} 分钟`);
+    $('#occEstimate').textContent = `约 ${n} 帧，预计 ${t(n * EST_FRAME_SEC[0] * k + 2)}～${t(n * EST_FRAME_SEC[1] * k + 2)}（画面越复杂越慢）`;
   } else $('#occEstimate').textContent = '';
 }
 
@@ -426,9 +434,16 @@ async function run() {
     const pending = new Set();
     let done = 0, sampleMs = 0, lastT = performance.now();
     const tOcr0 = performance.now();
-    const tick = () => progress(`识别中：${done} / ${times.length} 帧`, done / times.length);
+    // 进度：识别了几帧之后，按实测速度估算剩余时间
+    const tick = () => {
+      const left = done >= 3 ? ((performance.now() - tOcr0) / done) * (times.length - done) / 1000 : null;
+      const eta = left == null ? '' : left < 60 ? ` · 还要约 ${Math.ceil(left)} 秒` : ` · 还要约 ${Math.ceil(left / 60)} 分钟`;
+      progress(`识别中：${done} / ${times.length} 帧${eta}`, done / times.length);
+    };
     tick();
-    await sampleFrames(src, times, MAX_SIDE, async (c, t, i) => {
+    let started = 0;
+    const onFrame = async (c, t, i) => {
+      started++;
       sampleMs += performance.now() - lastT;
       const W = c.width, H = c.height;
       const pct = (b) => ({ x: (b.x / W) * 100, y: (b.y / H) * 100, w: (b.w / W) * 100, h: (b.h / H) * 100 });
@@ -440,7 +455,18 @@ async function run() {
       pending.add(p);
       if (pending.size >= nWorkers * 2) await Promise.race([Promise.race(pending).catch(() => {}), canceled]); // 排队太多就等一等
       lastT = performance.now();
-    }, () => S.cancel);
+    };
+    // 取帧：优先 WebCodecs 顺序解码（快）；浏览器解不了这个编码时，退回 <video> 逐个跳转
+    let how = 'WebCodecs 顺序解码';
+    try {
+      await sampleFramesWebCodecs(slot.file, times, MAX_SIDE, onFrame, () => S.cancel);
+    } catch (e) {
+      if (started || S.cancel) throw e;
+      console.warn('WebCodecs 取帧失败，改用 <video> 跳转：', e);
+      how = '<video> 跳转';
+      lastT = performance.now();
+      await sampleFrames(src, times, MAX_SIDE, onFrame, () => S.cancel);
+    }
     await Promise.race([Promise.all(pending), canceled]);
     if (S.cancel) throw new Error('已取消');
     const totalMs = performance.now() - T0, ocrWall = performance.now() - tOcr0;
@@ -449,7 +475,7 @@ async function run() {
     const h = Math.round(src.height * Math.min(1, MAX_SIDE / Math.max(src.width, src.height)));
     const parts = [`共抽取 ${n} 帧（每 ${interval} 秒一帧，缩小到 ${w}×${h}）`];
     parts.push(`文字识别 ${nWorkers} 个线程，平均每帧 ${(ocrWall / n / 1000).toFixed(2)} 秒`);
-    parts.push(`抽帧共 ${(sampleMs / 1000).toFixed(1)} 秒`, `加载模型 ${(loadMs / 1000).toFixed(1)} 秒`, `总耗时 ${(totalMs / 1000).toFixed(1)} 秒`);
+    parts.push(`抽帧（${how}）共 ${(sampleMs / 1000).toFixed(1)} 秒`, `加载模型 ${(loadMs / 1000).toFixed(1)} 秒`, `总耗时 ${(totalMs / 1000).toFixed(1)} 秒`);
     S.result = {
       id: Date.now(), src: S.src, url: slot.url, aspect: src.width / src.height, duration: src.duration, interval, frames,
       stats: parts.join(' · '),
@@ -501,6 +527,7 @@ function reset() {
   S.manual = [];
   S.marking = false;
   S.selMan = -1;
+  S.intervalManual = false; // 换视频后重新按时长自动选抽帧间隔
   $('#occMark').textContent = '框选文字';
   $('#occMark').classList.remove('primary');
   $('#occManualList').innerHTML = '';
@@ -514,7 +541,7 @@ function reset() {
 export function mount() {
   $('#occRun').addEventListener('click', run);
   $('#occCancel').addEventListener('click', cancelRun);
-  $('#occInterval').addEventListener('change', (e) => { S.interval = +e.target.value; renderSettings(); });
+  $('#occInterval').addEventListener('change', (e) => { S.interval = +e.target.value; S.intervalManual = true; renderSettings(); });
   $('#occTh').addEventListener('input', (e) => { S.th = +e.target.value / 100; renderSettings(); renderResults(); S.lastFrameT = undefined; onTime(); notify('update'); });
   $('#occSrcSeg').addEventListener('click', (e) => {
     const b = e.target.closest('[data-src]');
@@ -570,7 +597,11 @@ export function mount() {
 
   subscribe((reason) => {
     if (reason === 'before-new-file') { reset(); S.autoPending = false; return; }
-    if (reason === 'analyzed' && autoChecksEnabled() && (state.original?.info?.durationSec || 0) <= AUTO_MAX_SEC) S.autoPending = true;
+    if (reason === 'analyzed') {
+      const dur = state.original?.info?.durationSec || 0;
+      if (!S.intervalManual && dur) S.interval = autoInterval(dur); // 新视频：按时长选抽帧间隔
+      if (autoChecksEnabled() && dur <= AUTO_MAX_SEC) S.autoPending = true;
+    }
     // 导入后自动检查：等分析结束（不忙）再开始，在后台跑，不切换页面
     if (S.autoPending && !state.busy && !S.running && state.original?.info) {
       S.autoPending = false;
