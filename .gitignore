@@ -1,6 +1,9 @@
 # 第三方库（约 81MB）：版本固定，用 scripts/download-vendor.sh 重新下载，不放进仓库
 vendor/
 
+# 打包输出（bash scripts/package.sh 生成）
+dist/
+
 # 本机工具配置
 .claude/
 
