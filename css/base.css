@@ -1,3 +1,4 @@
+@charset "UTF-8"; /* 托管服务器返回的 CSS 不带字符集，声明一下，免得中文和符号被当成别的编码显示成乱码 */
 /* ============================================================
    base.css —— Eup Preflight 的通用样式：颜色变量（含深色模式）、液态玻璃材质、按钮、表单、状态标签、顶栏、高级面板
    设计方向：Apple 液态玻璃（Liquid Glass），黑白灰。
@@ -206,7 +207,7 @@ input[type=range] { accent-color: var(--accent); }
 .menu-item:hover { background: var(--fill); }
 .menu-item .m-name { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .menu-item .m-sub { font-size: 11.5px; color: var(--muted); }
-.menu-item.on .m-name::after { content: " · 当前"; color: var(--muted); font-weight: 400; }
+.menu-item.on .m-name::after { content: " \00B7  \5F53\524D"; color: var(--muted); font-weight: 400; }
 .menu-sep { height: 1px; background: var(--line); margin: 4px 6px; }
 .menu-empty { padding: 10px; font-size: 12.5px; color: var(--muted); }
 

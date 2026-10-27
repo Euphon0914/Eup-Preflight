@@ -14,9 +14,10 @@ PORT = int(args[0]) if args else 3000
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 class Handler(http.server.SimpleHTTPRequestHandler):
-    # 确保 wasm / mjs 的 MIME 类型正确（老版本 Python 不认识）
+    # 确保 wasm / mjs 的 MIME 类型正确（老版本 Python 不认识）；文本文件声明 UTF-8，避免中文和符号乱码
     extensions_map = {**http.server.SimpleHTTPRequestHandler.extensions_map,
-                      '.wasm': 'application/wasm', '.js': 'text/javascript', '.mjs': 'text/javascript',
+                      '.wasm': 'application/wasm', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
+                      '.css': 'text/css; charset=utf-8', '.html': 'text/html; charset=utf-8',
                       '.json': 'application/json', '.md': 'text/plain; charset=utf-8'}
 
     def end_headers(self):

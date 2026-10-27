@@ -1,3 +1,4 @@
+@charset "UTF-8"; /* 托管服务器返回的 CSS 不带字符集，声明一下，免得中文和符号被当成别的编码显示成乱码 */
 /* ============================================================
    tech.css —— 技术体检：体检 / 修复 / 对比 / 历史
    ============================================================ */
@@ -34,7 +35,7 @@
 .fold { margin-top: 4px; border-top: 1px solid var(--line); }
 .fold > summary { cursor: pointer; padding: 11px 2px; color: var(--muted); font-size: 13px; list-style: none; display: flex; align-items: center; gap: 6px; }
 .fold > summary::-webkit-details-marker { display: none; }
-.fold > summary::before { content: "›"; display: inline-block; transition: transform .15s; font-size: 15px; width: 10px; }
+.fold > summary::before { content: "\203A"; display: inline-block; transition: transform .15s; font-size: 15px; width: 10px; }
 .fold[open] > summary::before { transform: rotate(90deg); }
 .foot { margin: 14px 0 0; font-size: 12px; color: var(--subtle); }
 
@@ -54,7 +55,7 @@
 .more { margin-bottom: 14px; }
 .more > summary { cursor: pointer; color: var(--muted); font-size: 13px; padding: 4px 0 10px; list-style: none; display: flex; align-items: center; gap: 6px; }
 .more > summary::-webkit-details-marker { display: none; }
-.more > summary::before { content: "›"; display: inline-block; transition: transform .15s; font-size: 15px; width: 10px; }
+.more > summary::before { content: "\203A"; display: inline-block; transition: transform .15s; font-size: 15px; width: 10px; }
 .more[open] > summary::before { transform: rotate(90deg); }
 .action-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .card { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
