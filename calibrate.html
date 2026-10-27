@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Crect%20width%3D%2224%22%20height%3D%2224%22%20rx%3D%226%22%20fill%3D%22%231d1d1f%22/%3E%3Cpath%20d%3D%22M16.5%206.5H8.5v11h8%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M8.5%2012l2.6%202.3%205.4-5.3%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E">
+  <title>遮挡区域校准 · Eup Preflight</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/calibrate.css">
+</head>
+<body>
+  <!-- ===== 顶栏 ===== -->
+  <header class="topbar glass">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18"><rect x="6" y="2.5" width="12" height="19" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="8.5" y="13" width="7" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2 1.5"/></svg>
+      </span>
+      <div>
+        <div class="brand-name">遮挡区域校准 <span class="brand-tag" title="Eup 的个人作品">Eup</span></div>
+        <div class="brand-sub">对着平台播放页截图，框出会挡住画面的按钮和文字 · 截图只在本机使用，不会上传</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <div class="seg" id="platformSeg" role="group" aria-label="要校准的平台"></div>
+      <a class="btn ghost" href="index.html">返回 Preflight</a>
+    </div>
+  </header>
+
+  <div id="errorBox" class="cal-error" hidden></div>
+
+  <main class="cal">
+    <!-- ===== 左：截图和区域 ===== -->
+    <section class="cal-stage-wrap">
+      <div class="stage-tools">
+        <div class="seg seg-sm" id="modeSeg" role="group" aria-label="编辑对象">
+          <button data-mode="zones" class="on">遮挡区域</button>
+          <button data-mode="area">视频播放区域</button>
+        </div>
+        <span class="hint" id="modeHint"></span>
+        <button class="btn sm" id="undoBtn" disabled title="撤销（⌘Z / Ctrl+Z）">撤销</button>
+      </div>
+      <div class="stage" id="stage" tabindex="0" aria-label="截图画布">
+        <img id="shot" alt="" hidden>
+        <div class="stage-empty" id="stageEmpty">
+          <div>把播放页截图拖到这里</div>
+          <div class="hint">也可以点右侧“选择截图”，或直接粘贴（⌘V / Ctrl+V）<br>没有截图时也能按占位框调整</div>
+        </div>
+        <div class="layer" id="layer"></div>
+      </div>
+      <div class="stage-foot hint" id="stageFoot"></div>
+    </section>
+
+    <!-- ===== 右：设置 ===== -->
+    <aside class="cal-side">
+      <div class="draft-bar" id="draftBar" hidden>
+        <span id="draftText"></span>
+        <button class="btn sm" id="discardDraft">放弃修改</button>
+      </div>
+
+      <section class="cal-card">
+        <h3>① 截图</h3>
+        <p class="hint">在手机上打开该平台，播放一个<b>竖屏全屏视频</b>，界面元素都显示出来时截屏（不要截到弹窗）。</p>
+        <div class="row">
+          <button class="btn" id="pickShot">选择截图</button>
+          <input type="file" id="shotInput" accept="image/*" hidden>
+          <span class="hint num" id="shotInfo">未选择截图</span>
+        </div>
+        <p class="hint" id="aspectNote" hidden></p>
+      </section>
+
+      <section class="cal-card">
+        <h3>② 视频画面放在哪</h3>
+        <p class="hint">如果视频没有铺满整个屏幕（例如底部导航栏下面不放视频），切换到上方的“视频播放区域”，把绿色虚线框拖到视频实际显示的范围。</p>
+        <div class="row">
+          <label class="field">
+            <span class="label">视频在播放区域里怎么摆</span>
+            <select id="fitSel">
+              <option value="contain">完整显示，不够的地方留黑边（contain）</option>
+              <option value="cover">铺满，多出来的部分裁掉（cover）</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="label">预览比例</span>
+            <select id="previewSel">
+              <option value="0.5625">9:16 竖屏</option>
+              <option value="0.75">3:4</option>
+              <option value="1">1:1</option>
+              <option value="1.7778">16:9 横屏</option>
+            </select>
+          </label>
+        </div>
+        <p class="hint" id="fitNote"></p>
+      </section>
+
+      <section class="cal-card">
+        <div class="card-head">
+          <h3>③ 遮挡区域</h3>
+          <span class="hint">在截图上拖动即可新建</span>
+        </div>
+        <ul class="zlist" id="zoneList"></ul>
+        <div id="editor"></div>
+      </section>
+
+      <section class="cal-card">
+        <h3>④ 导出</h3>
+        <label class="field">
+          <span class="label">来源说明（写进配置的 source）</span>
+          <input type="text" id="sourceInput" placeholder="例如：校准：抖音 App 33.2（iPhone 15）播放页截图">
+        </label>
+        <div id="problems"></div>
+        <div class="row">
+          <button class="btn primary" id="downloadBtn">下载 platforms.json</button>
+          <button class="btn" id="copyBtn">复制本平台 overlay</button>
+        </div>
+        <p class="hint">浏览器不能直接改项目里的文件：下载后，用它替换项目里的 <code>config/platforms.json</code>，再刷新 Eup Preflight即可生效。只会替换当前平台的 <code>overlay</code>，其余内容原样保留。</p>
+        <details class="json-preview">
+          <summary>查看导出的 JSON</summary>
+          <pre id="jsonPreview"></pre>
+        </details>
+      </section>
+    </aside>
+  </main>
+
+  <script type="module" src="js/calibrate.js"></script>
+</body>
+</html>

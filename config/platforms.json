@@ -1,0 +1,902 @@
+{
+  "_说明": [
+    "Eup Preflight 的平台配置。修改后刷新网页即可生效（无需改代码）。",
+    "platforms 里的平台会显示在页面顶部；otherPlatforms 里的平台暂不在界面显示（保留以后用）。",
+    "每个平台包含：",
+    "  name     显示名称",
+    "  spec     技术规格：rules 为检查规则，slim 为“上传前瘦身”参数",
+    "  overlay  界面遮挡区域：播放页上会挡住画面的按钮、文字区域（用于“画面遮挡检查”）",
+    "  cover    封面适配：平台用到的封面比例、导出尺寸、封面上的角标位置（用于“封面适配”）",
+    "spec.rules 每条规则的字段：",
+    "  id          规则唯一标识（英文，不要重复）",
+    "  item        检查项名称（显示给创作者看，尽量通俗）",
+    "  requirement 要求（专业表述，点开详情时显示）",
+    "  type        hard = 硬性限制（不满足可能无法上传）；advice = 建议（不满足也能上传）；info = 仅提示",
+    "  check       机器判断条件：{ metric: 指标名, op: 运算符, value: 比较值 }",
+    "              也可以分档：把 value 换成 tiers: [{ upTo: 720, value: 3000, label: \"720P\" }, …]，按视频短边（或 tierBy 指定的指标）",
+    "              从小到大取第一个“≤ upTo”的档，最后一档不写 upTo 表示以上全部；说明文字里可用 {tier} 显示档位名称",
+    "  passMsg / failMsg  通过 / 不满足时的一句话说明；suggest 不满足时的修复建议",
+    "              三者都可用占位符：{actual} 实测值，{value} 要求值，{tier} 分档名称",
+    "  fix         （可选）对应的一键修复项：to_mp4 / to_cfr / fps_range / loudnorm / hdr_to_sdr / upscale /",
+    "              bitrate_floor / compress / trim / resample / downmix / add_audio / slim；修复目标值取自该规则的 check.value",
+    "  source / date  来源与核实日期。以“官方：”开头的来自平台官方页面；“经验值（待核实）”为平台未公开的常见经验值；“占位（待核实）”为尚未核实的占位数值",
+    "可用 op：in, notIn, eq, ne, gte, lte, gt, lt, between（value 为 [最小, 最大]）, isTrue, isFalse",
+    "可用 metric：container, videoCodec, width, height, shortSide, longSide, aspectRatio, orientation,",
+    "  frameRate, isVFR, videoBitrateKbps, durationSec, fileSizeMB, isHDR, hdrFormat, colorPrimaries,",
+    "  hasAudio, audioSilent, audioCodec, audioBitrateKbps, sampleRate, channels, loudnessLUFS, truePeakDBTP, loudnessRangeLU",
+    "单位：码率 kbps，时长 秒，文件大小 MB，采样率 Hz，响度 LUFS，真峰值 dBTP",
+    "overlay 的字段见各平台 overlay._说明；cover（封面适配）的字段见各平台 cover._说明"
+  ],
+  "platforms": {
+    "douyin": {
+      "name": "抖音",
+      "spec": {
+        "slim": {
+          "_说明": "上传前瘦身参数（占位数值，待核实）：短边超过 maxShortSide 才缩小，不放大；目标平均码率按帧率选，帧率 ≥ 48 用 fps60，否则用 fps30；实际码率不会低于本平台规则里的码率下限，也不会高于原片码率",
+          "maxShortSide": 1080,
+          "targetKbps": { "fps30": 10000, "fps60": 16000 },
+          "source": "经验值（待核实）：抖音未公开推荐码率；1080P30 约 10 Mbps、1080P60 约 16 Mbps 为常见经验值",
+          "date": "2026-10-23"
+        },
+        "rules": [
+          {
+            "id": "container",
+            "item": "文件格式",
+            "requirement": "常见视频格式均可上传",
+            "type": "hard",
+            "check": { "metric": "container", "op": "in", "value": ["MPEG-4", "QuickTime", "WebM", "Matroska", "Flash Video", "AVI", "MPEG-TS", "MPEG-PS", "RealMedia", "Windows Media"] },
+            "passMsg": "文件格式是 {actual}，抖音可以直接上传。",
+            "failMsg": "文件格式是 {actual}，抖音可能不认，上传会失败。",
+            "suggest": "用「修复 › 转成 MP4」转换后再上传。",
+            "fix": "to_mp4",
+            "source": "官方：抖音创作者中心网页上传页界面文案（creator.douyin.com/creator-micro/content/upload）：“Recommend mp4, webm. Other major formats are supported”，另列 flv、avi、wmv、mov、webm、mpeg4、ts、mpg、rm、rmvb、mkv 等",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "containerRecommended",
+            "item": "推荐格式",
+            "requirement": "推荐 MP4（也推荐 MOV、WebM）",
+            "type": "advice",
+            "check": { "metric": "container", "op": "in", "value": ["MPEG-4", "QuickTime", "WebM"] },
+            "passMsg": "{actual} 是抖音推荐的格式。",
+            "failMsg": "{actual} 能上传，但不是抖音推荐的格式，平台处理会慢一些、也更容易出问题。",
+            "suggest": "转成 MP4 最稳妥（「修复 › 转成 MP4」）。",
+            "fix": "to_mp4",
+            "source": "官方：抖音创作者中心网页上传页界面文案（creator.douyin.com/creator-micro/content/upload）：“Recommend mp4, webm”“recommend mp4, mov”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "videoCodec",
+            "item": "视频编码",
+            "requirement": "H.264（AVC）或 H.265（HEVC）",
+            "type": "advice",
+            "check": { "metric": "videoCodec", "op": "in", "value": ["AVC", "HEVC"] },
+            "passMsg": "视频编码是 {actual}，兼容性好。",
+            "failMsg": "视频编码是 {actual}，平台转码更慢，画质也更容易受损。",
+            "suggest": "用「修复 › 转成 MP4」转成 H.264 编码。",
+            "fix": "to_mp4",
+            "source": "经验值（待核实）：抖音未公开此项要求",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "resolution",
+            "item": "清晰度",
+            "requirement": "短边 ≥ 720 像素（720p 及以上）",
+            "type": "advice",
+            "check": { "metric": "shortSide", "op": "gte", "value": 720 },
+            "passMsg": "画面短边 {actual} 像素，清晰度够用。",
+            "failMsg": "画面短边只有 {actual} 像素，低于抖音建议的 720p，看起来会偏糊。",
+            "suggest": "用更高的清晰度重新拍摄或导出；实在没有，可以试试「放大分辨率」（画面不会变清晰）。",
+            "fix": "upscale",
+            "source": "官方：抖音创作者中心网页上传页界面文案（creator.douyin.com/creator-micro/content/upload）：“Resolution of 720p (1280x720) and above”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "resolutionMax",
+            "item": "清晰度上限",
+            "requirement": "最高 4K（短边 ≤ 2160）",
+            "type": "advice",
+            "check": { "metric": "shortSide", "op": "lte", "value": 2160 },
+            "passMsg": "画面在 4K 以内。",
+            "failMsg": "画面短边 {actual} 像素，超过 4K，平台会自动压小，白白多花上传时间。",
+            "suggest": "用「上传前瘦身」先缩小，上传更快。",
+            "fix": "slim",
+            "source": "官方：抖音创作者中心网页上传页界面文案（creator.douyin.com/creator-micro/content/upload）：“Resolution up to 4K, frame rate up to 60 frames”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "aspectRatio",
+            "item": "画面比例",
+            "requirement": "横屏、竖屏均可上传；9:16 可全屏铺满",
+            "type": "info",
+            "check": { "metric": "aspectRatio", "op": "in", "value": ["9:16"] },
+            "passMsg": "画面比例 {actual}，能铺满手机屏幕。",
+            "failMsg": "画面比例 {actual}，可以上传，但全屏播放时上下或左右会有黑边。",
+            "suggest": "想铺满屏幕，可以用「横屏转竖屏」，或剪成 9:16 竖屏。",
+            "source": "经验值：9:16 竖屏在抖音全屏铺满",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "frameRate",
+            "item": "流畅度（帧率）",
+            "requirement": "≤ 60 fps（官方）；不低于 24 fps（经验）",
+            "type": "advice",
+            "check": { "metric": "frameRate", "op": "between", "value": [23.9, 60.1] },
+            "passMsg": "每秒 {actual} 帧，在正常范围内。",
+            "failMsg": "每秒 {actual} 帧，超出抖音支持的范围，平台会自动调整，可能变卡。",
+            "suggest": "用「调整帧率」改到每秒 24～60 帧。",
+            "fix": "fps_range",
+            "source": "官方：抖音创作者中心网页上传页界面文案（creator.douyin.com/creator-micro/content/upload）：“frame rate up to 60 frames”；下限 24 fps 为经验值",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "cfr",
+            "item": "帧率稳定",
+            "requirement": "固定帧率（CFR）",
+            "type": "advice",
+            "check": { "metric": "isVFR", "op": "isFalse" },
+            "passMsg": "帧率稳定。",
+            "failMsg": "帧率忽快忽慢（手机拍摄、录屏常见），上传后可能卡顿，声音和画面对不上。",
+            "suggest": "用「固定帧率」修复。",
+            "fix": "to_cfr",
+            "source": "经验值（待核实）：抖音未公开此项要求",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "videoBitrate",
+            "item": "画质余量（码率）",
+            "requirement": "按清晰度（短边）：720P 及以下 ≥ 3000、1080P ≥ 6000、2K ≥ 10000、4K ≥ 20000 kbps",
+            "type": "advice",
+            "check": { "metric": "videoBitrateKbps", "op": "gte", "tiers": [{ "upTo": 720, "value": 3000, "label": "720P 及以下" }, { "upTo": 1080, "value": 6000, "label": "1080P" }, { "upTo": 1440, "value": 10000, "label": "2K" }, { "value": 20000, "label": "4K" }] },
+            "passMsg": "码率 {actual} kbps，画质余量充足（{tier} 建议 ≥ {value}）。",
+            "failMsg": "码率只有 {actual} kbps（{tier} 建议 ≥ {value}），平台再压缩一次后容易出现色块、模糊。",
+            "suggest": "导出时把码率调到 {value} kbps 以上，或用「码率下限」重新编码（原片已经糊的话不会变清晰）。",
+            "fix": "bitrate_floor",
+            "source": "经验值（待核实）：抖音未公开此项要求",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "duration",
+            "item": "时长",
+            "requirement": "≤ 60 分钟（3600 秒）",
+            "type": "hard",
+            "check": { "metric": "durationSec", "op": "lte", "value": 3600 },
+            "passMsg": "时长 {actual} 秒，在允许范围内。",
+            "failMsg": "时长 {actual} 秒，超过 1 小时，普通账号可能传不上去。",
+            "suggest": "剪到 1 小时以内，或用「截断时长」只保留前 1 小时。",
+            "fix": "trim",
+            "source": "官方：抖音创作者中心网页上传页界面文案（creator.douyin.com/creator-micro/content/upload）：“Only videos under 1 hour … are allowed to be uploaded”；另有“Function internal test: You can post videos over 1 hour and within 3 hours”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "fileSize",
+            "item": "文件大小",
+            "requirement": "≤ 16 GB（16384 MB）",
+            "type": "hard",
+            "check": { "metric": "fileSizeMB", "op": "lte", "value": 16384 },
+            "passMsg": "文件 {actual} MB，没有超限。",
+            "failMsg": "文件 {actual} MB，超过 16 GB 上限，传不上去。",
+            "suggest": "用「压缩体积」或「上传前瘦身」把文件变小。",
+            "fix": "compress",
+            "source": "官方：抖音创作者中心网页上传页界面文案（creator.douyin.com/creator-micro/content/upload）：“The video file size does not exceed 16G”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "hdr",
+            "item": "HDR 色彩",
+            "requirement": "抖音支持 HDR（会智能识别并输出 HDR）",
+            "type": "info",
+            "check": { "metric": "isHDR", "op": "isFalse" },
+            "passMsg": "普通色彩（SDR），在各种手机上看起来都一样。",
+            "failMsg": "这是 HDR 视频（{actual}）。抖音会自动识别；在不支持 HDR 的手机上颜色由平台转换，效果因机型而异。",
+            "suggest": "不放心的话，可以用「HDR 转 SDR」转成普通色彩再上传。",
+            "fix": "hdr_to_sdr",
+            "source": "官方：抖音创作者中心网页上传页界面文案（creator.douyin.com/creator-micro/content/upload）：“intelligent recognition and output HDR video”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "hasAudio",
+            "item": "有没有声音",
+            "requirement": "包含音轨",
+            "type": "advice",
+            "check": { "metric": "hasAudio", "op": "isTrue" },
+            "passMsg": "视频带声音。",
+            "failMsg": "视频没有声音轨，无声视频在推荐里通常完播率更低。",
+            "suggest": "加上配乐或旁白；只是为了避免报错，可以用「添加静音音轨」。",
+            "fix": "add_audio",
+            "source": "经验值（待核实）：抖音未公开此项要求",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "audioSilent",
+            "item": "声音是否为空",
+            "requirement": "音轨不是全程静音",
+            "type": "advice",
+            "check": { "metric": "audioSilent", "op": "isFalse" },
+            "passMsg": "声音正常。",
+            "failMsg": "声音轨全程没有声音（录屏没开录音时常见），观众会以为视频坏了。",
+            "suggest": "录制时打开声音，或在剪辑软件里加上配乐、旁白。",
+            "source": "经验值（待核实）：抖音未公开此项要求",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "audioCodec",
+            "item": "声音格式",
+            "requirement": "AAC",
+            "type": "advice",
+            "check": { "metric": "audioCodec", "op": "in", "value": ["AAC"] },
+            "passMsg": "声音格式是 AAC，兼容性最好。",
+            "failMsg": "声音格式是 {actual}，部分手机可能没声音，平台也会重新转换。",
+            "suggest": "用「转成 MP4」把声音转成 AAC。",
+            "fix": "to_mp4",
+            "source": "经验值（待核实）：抖音未公开此项要求",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "sampleRate",
+            "item": "声音采样率",
+            "requirement": "44100 或 48000 Hz",
+            "type": "advice",
+            "check": { "metric": "sampleRate", "op": "in", "value": [44100, 48000] },
+            "passMsg": "采样率 {actual} Hz，正常。",
+            "failMsg": "采样率 {actual} Hz 不常见，平台转换时音质可能变差。",
+            "suggest": "用「统一采样率」修复。",
+            "fix": "resample",
+            "source": "经验值（待核实）：抖音未公开此项要求",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "channels",
+            "item": "声道数",
+            "requirement": "单声道或立体声（≤ 2）",
+            "type": "advice",
+            "check": { "metric": "channels", "op": "lte", "value": 2 },
+            "passMsg": "{actual} 声道，手机播放正常。",
+            "failMsg": "{actual} 声道（环绕声），手机会合成双声道，人声可能变小。",
+            "suggest": "用「下混为立体声」修复。",
+            "fix": "downmix",
+            "source": "经验值（待核实）：抖音未公开此项要求",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "loudness",
+            "item": "音量大小",
+            "requirement": "-16 ~ -12 LUFS（目标 -14）",
+            "type": "advice",
+            "check": { "metric": "loudnessLUFS", "op": "between", "value": [-16, -12] },
+            "passMsg": "音量 {actual} LUFS，和别的视频差不多响。",
+            "failMsg": "音量 {actual} LUFS，和大多数视频差得多（建议 {value}），刷到时会觉得忽大忽小。",
+            "suggest": "用「统一音量」修复。",
+            "fix": "loudnorm",
+            "source": "经验值（待核实）：抖音未公开此项要求；-14 LUFS 是主流流媒体平台常用的响度目标",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "truePeak",
+            "item": "爆音风险",
+            "requirement": "≤ -1 dBTP",
+            "type": "advice",
+            "check": { "metric": "truePeakDBTP", "op": "lte", "value": -1 },
+            "passMsg": "峰值 {actual} dBTP，有余量，不会爆音。",
+            "failMsg": "峰值 {actual} dBTP 太高，平台转换后可能出现破音。",
+            "suggest": "用「统一音量」修复，会顺带压住峰值。",
+            "fix": "loudnorm",
+            "source": "经验值（待核实）：抖音未公开此项要求",
+            "date": "2026-10-23"
+          }
+        ]
+      },
+      "overlay": {
+        "_说明": "界面遮挡区域：x / y / w / h 都是相对于【整张手机截图】宽、高的百分比（0~100），x、y 是矩形左上角。screenAspect 是校准用截图的宽 ÷ 高；videoArea 是视频播放区域（不写表示整个屏幕）；videoFit 表示视频在播放区域里的摆放方式：contain = 完整显示、居中，不够的地方留黑边；cover = 铺满播放区域，多出来的部分被裁掉。建议用 calibrate.html 对着真实截图校准后导出。",
+        "source": "校准：抖音 App 推荐页截图（886×2000，用户提供，2026-10-26）。底部导航栏是不透明黑底，视频只显示在它上面（videoArea 高 94.2%）",
+        "date": "2026-10-26",
+        "screenAspect": 0.443,
+        "videoArea": { "x": 0, "y": 0, "w": 100, "h": 94.2 },
+        "videoFit": "cover",
+        "zones": [
+          { "id": "topBar", "name": "顶部栏", "desc": "状态栏 + “团购 / 同城 / 直播 / 关注 / 商城 / 推荐”标签和搜索按钮", "x": 0, "y": 0, "w": 100, "h": 10 },
+          { "id": "rightButtons", "name": "右侧按钮列", "desc": "头像、点赞、评论、收藏、分享、拍同款", "x": 84, "y": 42.1, "w": 16, "h": 47.4 },
+          { "id": "bottomCaption", "name": "底部标题和文案区", "desc": "弹幕按钮、作者名、标题文案和话题、音乐信息", "x": 0, "y": 71.5, "w": 82, "h": 18 },
+          { "id": "searchBar", "name": "相关搜索栏", "desc": "文案下方的“相关搜索”推荐条（不是每个视频都有）", "x": 0, "y": 89.5, "w": 100, "h": 4.7 },
+          { "id": "bottomNav", "name": "底部导航栏", "desc": "首页 / 朋友 / 拍摄 / 消息 / 我（不透明，视频不在它下面）", "x": 0, "y": 94.2, "w": 100, "h": 5.8 }
+        ]
+      },
+      "cover": {
+        "_说明": "封面适配：ratios 是平台会用到的封面比例。每项：id、name 名称、desc 在哪里显示、ratio [宽, 高]、size 导出尺寸 [宽, 高]（像素）、zones 显示时会盖在封面上的东西（播放量、置顶标签等），x / y / w / h 是相对【裁切后封面】宽、高的百分比；写 \"zonesFrom\": \"overlay\" 表示直接用播放页的界面遮挡区域（全屏封面）。",
+        "source": "校准：竖版封面 3:4 和角标按抖音 App 个人主页截图量出（886×2000，网格每格 294×390，用户提供，2026-10-26）；横版封面 4:3 仍为占位（待核实）",
+        "date": "2026-10-26",
+        "ratios": [
+          {
+            "id": "portrait",
+            "name": "竖版封面",
+            "desc": "个人主页作品网格（每行 3 个）",
+            "ratio": [3, 4],
+            "size": [1080, 1440],
+            "zones": [
+              { "id": "topLeft", "name": "置顶 / 时间标签", "desc": "左上角的“置顶”或“17小时前”等标签", "x": 3, "y": 3, "w": 50, "h": 15 },
+              { "id": "topRight", "name": "图集 / 实况标记", "desc": "右上角的图集、实况照片图标", "x": 76, "y": 3, "w": 21, "h": 15 },
+              { "id": "likes", "name": "点赞数", "desc": "左下角的 ♡ 点赞数（自己的主页显示 ▷ 播放数）", "x": 3, "y": 85, "w": 42, "h": 13 }
+            ]
+          },
+          {
+            "id": "landscape",
+            "name": "横版封面",
+            "desc": "搜索结果、电脑网页版",
+            "ratio": [4, 3],
+            "size": [1440, 1080],
+            "zones": [
+              { "id": "duration", "name": "时长", "desc": "右下角的视频时长", "x": 80, "y": 88, "w": 20, "h": 12 }
+            ]
+          }
+        ]
+      }
+    },
+    "tiktok": {
+      "name": "TikTok",
+      "spec": {
+        "slim": {
+          "_说明": "上传前瘦身参数（占位数值，待核实）：短边超过 maxShortSide 才缩小，不放大；目标平均码率按帧率选，帧率 ≥ 48 用 fps60，否则用 fps30；实际码率不会低于本平台规则里的码率下限，也不会高于原片码率",
+          "maxShortSide": 1080,
+          "targetKbps": { "fps30": 10000, "fps60": 16000 },
+          "source": "占位（待核实）：TikTok 数值尚未核实",
+          "date": "2026-10-26"
+        },
+        "rules": [
+          {
+            "id": "container",
+            "item": "文件格式",
+            "requirement": "MP4、WebM、MOV",
+            "type": "hard",
+            "check": { "metric": "container", "op": "in", "value": ["MPEG-4", "QuickTime", "WebM"] },
+            "passMsg": "文件格式是 {actual}，TikTok 可以直接上传。",
+            "failMsg": "文件格式是 {actual}，TikTok 只接受 MP4、WebM、MOV，上传可能会失败。",
+            "suggest": "用「修复 › 转成 MP4」转换后再上传。",
+            "fix": "to_mp4",
+            "source": "官方：TikTok for Developers「Media Transfer Guide」视频限制（developers.tiktok.com/doc/content-posting-api-media-transfer-guide，页面注明 2026-08-04 更新；该文档针对第三方工具发布，App 内上传可能略有不同）：“MP4 (recommended)”“WebM”“MOV”；网页上传另见 TikTok 帮助中心「Creator tools and TikTok Studio」（support.tiktok.com/en/using-tiktok/creating-videos/creator-tools-on-tiktok）经搜索引擎摘录：网页上传 MP4 或 WebM、720×1280 以上；该页在国内打不开，未能直接核实",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "containerRecommended",
+            "item": "推荐格式",
+            "requirement": "推荐 MP4",
+            "type": "advice",
+            "check": { "metric": "container", "op": "in", "value": ["MPEG-4"] },
+            "passMsg": "{actual} 是 TikTok 推荐的格式。",
+            "failMsg": "格式是 {actual}，TikTok 推荐 MP4，转成 MP4 兼容性最好。",
+            "suggest": "转成 MP4 最稳妥（「修复 › 转成 MP4」）。",
+            "fix": "to_mp4",
+            "source": "官方：TikTok for Developers「Media Transfer Guide」视频限制（developers.tiktok.com/doc/content-posting-api-media-transfer-guide，页面注明 2026-08-04 更新；该文档针对第三方工具发布，App 内上传可能略有不同）：“MP4 (recommended)”",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "videoCodec",
+            "item": "视频编码",
+            "requirement": "H.264（推荐）、H.265、VP8、VP9",
+            "type": "advice",
+            "check": { "metric": "videoCodec", "op": "in", "value": ["AVC", "HEVC", "VP8", "VP9"] },
+            "passMsg": "视频编码是 {actual}，兼容性好。",
+            "failMsg": "视频编码是 {actual}，TikTok 只支持 H.264、H.265、VP8、VP9，可能无法上传或被强制转码。",
+            "suggest": "用「修复 › 转成 MP4」转成 H.264 编码。",
+            "fix": "to_mp4",
+            "source": "官方：TikTok for Developers「Media Transfer Guide」视频限制（developers.tiktok.com/doc/content-posting-api-media-transfer-guide，页面注明 2026-08-04 更新；该文档针对第三方工具发布，App 内上传可能略有不同）：“H.264 (recommended)”“H.265”“VP8”“VP9”",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "resolution",
+            "item": "清晰度",
+            "requirement": "短边 ≥ 720 像素（网页上传要求 720×1280 以上；开发者文档最低 360）",
+            "type": "advice",
+            "check": { "metric": "shortSide", "op": "gte", "value": 720 },
+            "passMsg": "画面短边 {actual} 像素，清晰度够用。",
+            "failMsg": "画面短边只有 {actual} 像素，低于建议的 {value} 像素，看起来会偏糊。",
+            "suggest": "用更高的清晰度重新拍摄或导出；实在没有，可以试试「放大分辨率」（画面不会变清晰）。",
+            "fix": "upscale",
+            "source": "TikTok 帮助中心「Creator tools and TikTok Studio」（support.tiktok.com/en/using-tiktok/creating-videos/creator-tools-on-tiktok）经搜索引擎摘录：网页上传 MP4 或 WebM、720×1280 以上；该页在国内打不开，未能直接核实；最低 360 像素见 官方：TikTok for Developers「Media Transfer Guide」视频限制（developers.tiktok.com/doc/content-posting-api-media-transfer-guide，页面注明 2026-08-04 更新；该文档针对第三方工具发布，App 内上传可能略有不同）：“Minimum of 360 pixels for both height and width”",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "resolutionMax",
+            "item": "清晰度上限",
+            "requirement": "长边 ≤ 4096 像素",
+            "type": "advice",
+            "check": { "metric": "longSide", "op": "lte", "value": 4096 },
+            "passMsg": "画面长边 {actual}，没有超过 4096 像素。",
+            "failMsg": "画面长边 {actual}，超过了 TikTok 允许的 4096 像素，可能无法上传。",
+            "suggest": "用「上传前瘦身」把画面缩小到 1080P。",
+            "fix": "slim",
+            "source": "官方：TikTok for Developers「Media Transfer Guide」视频限制（developers.tiktok.com/doc/content-posting-api-media-transfer-guide，页面注明 2026-08-04 更新；该文档针对第三方工具发布，App 内上传可能略有不同）：“Maximum of 4096 pixels for both height and width”",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "aspectRatio",
+            "item": "画面比例",
+            "requirement": "横屏、竖屏均可上传；9:16 可全屏铺满",
+            "type": "info",
+            "check": { "metric": "aspectRatio", "op": "in", "value": ["9:16"] },
+            "passMsg": "画面比例 {actual}，能铺满手机屏幕。",
+            "failMsg": "画面比例 {actual}，可以上传，但全屏播放时上下或左右会有黑边。",
+            "suggest": "想铺满屏幕，可以用「横屏转竖屏」，或剪成 9:16 竖屏。",
+            "source": "经验值（待核实）：TikTok 未公开此项要求",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "frameRate",
+            "item": "流畅度（帧率）",
+            "requirement": "23 ~ 60 fps",
+            "type": "advice",
+            "check": { "metric": "frameRate", "op": "between", "value": [23, 60.1] },
+            "passMsg": "每秒 {actual} 帧，在正常范围内。",
+            "failMsg": "每秒 {actual} 帧，TikTok 要求 23 ~ 60 帧，可能无法上传或被强制转码。",
+            "suggest": "用「调整帧率」改到每秒 24～60 帧。",
+            "fix": "fps_range",
+            "source": "官方：TikTok for Developers「Media Transfer Guide」视频限制（developers.tiktok.com/doc/content-posting-api-media-transfer-guide，页面注明 2026-08-04 更新；该文档针对第三方工具发布，App 内上传可能略有不同）：“Minimum of 23 FPS”“Maximum of 60 FPS”",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "cfr",
+            "item": "帧率稳定",
+            "requirement": "固定帧率（CFR）",
+            "type": "advice",
+            "check": { "metric": "isVFR", "op": "isFalse" },
+            "passMsg": "帧率稳定。",
+            "failMsg": "帧率忽快忽慢（手机拍摄、录屏常见），上传后可能卡顿，声音和画面对不上。",
+            "suggest": "用「固定帧率」修复。",
+            "fix": "to_cfr",
+            "source": "经验值（待核实）：TikTok 未公开此项要求",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "videoBitrate",
+            "item": "画质余量（码率）",
+            "requirement": "按清晰度（短边）：720P 及以下 ≥ 3000、1080P ≥ 6000、2K ≥ 10000、4K ≥ 20000 kbps",
+            "type": "advice",
+            "check": { "metric": "videoBitrateKbps", "op": "gte", "tiers": [{ "upTo": 720, "value": 3000, "label": "720P 及以下" }, { "upTo": 1080, "value": 6000, "label": "1080P" }, { "upTo": 1440, "value": 10000, "label": "2K" }, { "value": 20000, "label": "4K" }] },
+            "passMsg": "码率 {actual} kbps，画质余量充足（{tier} 建议 ≥ {value}）。",
+            "failMsg": "码率只有 {actual} kbps（{tier} 建议 ≥ {value}），平台再压缩一次后容易出现色块、模糊。",
+            "suggest": "导出时把码率调到 {value} kbps 以上，或用「码率下限」重新编码（原片已经糊的话不会变清晰）。",
+            "fix": "bitrate_floor",
+            "source": "经验值（待核实）：TikTok 未公开此项要求",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "duration",
+            "item": "时长",
+            "requirement": "≤ 10 分钟（600 秒）；所有创作者至少能发 3 分钟，部分账号 5 或 10 分钟",
+            "type": "advice",
+            "check": { "metric": "durationSec", "op": "lte", "value": 600 },
+            "passMsg": "时长 {actual} 秒，在 10 分钟以内。",
+            "failMsg": "时长 {actual} 秒，超过 10 分钟。TikTok 多数账号最长只能发 10 分钟（网页版、部分账号可能更长），可能需要剪短。",
+            "suggest": "剪到 10 分钟以内，或用「截断时长」只保留前 {value} 秒。",
+            "fix": "trim",
+            "source": "官方：TikTok for Developers「Media Transfer Guide」视频限制（developers.tiktok.com/doc/content-posting-api-media-transfer-guide，页面注明 2026-08-04 更新；该文档针对第三方工具发布，App 内上传可能略有不同）：“All TikTok creators can post 3-minute videos, while some have access to post 5-minute or 10-minute videos.”",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "durationBasic",
+            "item": "所有账号都能发的时长",
+            "requirement": "≤ 3 分钟（180 秒）",
+            "type": "info",
+            "check": { "metric": "durationSec", "op": "lte", "value": 180 },
+            "passMsg": "时长 {actual} 秒，所有 TikTok 账号都能发。",
+            "failMsg": "时长 {actual} 秒，超过 3 分钟：所有账号都能发 3 分钟，更长的视频要看你的账号有没有 5 / 10 分钟的权限。",
+            "suggest": "发布前在 TikTok 里确认自己的账号能发多长，不够的话剪短。",
+            "source": "官方：TikTok for Developers「Media Transfer Guide」视频限制（developers.tiktok.com/doc/content-posting-api-media-transfer-guide，页面注明 2026-08-04 更新；该文档针对第三方工具发布，App 内上传可能略有不同）：“All TikTok creators can post 3-minute videos”",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "fileSize",
+            "item": "文件大小",
+            "requirement": "≤ 4 GB",
+            "type": "hard",
+            "check": { "metric": "fileSizeMB", "op": "lte", "value": 4096 },
+            "passMsg": "文件 {actual} MB，没有超限。",
+            "failMsg": "文件 {actual} MB，超过 TikTok 上限 {value} MB，传不上去。",
+            "suggest": "用「压缩体积」或「上传前瘦身」把文件变小。",
+            "fix": "compress",
+            "source": "官方：TikTok for Developers「Media Transfer Guide」视频限制（developers.tiktok.com/doc/content-posting-api-media-transfer-guide，页面注明 2026-08-04 更新；该文档针对第三方工具发布，App 内上传可能略有不同）：“Maximum of 4GB”",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "hdr",
+            "item": "HDR 色彩",
+            "requirement": "SDR / HDR 支持情况待核实",
+            "type": "info",
+            "check": { "metric": "isHDR", "op": "isFalse" },
+            "passMsg": "普通色彩（SDR），在各种手机上看起来都一样。",
+            "failMsg": "这是 HDR 视频（{actual}）。TikTok 对 HDR 的处理尚未核实，在部分手机上颜色可能和你看到的不一样。",
+            "suggest": "不放心的话，可以用「HDR 转 SDR」转成普通色彩再上传。",
+            "fix": "hdr_to_sdr",
+            "source": "经验值（待核实）：TikTok 未公开此项要求",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "hasAudio",
+            "item": "有没有声音",
+            "requirement": "包含音轨",
+            "type": "advice",
+            "check": { "metric": "hasAudio", "op": "isTrue" },
+            "passMsg": "视频带声音。",
+            "failMsg": "视频没有声音轨，无声视频在推荐里通常完播率更低。",
+            "suggest": "加上配乐或旁白；只是为了避免报错，可以用「添加静音音轨」。",
+            "fix": "add_audio",
+            "source": "经验值（待核实）：TikTok 未公开此项要求",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "audioSilent",
+            "item": "声音是否为空",
+            "requirement": "音轨不是全程静音",
+            "type": "advice",
+            "check": { "metric": "audioSilent", "op": "isFalse" },
+            "passMsg": "声音正常。",
+            "failMsg": "声音轨全程没有声音（录屏没开录音时常见），观众会以为视频坏了。",
+            "suggest": "录制时打开声音，或在剪辑软件里加上配乐、旁白。",
+            "source": "经验值（待核实）：TikTok 未公开此项要求",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "audioCodec",
+            "item": "声音格式",
+            "requirement": "AAC",
+            "type": "advice",
+            "check": { "metric": "audioCodec", "op": "in", "value": ["AAC"] },
+            "passMsg": "声音格式是 AAC，兼容性最好。",
+            "failMsg": "声音格式是 {actual}，部分手机可能没声音，平台也会重新转换。",
+            "suggest": "用「转成 MP4」把声音转成 AAC。",
+            "fix": "to_mp4",
+            "source": "经验值（待核实）：TikTok 未公开此项要求",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "sampleRate",
+            "item": "声音采样率",
+            "requirement": "44100 或 48000 Hz",
+            "type": "advice",
+            "check": { "metric": "sampleRate", "op": "in", "value": [44100, 48000] },
+            "passMsg": "采样率 {actual} Hz，正常。",
+            "failMsg": "采样率 {actual} Hz 不常见，平台转换时音质可能变差。",
+            "suggest": "用「统一采样率」修复。",
+            "fix": "resample",
+            "source": "经验值（待核实）：TikTok 未公开此项要求",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "channels",
+            "item": "声道数",
+            "requirement": "单声道或立体声（≤ 2）",
+            "type": "advice",
+            "check": { "metric": "channels", "op": "lte", "value": 2 },
+            "passMsg": "{actual} 声道，手机播放正常。",
+            "failMsg": "{actual} 声道（环绕声），手机会合成双声道，人声可能变小。",
+            "suggest": "用「下混为立体声」修复。",
+            "fix": "downmix",
+            "source": "经验值（待核实）：TikTok 未公开此项要求",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "loudness",
+            "item": "音量大小",
+            "requirement": "-16 ~ -12 LUFS（目标 -14）",
+            "type": "advice",
+            "check": { "metric": "loudnessLUFS", "op": "between", "value": [-16, -12] },
+            "passMsg": "音量 {actual} LUFS，和别的视频差不多响。",
+            "failMsg": "音量 {actual} LUFS，和大多数视频差得多（建议 {value}），刷到时会觉得忽大忽小。",
+            "suggest": "用「统一音量」修复。",
+            "fix": "loudnorm",
+            "source": "经验值（待核实）：TikTok 未公开此项要求",
+            "date": "2026-10-26"
+          },
+          {
+            "id": "truePeak",
+            "item": "爆音风险",
+            "requirement": "≤ -1 dBTP",
+            "type": "advice",
+            "check": { "metric": "truePeakDBTP", "op": "lte", "value": -1 },
+            "passMsg": "峰值 {actual} dBTP，有余量，不会爆音。",
+            "failMsg": "峰值 {actual} dBTP 太高，平台转换后可能出现破音。",
+            "suggest": "用「统一音量」修复，会顺带压住峰值。",
+            "fix": "loudnorm",
+            "source": "经验值（待核实）：TikTok 未公开此项要求",
+            "date": "2026-10-26"
+          }
+        ]
+      },
+      "overlay": {
+        "_说明": "界面遮挡区域：x / y / w / h 都是相对于【整张手机截图】宽、高的百分比（0~100），x、y 是矩形左上角。screenAspect 是校准用截图的宽 ÷ 高；videoArea 是视频播放区域（不写表示整个屏幕）；videoFit 表示视频在播放区域里的摆放方式：contain = 完整显示、居中，不够的地方留黑边；cover = 铺满播放区域，多出来的部分被裁掉。建议用 calibrate.html 对着真实截图校准后导出。",
+        "source": "参照抖音截图（近似）：TikTok 播放页布局和抖音基本一致，尚未用 TikTok 截图单独校准",
+        "date": "2026-10-26",
+        "screenAspect": 0.443,
+        "videoArea": { "x": 0, "y": 0, "w": 100, "h": 94.2 },
+        "videoFit": "cover",
+        "zones": [
+          { "id": "topBar", "name": "顶部栏", "desc": "状态栏 + “Following / For You”标签和搜索按钮", "x": 0, "y": 0, "w": 100, "h": 10 },
+          { "id": "rightButtons", "name": "右侧按钮列", "desc": "头像、点赞、评论、收藏、分享、音乐唱片", "x": 84, "y": 42.1, "w": 16, "h": 47.4 },
+          { "id": "bottomCaption", "name": "底部标题和文案区", "desc": "用户名、文案和话题、音乐信息", "x": 0, "y": 71.5, "w": 82, "h": 18 },
+          { "id": "searchBar", "name": "搜索推荐栏", "desc": "文案下方的搜索推荐条（不是每个视频都有）", "x": 0, "y": 89.5, "w": 100, "h": 4.7 },
+          { "id": "bottomNav", "name": "底部导航栏", "desc": "Home / Friends / 拍摄 / Inbox / Profile", "x": 0, "y": 94.2, "w": 100, "h": 5.8 }
+        ]
+      },
+      "cover": {
+        "_说明": "封面适配：ratios 是平台会用到的封面比例。每项：id、name 名称、desc 在哪里显示、ratio [宽, 高]、size 导出尺寸 [宽, 高]（像素）、zones 显示时会盖在封面上的东西（播放量、置顶标签等），x / y / w / h 是相对【裁切后封面】宽、高的百分比；写 \"zonesFrom\": \"overlay\" 表示直接用播放页的界面遮挡区域（全屏封面）。",
+        "source": "主页网格 3:4 和角标参照抖音主页截图（近似）；视频封面 9:16 用播放页遮挡区域；尚未用 TikTok 截图核实",
+        "date": "2026-10-26",
+        "ratios": [
+          {
+            "id": "full",
+            "name": "视频封面",
+            "desc": "推荐流全屏显示",
+            "ratio": [9, 16],
+            "size": [1080, 1920],
+            "zonesFrom": "overlay"
+          },
+          {
+            "id": "grid",
+            "name": "主页网格",
+            "desc": "个人主页作品网格",
+            "ratio": [3, 4],
+            "size": [1080, 1440],
+            "zones": [
+              { "id": "topLeft", "name": "置顶标签", "desc": "左上角的 Pinned 等标签", "x": 3, "y": 3, "w": 50, "h": 15 },
+              { "id": "topRight", "name": "图集 / 实况标记", "desc": "右上角的图集、实况照片图标", "x": 76, "y": 3, "w": 21, "h": 15 },
+              { "id": "likes", "name": "播放量", "desc": "左下角的 ▷ 播放量", "x": 3, "y": 85, "w": 42, "h": 13 }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "otherPlatforms": {
+    "bilibili": {
+      "name": "B站",
+      "spec": {
+        "slim": {
+          "_说明": "上传前瘦身参数（占位数值，待核实）：短边超过 maxShortSide 才缩小，不放大；目标平均码率按帧率选，帧率 ≥ 48 用 fps60，否则用 fps30；实际码率不会低于本平台规则里的码率下限，也不会高于原片码率",
+          "maxShortSide": 1080,
+          "targetKbps": { "fps30": 20000, "fps60": 20000 },
+          "source": "官方建议值：官方：哔哩哔哩帮助中心 › 创作中心 › 投稿相关「关于视频上传」（https://www.bilibili.com/blackboard/help.html#/?qid=314）：“视频码率建议20000kbps”",
+          "date": "2026-10-23"
+        },
+        "rules": [
+          {
+            "id": "container",
+            "item": "容器格式",
+            "requirement": "mp4、flv、avi、wmv、mov、webm、mpeg4、ts、mpg、rm、rmvb、mkv",
+            "type": "hard",
+            "check": { "metric": "container", "op": "in", "value": ["MPEG-4", "QuickTime", "WebM", "Matroska", "Flash Video", "AVI", "MPEG-TS", "MPEG-PS", "RealMedia", "Windows Media"] },
+            "passMsg": "容器为 {actual}，可以上传。",
+            "failMsg": "容器为 {actual}，不在 B站支持的格式列表里，可能无法上传，建议转成 MP4。",
+            "fix": "to_mp4",
+            "source": "官方：哔哩哔哩帮助中心 › 创作中心 › 投稿相关「关于视频上传」（https://www.bilibili.com/blackboard/help.html#/?qid=314）：“格式：mp4,flv,avi,wmv,mov,webm,mpeg4,ts,mpg,rm,rmvb,mkv”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "videoCodec",
+            "item": "视频编码",
+            "requirement": "H.264 / H.265 / AV1",
+            "type": "advice",
+            "check": { "metric": "videoCodec", "op": "in", "value": ["AVC", "HEVC", "AV1"] },
+            "passMsg": "视频编码为 {actual}，兼容性良好。",
+            "failMsg": "视频编码为 {actual}，审核转码耗时可能更长，建议转 H.264。",
+            "fix": "to_mp4",
+            "source": "经验值（待核实）：B站未公开此项要求（官方码率建议以 H.264/AVC 为准）",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "resolution",
+            "item": "分辨率（短边）",
+            "requirement": "短边 ≥ 1080 像素",
+            "type": "advice",
+            "check": { "metric": "shortSide", "op": "gte", "value": 1080 },
+            "passMsg": "短边 {actual}px，可开放 1080P 档位。",
+            "failMsg": "短边仅 {actual}px（建议 ≥ {value}），观众无法选择 1080P 高清。",
+            "fix": "upscale",
+            "source": "经验值（待核实）：B站未公开此项要求",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "resolutionMax",
+            "item": "最高分辨率",
+            "requirement": "最大 4096×4096",
+            "type": "hard",
+            "check": { "metric": "longSide", "op": "lte", "value": 4096 },
+            "passMsg": "长边 {actual}px，在 B站支持范围内。",
+            "failMsg": "长边 {actual}px 超过 B站最大支持的 4096，需要先缩小。",
+            "fix": "slim",
+            "source": "官方：哔哩哔哩帮助中心 › 创作中心 › 投稿相关「关于视频上传」（https://www.bilibili.com/blackboard/help.html#/?qid=314）：“分辨率：最大支持4096x4096（120fps）”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "aspectRatio",
+            "item": "画面比例",
+            "requirement": "横屏、竖屏均可上传；16:9 在横屏播放器中铺满",
+            "type": "info",
+            "check": { "metric": "aspectRatio", "op": "in", "value": ["16:9"] },
+            "passMsg": "画面比例 {actual}，PC 和 App 播放器都能铺满。",
+            "failMsg": "画面比例为 {actual}，可正常上传；在 B站横屏播放器里会有黑边。",
+            "source": "经验值：B站播放器以 16:9 为主",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "frameRate",
+            "item": "帧率",
+            "requirement": "≤ 120 fps（官方）；不低于 24 fps（经验）",
+            "type": "advice",
+            "check": { "metric": "frameRate", "op": "between", "value": [23.9, 120.1] },
+            "passMsg": "帧率 {actual} fps，在支持范围内。",
+            "failMsg": "帧率 {actual} fps 超出范围（B站最高 120 fps），可能被转成较低帧率。",
+            "fix": "fps_range",
+            "source": "官方：哔哩哔哩帮助中心 › 创作中心 › 投稿相关「关于视频上传」（https://www.bilibili.com/blackboard/help.html#/?qid=314）：“最大支持4096x4096（120fps）”；下限 24 fps 为经验值",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "cfr",
+            "item": "固定帧率",
+            "requirement": "固定帧率（CFR）",
+            "type": "advice",
+            "check": { "metric": "isVFR", "op": "isFalse" },
+            "passMsg": "固定帧率，播放更稳定。",
+            "failMsg": "检测到可变帧率，转码后可能音画不同步，弹幕时间轴也会有偏差。",
+            "fix": "to_cfr",
+            "source": "经验值（待核实）：B站未公开此项要求",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "videoBitrate",
+            "item": "视频码率",
+            "requirement": "≥ 6000 kbps（经验）；官方建议约 20000 kbps",
+            "type": "advice",
+            "check": { "metric": "videoBitrateKbps", "op": "gte", "value": 6000 },
+            "passMsg": "视频码率 {actual} kbps，画质余量充足。",
+            "failMsg": "视频码率仅 {actual} kbps（建议 ≥ {value}），二压后暗部和运动画面容易糊；B站官方建议约 20000 kbps。",
+            "fix": "bitrate_floor",
+            "source": "经验值（待核实）：B站未公开此项要求；官方建议值见：官方：哔哩哔哩帮助中心 › 创作中心 › 投稿相关「关于视频上传」（https://www.bilibili.com/blackboard/help.html#/?qid=314）：“视频码率建议20000kbps”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "videoBitrateMax",
+            "item": "码率上限",
+            "requirement": "峰值 ≤ 60000 kbps",
+            "type": "advice",
+            "check": { "metric": "videoBitrateKbps", "op": "lte", "value": 60000 },
+            "passMsg": "视频平均码率 {actual} kbps，在峰值上限以内。",
+            "failMsg": "视频平均码率 {actual} kbps 已超过 B站建议的峰值上限 60000 kbps，一定会被重新压缩，建议先瘦身减小上传体积。",
+            "fix": "slim",
+            "source": "官方：哔哩哔哩帮助中心 › 创作中心 › 投稿相关「关于视频上传」（https://www.bilibili.com/blackboard/help.html#/?qid=314）：“峰值码率建议不超过60000kbps（H264/AVC编码）”；本工具只能测平均码率，仅作参考",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "duration",
+            "item": "时长",
+            "requirement": "≤ 10 小时（36000 秒）",
+            "type": "hard",
+            "check": { "metric": "durationSec", "op": "lte", "value": 36000 },
+            "passMsg": "时长 {actual} 秒，在允许范围内。",
+            "failMsg": "时长 {actual} 秒超过 10 小时上限，需要分 P 上传。",
+            "fix": "trim",
+            "source": "官方：哔哩哔哩帮助中心 › 创作中心 › 投稿相关「视频上传有体积大小和时长的限制吗？」（https://www.bilibili.com/blackboard/help.html#/?qid=314）：“视频内容时长最大10小时”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "fileSize",
+            "item": "文件大小",
+            "requirement": "≤ 16 GB（16384 MB）；权益等级 lv3 以上网页投稿可到 64 GB",
+            "type": "hard",
+            "check": { "metric": "fileSizeMB", "op": "lte", "value": 16384 },
+            "passMsg": "文件 {actual} MB，在允许范围内。",
+            "failMsg": "文件 {actual} MB 超过 16 GB 上限（权益等级 lv3 以上网页投稿可到 64 GB），需要压缩或分 P。",
+            "fix": "compress",
+            "source": "官方：哔哩哔哩帮助中心 › 创作中心 › 投稿相关「关于视频上传」（https://www.bilibili.com/blackboard/help.html#/?qid=314）：“文件大小：不超过16G，权益等级lv3以上，则可享受web投稿64G超大文件上限”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "hdr",
+            "item": "HDR",
+            "requirement": "B站支持 HDR（10bit，HDR10 / HLG）",
+            "type": "info",
+            "check": { "metric": "isHDR", "op": "isFalse" },
+            "passMsg": "SDR 视频，色彩显示稳定。",
+            "failMsg": "检测到 HDR 视频（{actual}），B站支持 HDR 投稿（10bit）；非 HDR 设备观看时由平台转换。",
+            "fix": "hdr_to_sdr",
+            "source": "官方：哔哩哔哩帮助中心 › 创作中心 › 投稿相关「关于视频上传」（https://www.bilibili.com/blackboard/help.html#/?qid=314）：“SDR位深8bit，HDR位深10bit”；官方：哔哩哔哩开放平台文档「文件上传预处理」（https://openhome.bilibili.com/doc/4/0c532c6a-e6fb-0aff-8021-905ae2409095）：“HDR10（PQ）或 HLG 标准，位深 10bit”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "hasAudio",
+            "item": "音轨",
+            "requirement": "包含音轨",
+            "type": "advice",
+            "check": { "metric": "hasAudio", "op": "isTrue" },
+            "passMsg": "包含音轨。",
+            "failMsg": "没有音轨，请确认是否有意为之。",
+            "fix": "add_audio",
+            "source": "经验值（待核实）：B站未公开此项要求",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "audioSilent",
+            "item": "音轨有声音",
+            "requirement": "音轨不是全程静音",
+            "type": "advice",
+            "check": { "metric": "audioSilent", "op": "isFalse" },
+            "passMsg": "音轨有声音。",
+            "failMsg": "音轨全程静音（录屏没录到声音时常见），请确认是否忘了录音或配乐。",
+            "source": "经验值（待核实）：B站未公开此项要求",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "audioCodec",
+            "item": "音频编码",
+            "requirement": "AAC",
+            "type": "advice",
+            "check": { "metric": "audioCodec", "op": "in", "value": ["AAC"] },
+            "passMsg": "音频编码为 AAC，符合要求。",
+            "failMsg": "音频编码为 {actual}，B站要求 AAC，会被重新编码，建议转 AAC。",
+            "fix": "to_mp4",
+            "source": "官方：哔哩哔哩帮助中心 › 创作中心 › 投稿相关「关于视频上传」（https://www.bilibili.com/blackboard/help.html#/?qid=314）：“音频码率：最高320kbps（AAC编码）”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "audioBitrate",
+            "item": "音频码率",
+            "requirement": "≤ 320 kbps",
+            "type": "advice",
+            "check": { "metric": "audioBitrateKbps", "op": "lte", "value": 320 },
+            "passMsg": "音频码率 {actual} kbps，符合要求。",
+            "failMsg": "音频码率 {actual} kbps 超过 320 kbps，会被重新编码。",
+            "fix": "to_mp4",
+            "source": "官方：哔哩哔哩帮助中心 › 创作中心 › 投稿相关「关于视频上传」（https://www.bilibili.com/blackboard/help.html#/?qid=314）：“音频码率：最高320kbps（AAC编码）”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "sampleRate",
+            "item": "采样率",
+            "requirement": "48000 Hz",
+            "type": "advice",
+            "check": { "metric": "sampleRate", "op": "in", "value": [48000] },
+            "passMsg": "采样率 {actual} Hz，符合要求。",
+            "failMsg": "采样率 {actual} Hz，B站要求 48000 Hz，平台会重新采样，建议统一为 48000 Hz。",
+            "fix": "resample",
+            "source": "官方：哔哩哔哩帮助中心 › 创作中心 › 投稿相关「关于视频上传」（https://www.bilibili.com/blackboard/help.html#/?qid=314）：“采样率：=48000”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "channels",
+            "item": "声道",
+            "requirement": "≤ 2 声道",
+            "type": "advice",
+            "check": { "metric": "channels", "op": "lte", "value": 2 },
+            "passMsg": "{actual} 声道，符合要求。",
+            "failMsg": "{actual} 声道（多声道），B站要求不超过 2 声道，会被下混，人声可能变小。",
+            "fix": "downmix",
+            "source": "官方：哔哩哔哩帮助中心 › 创作中心 › 投稿相关「关于视频上传」（https://www.bilibili.com/blackboard/help.html#/?qid=314）：“声道数：≤2”",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "loudness",
+            "item": "整体响度",
+            "requirement": "-16 ~ -12 LUFS（目标 -14）",
+            "type": "advice",
+            "check": { "metric": "loudnessLUFS", "op": "between", "value": [-16, -12] },
+            "passMsg": "整体响度 {actual} LUFS，音量适中。",
+            "failMsg": "整体响度 {actual} LUFS 偏离建议范围 {value}，观众需要频繁调音量。",
+            "fix": "loudnorm",
+            "source": "经验值（待核实）：B站未公开此项要求；-14 LUFS 是主流流媒体平台常用的响度目标",
+            "date": "2026-10-23"
+          },
+          {
+            "id": "truePeak",
+            "item": "真峰值",
+            "requirement": "≤ -1 dBTP",
+            "type": "advice",
+            "check": { "metric": "truePeakDBTP", "op": "lte", "value": -1 },
+            "passMsg": "真峰值 {actual} dBTP，有足够余量。",
+            "failMsg": "真峰值 {actual} dBTP 过高，转码后可能出现破音。",
+            "fix": "loudnorm",
+            "source": "经验值（待核实）：B站未公开此项要求",
+            "date": "2026-10-23"
+          }
+        ]
+      }
+    }
+  }
+}

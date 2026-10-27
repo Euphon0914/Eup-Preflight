@@ -1,0 +1,8 @@
+# 第三方库（约 81MB）：版本固定，用 scripts/download-vendor.sh 重新下载，不放进仓库
+vendor/
+
+# 本机工具配置
+.claude/
+
+# macOS
+.DS_Store

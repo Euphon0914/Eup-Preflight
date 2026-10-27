@@ -1,0 +1,109 @@
+/* ============================================================
+   shell.css —— 页面外壳：工作台布局、左栏（拖入 / 视频卡片 / 步骤导航）、右侧内容面板、进度条、错误提示
+   左栏是“玻璃侧边栏”：上面是视频，下面是检查步骤（原来的一级标签）；右侧是当前步骤的内容，顶部是大标题。
+   ============================================================ */
+
+/* ---------- 工作台布局 ---------- */
+.workspace {
+  width: min(1280px, calc(100% - 40px)); margin: 0 auto; padding: 16px 0 40px;
+  display: grid; grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); gap: 16px; align-items: start;
+}
+.left {
+  position: sticky; top: 84px; display: flex; flex-direction: column; gap: 12px;
+  max-height: calc(100vh - 96px); overflow-y: auto; padding: 2px 2px 12px; margin: -2px; scrollbar-width: none; /* 侧边栏比屏幕高时自己滚动 */
+}
+.left::-webkit-scrollbar { display: none; }
+.right { min-width: 0; padding: 22px 24px 26px; }
+.right > * { position: relative; z-index: 1; }
+.glass > .media, .left > .glass > * { position: relative; z-index: 1; }
+
+/* ---------- 左：拖放区 ---------- */
+.drop {
+  min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  padding: 28px 24px; text-align: center; cursor: pointer; transition: transform .2s;
+}
+.drop > * { position: relative; z-index: 1; }
+.drop::after { /* 虚线框 */
+  content: ""; position: absolute; inset: 10px; border-radius: 18px; border: 1.5px dashed var(--line-strong); pointer-events: none; transition: border-color .2s;
+}
+.drop:hover::after, .drop.over::after { border-color: var(--text); }
+.drop.over { transform: scale(1.01); }
+.drop-icon { width: 60px; height: 60px; border-radius: 20px; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; box-shadow: 0 8px 22px rgba(0, 0, 0, .18); }
+.drop-main { font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
+
+/* ---------- 左：视频卡片 ---------- */
+.media { overflow: hidden; }
+.player { background: #000; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; }
+.player video { display: block; width: 100%; height: 210px; object-fit: contain; background: #000; }
+.player-note { position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; text-align: center; color: #c9ccd2; font-size: 12.5px; }
+.media .seg { margin: 12px 16px 0; }
+.file-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px 2px; }
+.file-name { flex: 1; min-width: 0; font-weight: 600; font-size: 14px; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 关键参数：两列小格子，比长列表更紧凑 */
+.params { margin: 0; padding: 8px 12px 14px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.params .pcell { background: var(--fill); border-radius: 12px; padding: 7px 10px; min-width: 0; }
+.params dt { margin: 0; color: var(--muted); font-size: 11px; }
+.params dd { margin: 1px 0 0; font-size: 12.5px; font-weight: 500; overflow-wrap: anywhere; line-height: 1.35; }
+.params .old { color: var(--subtle); text-decoration: line-through; margin-right: 4px; font-weight: 400; }
+.params .new { color: var(--text); font-weight: 700; }
+.params .sub { display: block; color: var(--subtle); font-size: 11px; font-weight: 400; }
+
+/* ---------- 左：步骤导航（原来的一级标签） ---------- */
+.steps { padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+.steps button {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  border: 0; background: transparent; font: inherit; color: var(--text); cursor: pointer;
+  padding: 9px 10px; border-radius: 16px; transition: background .2s, transform .12s;
+}
+.steps button:hover { background: var(--fill); }
+.steps button:active { transform: scale(.985); }
+.steps button.on { background: var(--glass-strong); box-shadow: 0 4px 14px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .55); }
+.step-ico { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: var(--fill); color: var(--muted); flex: none; transition: background .2s, color .2s; }
+.steps button.on .step-ico { background: var(--accent); color: var(--on-accent); }
+.step-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.step-txt b { font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
+.step-txt small { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.count { font-size: 11px; font-weight: 600; min-width: 20px; padding: 0 6px; border-radius: 999px; background: var(--fill); color: var(--muted); text-align: center; line-height: 20px; }
+.count:empty:not(.dot) { display: none; }
+.count.warn { background: var(--warn-bg); color: var(--warn); }
+.count.fail { background: var(--fail-bg); color: var(--fail); }
+.count.dot { min-width: 8px; width: 8px; height: 8px; padding: 0; background: var(--accent); }
+
+/* ---------- 右：大标题 ---------- */
+.panel-title { display: flex; align-items: flex-end; gap: 12px; margin-bottom: 16px; }
+.panel-title h1 { margin: 0; font-size: 28px; line-height: 1.15; font-weight: 700; letter-spacing: -.03em; }
+.panel-title p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+
+.empty { text-align: center; padding: 56px 16px; color: var(--muted); }
+.empty-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 6px; letter-spacing: -.02em; }
+.empty p { margin: 0; font-size: 13px; }
+
+/* 进度 / 错误 */
+.task { background: var(--fill); border-radius: 16px; padding: 12px 14px; margin-bottom: 14px; }
+.task-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px; }
+.task-row #taskLabel { flex: 1; }
+.bar { height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar > div { height: 100%; width: 0; background: var(--accent); border-radius: 3px; transition: width .25s; }
+.error { background: var(--fail-bg); color: var(--fail); border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; white-space: pre-wrap; font-size: 12.5px; max-height: 180px; overflow: auto; }
+
+/* ---------- 窄屏：上下堆叠，步骤变成横向滚动的胶囊 ---------- */
+@media (max-width: 900px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); width: calc(100% - 24px); padding: 12px 0 32px; gap: 12px; }
+  .topbar { width: calc(100% - 24px); margin-top: 8px; }
+  .adv { width: calc(100% - 24px); }
+  .left { position: static; max-height: none; overflow: visible; }
+  .drop { min-height: 200px; }
+  .player video { height: 220px; }
+  .right { padding: 16px 16px 20px; }
+  .steps { flex-direction: row; overflow-x: auto; }
+  .steps button { flex: 0 0 auto; width: auto; padding: 6px 12px 6px 6px; }
+  .step-txt small { display: none; }
+  .brand-sub { display: none; }
+  .panel-title h1 { font-size: 23px; }
+}
+@media (max-width: 560px) {
+  .topbar { flex-wrap: wrap; }
+  .top-actions { flex-wrap: wrap; }
+}

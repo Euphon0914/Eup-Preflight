@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>WebCodecs 瘦身测速</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/shell.css">
+  <link rel="stylesheet" href="css/tech.css">
+  <style>
+    .good { color: var(--pass); font-weight: 600; }
+    .bad { color: var(--fail); }
+    #result video { max-width: 100%; max-height: 360px; background: #000; border-radius: 6px; margin-top: 8px; }
+    .row { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: flex-end; margin: 10px 0; }
+    #bwInput { width: 64px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--text); font: inherit; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>WebCodecs 瘦身测速</h1>
+    <p class="sub">可行性测试：用浏览器硬件编解码把视频缩到 1080P + H.264，和 ffmpeg.wasm 比速度。视频只在本机处理。
+      <a href="index.html">← 回到 Eup Preflight</a></p>
+  </header>
+  <main>
+    <section class="card">
+      <h2>① 本机环境</h2>
+      <div class="table-wrap"><table id="envTable"><tr><td class="hint">检测中…</td></tr></table></div>
+    </section>
+
+    <section class="card">
+      <h2>② 选择视频</h2>
+      <p class="hint">建议用手机拍的真实 4K / 60fps 原片测试（可直接拖进页面）。</p>
+      <input type="file" id="fileInput" accept="video/*">
+      <p id="fileInfo" class="hint"></p>
+    </section>
+
+    <section class="card">
+      <h2>③ 瘦身</h2>
+      <div class="row">
+        <div class="field">
+          <label class="label" for="platformSel">瘦身参数取自</label>
+          <select id="platformSel"><option value="douyin">抖音规则</option><option value="tiktok">TikTok 规则</option></select>
+        </div>
+        <div class="field">
+          <label class="label" for="hwSel">编码方式</label>
+          <select id="hwSel">
+            <option value="no-preference">自动（浏览器决定）</option>
+            <option value="prefer-hardware">优先硬件</option>
+            <option value="prefer-software">强制软件（对比用）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="bwInput">上行带宽（Mbps）</label>
+          <input id="bwInput" type="number" min="1" value="30">
+        </div>
+      </div>
+      <p id="plan" class="hint"></p>
+      <button id="runBtn" class="primary" disabled>开始瘦身</button>
+      <button id="cancelBtn" class="ghost" hidden>取消</button>
+      <div class="task-row" style="margin-top:12px"><span id="progLabel" class="hint"></span></div>
+      <div class="bar"><div id="bar"></div></div>
+      <div id="result"></div>
+    </section>
+
+    <section class="card">
+      <h2>④ 测速记录</h2>
+      <p class="hint">可以对同一个文件换“编码方式”多跑几次对比。主页面 ffmpeg.wasm 的对照数据：3 秒 2560×1440 60fps → 1080P60 用了 84 秒（约 0.04x 实时）。</p>
+      <div class="table-wrap"><table id="runsTable"></table></div>
+    </section>
+  </main>
+  <script type="module" src="js/webcodecs-slim.js"></script>
+</body>
+</html>

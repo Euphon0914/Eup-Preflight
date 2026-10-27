@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Crect%20width%3D%2224%22%20height%3D%2224%22%20rx%3D%226%22%20fill%3D%22%231d1d1f%22/%3E%3Cpath%20d%3D%22M16.5%206.5H8.5v11h8%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M8.5%2012l2.6%202.3%205.4-5.3%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E">
+  <title>Eup Preflight</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/shell.css">
+  <link rel="stylesheet" href="css/tech.css">
+  <link rel="stylesheet" href="css/modules.css">
+</head>
+<body>
+  <!-- ===== 顶栏：产品名 / 平台切换 / 高级 ===== -->
+  <header class="topbar glass">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M16.5 6.5H8.5v11h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 12l2.6 2.3 5.4-5.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <div>
+        <div class="brand-name">Preflight <span class="brand-tag" title="Eup 的个人作品">Eup</span></div>
+        <div class="brand-sub">Preflight for 抖音 / TikTok · 技术、遮挡、封面一站检查 · 本机处理，不上传</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <!-- 平台按钮由 config/platforms.json 生成 -->
+      <div class="seg" id="platformSeg" role="group" aria-label="目标平台"></div>
+      <div class="menu-wrap">
+        <button id="recentBtn" class="btn ghost" aria-haspopup="true" aria-expanded="false" aria-controls="recentMenu">最近</button>
+        <div id="recentMenu" class="menu glass" role="menu" hidden></div>
+      </div>
+      <button id="advBtn" class="btn ghost" aria-expanded="false" aria-controls="advPanel">高级</button>
+    </div>
+  </header>
+
+  <!-- ===== 高级：测试 / 调试用信息，平时折叠 ===== -->
+  <section id="advPanel" class="adv glass" hidden>
+    <div class="adv-inner">
+      <div class="adv-row">
+        <label class="check-line adv-note"><input type="checkbox" id="autoChecks" checked>导入视频后自动在后台检查画面遮挡、选好封面帧（10 分钟以内的视频）</label>
+      </div>
+      <div class="adv-row">
+        <div class="field">
+          <label class="label" for="modeSel">ffmpeg 核心</label>
+          <select id="modeSel">
+            <option value="st">单线程（兼容性最好）</option>
+            <option value="mt">多线程（更快，实验）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="presetSel">H.264 编码速度</label>
+          <select id="presetSel">
+            <option value="ultrafast">ultrafast（最快，文件大）</option>
+            <option value="superfast">superfast</option>
+            <option value="veryfast" selected>veryfast（推荐）</option>
+            <option value="medium">medium（慢，画质 / 体积更优）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="crfSel">画质 CRF</label>
+          <select id="crfSel">
+            <option value="18">18（接近无损）</option>
+            <option value="20" selected>20（推荐）</option>
+            <option value="23">23（ffmpeg 默认）</option>
+          </select>
+        </div>
+        <p class="hint adv-note">以上设置只在退回 ffmpeg.wasm 处理时生效；正常情况走浏览器硬件编码。
+          <a href="webcodecs-test.html">WebCodecs 测速页 →</a> · <a href="calibrate.html">遮挡区域校准 →</a></p>
+      </div>
+      <div class="adv-head">
+        <h3>每一步耗时</h3>
+        <button id="clearTiming" class="btn ghost sm">清空</button>
+      </div>
+      <div id="envInfo" class="hint"></div>
+      <div class="table-wrap"><table id="timingTable" class="table"></table></div>
+    </div>
+  </section>
+
+  <!-- ===== 工作台：左 视频（所有模块共用），右 四个标签页 ===== -->
+  <main class="workspace">
+    <aside class="left">
+      <!-- 检查步骤（一级导航） -->
+      <nav class="steps glass" id="mainTabs" role="tablist" aria-label="检查步骤">
+        <button role="tab" data-tab="tech" class="on">
+          <span class="step-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13a8 8 0 1 1 16 0"/><path d="M12 13l4-4"/><path d="M8 19h8"/></svg></span>
+          <span class="step-txt"><b>技术体检</b><small>格式、清晰度、声音，一键修复</small></span>
+          <span class="count" id="countTech"></span>
+        </button>
+        <button role="tab" data-tab="occlusion">
+          <span class="step-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M6 16.5h12"/><path d="M9 13h6"/></svg></span>
+          <span class="step-txt"><b>画面遮挡</b><small>字幕会不会被按钮和文案挡住</small></span>
+          <span class="count" id="countOcc"></span>
+        </button>
+        <button role="tab" data-tab="cover">
+          <span class="step-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M3.5 15l4.5-4 4 3.5 3-2.5 5 4"/><circle cx="15.5" cy="9.5" r="1.3"/></svg></span>
+          <span class="step-txt"><b>封面适配</b><small>各比例裁切、标题会不会被裁掉</small></span>
+          <span class="count" id="countCover"></span>
+        </button>
+        <button role="tab" data-tab="summary">
+          <span class="step-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg></span>
+          <span class="step-txt"><b>总报告</b><small>所有问题按轻重排好，附建议</small></span>
+          <span class="count" id="countSummary"></span>
+        </button>
+      </nav>
+
+      <!-- 还没选视频：拖放区 -->
+      <div id="drop" class="drop glass" tabindex="0">
+        <input type="file" id="fileInput" accept="video/*,.mkv,.flv,.mov,.mp4,.webm,.avi,.ts" hidden>
+        <div class="drop-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28"><path d="M12 15V4m0 0-4 4m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="drop-main">把视频拖到这里</div>
+        <button class="btn" id="pickBtn">选择视频</button>
+        <button class="link" id="testBtn">没有素材？生成一段测试视频</button>
+      </div>
+
+      <!-- 已选视频：预览 + 关键参数 -->
+      <div id="mediaCard" class="media glass" hidden>
+        <div class="player">
+          <video id="previewVideo" controls playsinline preload="metadata"></video>
+          <div id="previewNote" class="player-note" hidden>浏览器无法直接播放这个格式（如 MKV / HEVC），不影响体检和处理。</div>
+        </div>
+        <div class="seg seg-sm" id="previewSeg" hidden>
+          <button data-src="original" class="on">原片</button>
+          <button data-src="fixed">处理后</button>
+        </div>
+        <div class="file-head">
+          <div class="file-name" id="fileName"></div>
+          <button id="changeBtn" class="btn ghost sm">换一个</button>
+        </div>
+        <p class="hint file-note" id="fileNote" hidden>已自动载入上次的视频 · <button class="link" data-goto="tech:history">最近导入的视频</button></p>
+        <dl id="paramList" class="params"></dl>
+      </div>
+
+    </aside>
+
+    <section class="right glass">
+      <!-- 当前步骤的大标题（shell.js 按步骤填写） -->
+      <header class="panel-title"><div><h1 id="panelTitle">技术体检</h1><p id="panelSub"></p></div></header>
+
+      <!-- 进度 / 错误（所有标签页共用） -->
+      <div id="task" class="task" hidden>
+        <div class="task-row">
+          <span id="taskLabel">处理中…</span>
+          <span id="taskPct" class="num"></span>
+          <button id="cancelBtn" class="btn ghost sm">取消</button>
+        </div>
+        <div class="bar"><div id="taskBar"></div></div>
+      </div>
+      <div id="errorBox" class="error" hidden></div>
+
+      <!-- ===== ① 技术体检 ===== -->
+      <div class="panel" data-panel="tech">
+        <nav class="subtabs" id="techTabs">
+          <button data-subtab="report" class="on">体检 <span class="count" id="countReport"></span></button>
+          <button data-subtab="fix">修复 <span class="count" id="countFix"></span></button>
+          <button data-subtab="compare">对比 <span class="count dot" id="countCompare" hidden></span></button>
+          <button data-subtab="history">历史 <span class="count" id="countHistory"></span></button>
+        </nav>
+
+        <!-- 体检 -->
+        <div data-subpanel="report">
+          <div class="empty" id="reportEmpty">
+            <div class="empty-title">选择一个视频开始体检</div>
+            <p>会检查格式、清晰度、流畅度、色彩和声音是否适合发布到当前平台。</p>
+          </div>
+          <div id="reportBody" hidden>
+            <div id="summary" class="verdict"></div>
+            <div id="issueList" class="checks"></div>
+            <details id="passGroup" class="fold">
+              <summary id="passSummary"></summary>
+              <div id="passList" class="checks"></div>
+            </details>
+            <p class="foot">规则来自 <code>config/platforms.json</code>：标“官方”的来自平台官方页面，标“经验值”的是平台没有公开要求的常见经验值，标“占位”的还没有核实。点开任意一项可以看要求和来源。</p>
+          </div>
+        </div>
+
+        <!-- 修复 -->
+        <div data-subpanel="fix" hidden>
+          <div class="empty" id="fixEmpty">
+            <div class="empty-title">先选择一个视频</div>
+            <p>体检完成后，这里会列出可以一键修复的问题。</p>
+          </div>
+          <div id="fixBody" hidden>
+            <div id="fixList"></div>
+            <div class="action-bar">
+              <button id="fixBtn" class="btn primary">开始处理</button>
+              <span id="fixHint" class="hint">所有勾选项合并成一次处理，输出 MP4。</span>
+            </div>
+            <div id="fixResult"></div>
+
+            <div class="card extra" id="verticalSec">
+              <div class="extra-title">横屏转竖屏</div>
+              <p class="hint">把横屏画面放在 1080×1920 中间，上下用模糊背景填满，适合全屏播放。横屏、竖屏本来都能发布，这是可选的二次加工。</p>
+              <label class="check-line"><input type="checkbox" id="verticalWithFixes" checked> 同时应用上面勾选的修复项（只处理一次）</label>
+              <div class="action-bar">
+                <button id="verticalBtn" class="btn">生成竖屏版</button>
+                <span id="verticalHint" class="hint"></span>
+              </div>
+              <div id="verticalResult"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 对比 -->
+        <div data-subpanel="compare" hidden>
+          <div class="empty" id="compareEmpty">
+            <div class="empty-title">还没有处理结果</div>
+            <p>在“修复”里处理一次，这里会并排显示处理前后的体检结果、画面和声音。</p>
+          </div>
+          <div id="compareBody" hidden>
+            <div id="compareCards" class="score-row"></div>
+            <div class="size-row">
+              <div id="sizeCompare"></div>
+              <div>按上行带宽 <input id="bwInput" type="number" min="1" step="1" value="30"> Mbps 估算上传：<span id="uploadEst"></span>
+                <span class="hint">（实际速度通常低于带宽）</span></div>
+            </div>
+
+            <h3 class="sec-title">画面 <span class="hint">同一时间点截帧 · 左处理前 / 右处理后</span></h3>
+            <div id="frameCompare" class="frames"></div>
+
+            <h3 class="sec-title">声音</h3>
+            <div id="loudViz"></div>
+
+            <h3 class="sec-title">播放
+              <span class="sec-actions"><button id="syncPlay" class="btn ghost sm">同步播放</button><button id="syncPause" class="btn ghost sm">暂停</button></span>
+            </h3>
+            <div id="videoCompare" class="videos"></div>
+
+            <h3 class="sec-title">逐项对比
+              <label class="sec-actions check-line"><input type="checkbox" id="onlyChanged" checked> 只看有变化的项</label>
+            </h3>
+            <div id="compareTable" class="diff-list"></div>
+          </div>
+        </div>
+
+        <!-- 历史 -->
+        <div data-subpanel="history" hidden>
+          <p class="hint">导入的视频和处理结果都保存在本机浏览器里，不会上传；刷新、重新打开页面都不会丢。清除浏览器网站数据会一起删除，重要的视频请另外保存。<span id="storageInfo"></span></p>
+
+          <h3 class="sec-title">最近导入的视频 <span class="hint">最近 5 个，点「载入」直接使用，不用重新选文件</span>
+            <label class="check-line sec-actions"><input type="checkbox" id="autoLoadLast">打开页面时自动载入最近一个</label></h3>
+          <div id="recentList" class="hist-list"></div>
+
+          <div class="panel-head hist-sec">
+            <h3 class="sec-title">处理结果</h3>
+            <button id="clearHistory" class="btn ghost sm">清空处理结果</button>
+          </div>
+          <div id="historyList" class="hist-list"></div>
+          <div id="historyPlayer"></div>
+        </div>
+      </div>
+
+      <!-- ===== ② 画面遮挡检查 ===== -->
+      <div class="panel" data-panel="occlusion" hidden>
+        <div class="empty" id="occEmpty">
+          <div class="empty-title">选择一个视频后检查画面遮挡</div>
+          <p>检查字幕和画面里的文字会不会被平台的按钮、标题文字挡住，或者被裁掉。全部在本机识别，视频不会上传。</p>
+        </div>
+        <div id="occBody" hidden>
+          <p class="hint occ-intro">把视频按 <b id="occPlatform"></b> 播放页的样子摆好，每隔一段时间抽一帧，识别字幕和画面里的文字，看会不会被界面挡住。</p>
+          <div class="occ-settings">
+            <div class="field" id="occSrcField" hidden>
+              <span class="label">检查哪个版本</span>
+              <div class="seg seg-sm" id="occSrcSeg"><button data-src="original" class="on">原视频</button><button data-src="fixed">处理后</button></div>
+            </div>
+            <label class="field">
+              <span class="label">抽帧间隔</span>
+              <select id="occInterval">
+                <option value="0.5">每 0.5 秒</option>
+                <option value="1" selected>每 1 秒</option>
+                <option value="2">每 2 秒</option>
+                <option value="3">每 3 秒</option>
+              </select>
+            </label>
+            <label class="field occ-th">
+              <span class="label">挡住多少算问题：<b id="occThVal" class="num">30%</b></span>
+              <input type="range" id="occTh" min="10" max="80" step="5" value="30">
+            </label>
+            <div class="occ-run">
+              <button class="btn primary" id="occRun">开始检查</button>
+              <span class="hint" id="occEstimate"></span>
+            </div>
+          </div>
+          <label class="check-line occ-preview-toggle"><input type="checkbox" id="occPreviewOnly">仅预览遮挡效果（不识别，播放视频看界面会挡住哪里）</label>
+
+          <div class="task" id="occProgress" hidden>
+            <div class="task-row"><span id="occProgLabel">准备中…</span><span id="occProgPct" class="num"></span><button id="occCancel" class="btn ghost sm">取消</button></div>
+            <div class="bar"><div id="occProgBar"></div></div>
+          </div>
+
+          <div class="occ-main">
+            <div class="occ-stage">
+              <div id="occPhoneWrap"></div>
+              <div class="occ-controls">
+                <button class="btn sm" id="occPlay">播放</button>
+                <button class="btn sm" id="occMark" title="手动框出识别不到的重要文字">框选文字</button>
+                <span class="num hint" id="occTime">0:00</span>
+                <label class="check-line"><input type="checkbox" id="occShowZones" checked>显示界面区域</label>
+              </div>
+            </div>
+            <div class="occ-side">
+              <div id="occVerdict"></div>
+              <div id="occFrameMsg" class="occ-frame-msg"></div>
+              <div id="occManualList" class="man-list"></div>
+              <ul id="occEvents" class="occ-events"></ul>
+            </div>
+          </div>
+          <div class="occ-timeline" id="occTimeline" hidden>
+            <div class="tl-track" id="occTrack"><div class="tl-head" id="occHead"></div></div>
+            <div class="tl-legend hint"><span><i class="m occ"></i>被界面挡住</span><span><i class="m crop"></i>在边缘被裁掉</span><span>点击时间轴跳到对应画面</span></div>
+          </div>
+          <p class="hint occ-stats" id="occStats"></p>
+
+          <details class="occ-config">
+            <summary><span id="occPlatformCfg"></span> 界面区域设置 <span class="hint">来自 config/platforms.json</span></summary>
+            <div class="occ-config-body">
+              <a class="btn sm" id="occCalibrate" href="calibrate.html">用截图校准</a>
+              <div id="occZones"></div>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- ===== ③ 封面适配 ===== -->
+      <div class="panel" data-panel="cover" hidden>
+        <div class="empty" id="coverEmpty">
+          <div class="empty-title">做一张适配各平台的封面</div>
+          <p>从视频里选一帧，或上传做好的封面图。会按 <span class="cover-pname"></span> 用到的封面比例分别裁切预览，检查主体和标题会不会被裁掉、被角标挡住，并导出每个比例的图片。图片只在本机处理，不会上传。</p>
+          <p class="cover-empty-actions"><button class="btn primary" id="coverUploadEmpty">上传封面图</button> <span class="hint">或先在左边导入视频，从视频里选一帧</span></p>
+        </div>
+        <div id="coverBody" hidden>
+          <div class="cover-src">
+            <div class="seg seg-sm" id="coverSrcSeg">
+              <button data-src="video" class="on">从视频选一帧</button>
+              <button data-src="image">上传图片</button>
+            </div>
+            <div class="cover-src-video" id="coverSrcVideo">
+              <input type="range" id="coverTime" min="0" max="10" step="0.05" value="0" aria-label="封面时间点">
+              <span class="num hint" id="coverTimeText">0:00</span>
+              <button class="btn sm" id="coverStep" title="往后 1 帧">下一帧</button>
+            </div>
+            <div class="cover-src-image" id="coverSrcImage" hidden>
+              <button class="btn sm" id="coverUpload">选择图片</button>
+              <span class="hint" id="coverImageName">也可以把图片直接拖进页面</span>
+            </div>
+            <input type="file" id="coverFile" accept="image/*" hidden>
+          </div>
+
+          <div class="cover-main">
+            <div class="cover-editor-wrap">
+              <div class="seg seg-sm" id="coverEditSeg">
+                <button data-mode="subject" class="on">调整主体</button>
+                <button data-mode="text">标记文字</button>
+              </div>
+              <div class="cover-editor" id="coverEditor">
+                <img id="coverImg" alt="封面原图">
+                <div class="cover-layer" id="coverLayer"></div>
+                <div class="cover-manual" id="coverManual"></div>
+              </div>
+              <p class="hint cover-editor-hint" id="coverEditHint"></p>
+            </div>
+            <div class="cover-side">
+              <div id="coverVerdict"></div>
+              <ul id="coverIssues" class="occ-events"></ul>
+              <div class="cover-export">
+                <label class="field"><span class="label">导出格式</span>
+                  <select id="coverFormat"><option value="jpeg">JPG（体积小）</option><option value="png">PNG（无损）</option></select></label>
+                <button class="btn primary" id="coverExportAll">全部下载</button>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="sec-title"><span class="cover-pname"></span> 各比例预览 <span class="hint">拖动预览图可以调整裁切位置</span></h3>
+          <div class="cover-crops" id="coverCrops"></div>
+
+          <details class="occ-config">
+            <summary><span class="cover-pname"></span> 封面比例设置 <span class="hint">来自 config/platforms.json</span></summary>
+            <div class="occ-config-body"><div id="coverConfig"></div></div>
+          </details>
+        </div>
+      </div>
+
+      <!-- ===== ④ 总报告 ===== -->
+      <div class="panel" data-panel="summary" hidden>
+        <div class="empty" id="summaryEmpty">
+          <div class="empty-title">选择一个视频后生成总报告</div>
+          <p>汇总技术体检、画面遮挡检查、封面适配的结果，按“不通过 / 警告 / 通过”排序，并给出修改建议。</p>
+        </div>
+        <div id="summaryBody" hidden>
+          <div id="summaryHead" class="verdict"></div>
+          <div id="summaryList"></div>
+          <details id="summaryPassGroup" class="fold">
+            <summary id="summaryPassSummary"></summary>
+            <div id="summaryPassList"></div>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== 署名 ===== -->
+  <footer class="sign">
+    <span class="sign-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M16.5 6.5H8.5v11h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 12l2.6 2.3 5.4-5.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span><b>Eup</b> Preflight</span><span class="sign-dot">·</span><span>made by Eup</span>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
