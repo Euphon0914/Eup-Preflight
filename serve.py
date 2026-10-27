@@ -17,7 +17,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     # 确保 wasm / mjs 的 MIME 类型正确（老版本 Python 不认识）
     extensions_map = {**http.server.SimpleHTTPRequestHandler.extensions_map,
                       '.wasm': 'application/wasm', '.js': 'text/javascript', '.mjs': 'text/javascript',
-                      '.json': 'application/json'}
+                      '.json': 'application/json', '.md': 'text/plain; charset=utf-8'}
 
     def end_headers(self):
         self.send_header('Cross-Origin-Opener-Policy', 'same-origin')

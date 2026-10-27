@@ -192,6 +192,8 @@ input[type=range] { accent-color: var(--accent); }
 .sign b { color: var(--text); font-weight: 700; }
 .sign-mark { width: 20px; height: 20px; border-radius: 6px; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; }
 .sign-dot { color: var(--subtle); }
+.sign a { color: inherit; text-decoration: none; }
+.sign a:hover { color: var(--text); text-decoration: underline; }
 
 /* 下拉菜单（“最近”） */
 .menu-wrap { position: relative; }

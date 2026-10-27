@@ -44,7 +44,7 @@ PY
 
 # 在线部署版：不带本地服务器和启动脚本；静态托管不发 COOP/COEP 响应头，用不上多线程核心，省掉 31 MB
 mkdir -p dist/web dist/root
-cp -R index.html calibrate.html webcodecs-test.html config css js vendor dist/web/
+cp -R index.html calibrate.html webcodecs-test.html config css js vendor THIRD_PARTY_NOTICES.md dist/web/
 rm -rf dist/web/vendor/ffmpeg-core-mt
 find dist/web -name .DS_Store -delete
 cp deploy/root-index.html dist/root/index.html
