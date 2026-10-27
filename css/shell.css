@@ -3,6 +3,16 @@
    左栏是“玻璃侧边栏”：上面是视频，下面是检查步骤（原来的一级标签）；右侧是当前步骤的内容，顶部是大标题。
    ============================================================ */
 
+/* ---------- 浏览器兼容提示 ---------- */
+.compat {
+  width: min(1280px, calc(100% - 40px)); margin: 12px auto 0; padding: 12px 14px 12px 18px; border-radius: 20px;
+  display: flex; align-items: flex-start; gap: 12px; font-size: 13px;
+}
+.compat > * { position: relative; z-index: 1; }
+.compat-body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.compat-body b { color: var(--warn); }
+.compat-body ul { margin: 4px 0 0; padding-left: 18px; color: var(--muted); font-size: 12.5px; }
+
 /* ---------- 工作台布局 ---------- */
 .workspace {
   width: min(1280px, calc(100% - 40px)); margin: 0 auto; padding: 16px 0 40px;
@@ -92,7 +102,7 @@
 @media (max-width: 900px) {
   .workspace { grid-template-columns: minmax(0, 1fr); width: calc(100% - 24px); padding: 12px 0 32px; gap: 12px; }
   .topbar { width: calc(100% - 24px); margin-top: 8px; }
-  .adv { width: calc(100% - 24px); }
+  .adv, .compat { width: calc(100% - 24px); }
   .left { position: static; max-height: none; overflow: visible; }
   .drop { min-height: 200px; }
   .player video { height: 220px; }

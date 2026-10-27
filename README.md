@@ -7,23 +7,24 @@
 
 ## 启动
 
-第三方库、识别模型都在 `vendor/` 里（约 82MB），**不需要联网加载 CDN**。必须通过本地服务器打开（直接双击 `index.html` 无法加载 wasm）。
+**最简单：双击启动**（推荐用 Chrome 或 Edge）
 
-**方式 A：Node.js（推荐）**
+- **macOS**：双击 `启动 Eup Preflight.command`。第一次如果提示“无法验证开发者”，右键这个文件 →「打开」→ 再点「打开」。
+- **Windows**：双击 `启动 Eup Preflight（Windows）.bat`（需要安装 Python 3，安装时勾选 “Add python.exe to PATH”）。
 
-```bash
-npx serve@14.2.4 -l 3000 .
-```
+会自动启动本地服务器并用默认浏览器打开页面；端口 3000 被占用时自动换下一个。关闭弹出的终端窗口即退出。
 
-国内网络慢可以加镜像：`npx --registry=https://registry.npmmirror.com serve@14.2.4 -l 3000 .`
+第三方库、识别模型都在 `vendor/` 里（约 81MB），**不需要联网加载 CDN**。从 git 仓库拿到的代码不含 `vendor/`：macOS 上第一次双击启动会自动下载（国内镜像），也可以手动运行 `CDN=npmmirror bash scripts/download-vendor.sh`。
 
-**方式 B：只有 Python（macOS 自带）**
+**手动启动**（必须通过本地服务器打开，直接双击 `index.html` 无法加载 wasm）
 
 ```bash
 python3 serve.py 3000
 ```
 
-然后浏览器打开 <http://localhost:3000>（推荐 Chrome / Edge）。两种方式都会发送 COOP/COEP 响应头（`serve.json` / `serve.py`），这样页面可以使用 ffmpeg 多线程核心。
+或者用 Node.js：`npx serve@14.2.4 -l 3000 .`（国内网络慢可以加 `--registry=https://registry.npmmirror.com`）。然后浏览器打开 <http://localhost:3000>。两种方式都会发送 COOP/COEP 响应头（`serve.py` / `serve.json`），这样页面可以使用 ffmpeg 多线程核心。
+
+**浏览器**：Chrome、Edge 实测可用。工具依赖 WebCodecs（硬件编解码）和浏览器本地文件存储；Safari、Firefox 没有完整测试过，页面顶部会提示改用 Chrome / Edge（可以关掉提示继续用）。
 
 ## 使用
 
@@ -166,6 +167,7 @@ js/core/store.js             共享状态 + 事件通知（视频、参数、平
 js/core/config.js            读取并检查 config/platforms.json
 js/core/media.js             拖入视频、读参数、分析响度（全站只做一次）
 js/core/shell.js             顶栏（平台、最近、高级）、步骤导航和大标题、视频卡片（预览 + 关键参数）、拖放、取消
+js/core/compat.js            浏览器兼容提示（缺少需要的能力或没测试过的浏览器）
 js/core/ui.js                通用界面工具：格式化、状态标签、进度条、错误提示、耗时表
 js/core/box-editor.js        画框、拖动、拖角缩放（手动框选文字用）
 js/lib/probe.js              mediainfo.js 读参数 → 统一指标
@@ -185,7 +187,9 @@ js/modules/summary/          总报告
 js/webcodecs-slim.js         测速页逻辑
 js/calibrate.js              校准页逻辑
 scripts/download-vendor.sh   重新下载第三方库（支持 jsdelivr / unpkg / npmmirror）
-serve.json / serve.py        本地服务器配置（带 COOP/COEP 头）
+serve.json / serve.py        本地服务器配置（带 COOP/COEP 头；serve.py 端口被占用时自动换、--open 自动打开浏览器）
+启动 Eup Preflight.command    macOS 双击启动
+启动 Eup Preflight（Windows）.bat  Windows 双击启动
 vendor/                      第三方库（固定版本）
 ```
 
