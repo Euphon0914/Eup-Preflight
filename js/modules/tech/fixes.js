@@ -5,7 +5,7 @@ import { state, notify, goto, currentPlatform, currentRules, metricsOf } from '.
 import { $, esc, fmtMB, stampName, showTask, hideTask, showError, clearError, setBusy, timed, currentMode } from '../../core/ui.js';
 import { ensureFFmpeg, analyzeSlot, revokeSlot } from '../../core/media.js';
 import { probeFile } from '../../lib/probe.js';
-import { runFix, terminateFFmpeg, extractFrames, targetFps, LOUD_TARGET, LOUD_TP, MAX_GAIN_DB } from '../../lib/ffmpeg-tools.js';
+import { runFix, terminateFFmpeg, extractFrames, outputFps, LOUD_TARGET, LOUD_TP, MAX_GAIN_DB } from '../../lib/ffmpeg-tools.js';
 import { hasWebCodecs, checkWebCodecs, transcodeWithWebCodecs, captureFramesWebCodecs, muxTracks, canCopyToMp4,
   removeOPFSFile, VERTICAL_W, VERTICAL_H } from '../../lib/webcodecs.js';
 import { evaluate, suggestFixes, resolveCheck } from '../../lib/rules-engine.js';
@@ -383,11 +383,8 @@ function videoParams(info, fixes, t, outDuration) {
   const outH = fixes.vertical ? VERTICAL_H : even(info.height * scale);
   const pixelScale = Math.sqrt((outW * outH) / (info.width * info.height)); // 用于按像素数换算码率
 
-  // 帧率：只有瘦身 / 固定帧率 / 帧率范围时才固定，否则保持原时间轴
-  let fps, fpsNote = '';
-  if (fixes.slim || fixes.to_cfr || fixes.fps_range) {
-    ({ fps, note: fpsNote } = targetFps(info, fixes.fps_range ? t.fpsRange : null));
-  }
+  // 帧率：重新编码一律输出固定帧率（见 outputFps）
+  const { fps, note: fpsNote } = outputFps(info, fixes, t.fpsRange);
 
   // 码率。硬件编码器在简单画面上常常达不到目标（实测可低 15%），对平台码率下限留 10% 余量
   const src = info.videoBitrateKbps;

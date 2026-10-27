@@ -206,6 +206,18 @@ export function targetFps(info, fpsRange) {
   };
 }
 
+/**
+ * 重新编码时的输出帧率：一律输出固定的【标准】帧率（24 / 25 / 30 / 50 / 60…）。
+ * 不吸附的话，编码后的时间戳会带着原片的微小抖动；非标准帧率（例如 25.986）的每帧时长也无法用 MP4 的时间单位整除，
+ * 帧时长会交替变化——两种情况都会被判成“可变帧率”（实测 25.986 fps 的固定帧率原片，保持原帧率重编后被判可变）。
+ * 25.986 → 25 大约每 26 帧丢 1 帧，看不出来。
+ */
+export function outputFps(info, fixes, fpsRange) {
+  const r = targetFps(info, fixes.fps_range ? fpsRange : null);
+  if (!r.note && info.frameRate && Math.abs(info.frameRate - r.fps) > 0.01) r.note = '（吸附到标准帧率，每帧时长一致）';
+  return r;
+}
+
 /** 把平均帧率吸附到最近的标准帧率 */
 export function snapFps(fps) {
   const std = [24, 25, 30, 48, 50, 60, 120];
@@ -269,14 +281,10 @@ export async function runFix(file, info, loud, fixes, opts, onProgress) {
     } else {
       const vf = [];
       // 1) 帧率：可变 → 固定，或者调整到平台允许的范围（瘦身也会固定帧率，但保持原帧率档位 30 / 60）
-      let outFps = info.frameRate || 30;
-      if (fixes.to_cfr || fixes.fps_range || fixes.slim) {
-        const { fps: target, note } = targetFps(info, fixes.fps_range ? t.fpsRange : null);
-        outFps = target;
-        vf.push(`fps=${target}`);
-        args.push('-fps_mode', 'cfr', '-r', String(target));
-        plan.push(`视频：帧率 ${info.frameRate ?? '?'}${info.isVFR ? '（可变）' : ''} → 固定 ${target} fps${note}`);
-      }
+      const { fps: outFps, note } = outputFps(info, fixes, t.fpsRange);
+      vf.push(`fps=${outFps}`);
+      args.push('-fps_mode', 'cfr', '-r', String(outFps));
+      plan.push(`视频：帧率 ${info.frameRate ?? '?'}${info.isVFR ? '（可变）' : ''} → 固定 ${outFps} fps${note}`);
       // 2) 尺寸：横屏转竖屏 / 瘦身缩小到短边上限 / 放大到平台建议的短边
       //    放在 HDR 色调映射之前：先缩小，浮点色调映射的计算量能少好几倍（4K → 1080P 少 3/4）
       if (fixes.vertical) {
@@ -349,13 +357,41 @@ export async function runFix(file, info, loud, fixes, opts, onProgress) {
       const inI = parseFloat(m.input_i);
       const capped = inI + MAX_GAIN_DB < LOUD_TARGET;
       const target = capped ? +(inI + MAX_GAIN_DB).toFixed(1) : LOUD_TARGET;
-      af.push(`loudnorm=I=${target}:TP=${LOUD_TP}:LRA=${lra}` +
-        `:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}:measured_thresh=${m.input_thresh}` +
-        // offset 是第一遍按 -14 目标算出的微调量，目标变了就不能再用
-        (capped ? '' : `:offset=${m.target_offset}`) + `:linear=true:print_format=summary`);
+      // 线性模式只能整体加减音量：如果加减后峰值会超过上限，ffmpeg 会自动把目标降低（实测原片 -15.9 LUFS、峰值 +2.5 dBTP、
+      // 响度范围 20 LU，结果变成 -18.7 LUFS，比原来还小）。只压峰值也不行：这类视频平时说话很轻、偶尔一段很响，
+      // 整体响度主要由响的那段决定，压住峰值就等于把响的那段压小了（实测只限幅 → -19.6 LUFS；loudnorm 动态模式 → -19.1）。
+      // 做法：压缩器先缩小音量起伏 → 整体提升 → 限幅器压住峰值；提升多少先试算一两遍（只处理音频，每遍几秒）
+      let gain = target - inI;
+      const limited = parseFloat(m.input_tp) + gain > LOUD_TP;
+      if (limited) {
+        const lim = Math.pow(10, (LOUD_TP - 1) / 20); // 采样峰值再多留 1 dB，真峰值（采样之间的峰值）才能落在上限以内
+        const chain = (g) => `acompressor=threshold=0.125:ratio=3:attack=5:release=150,volume=${g.toFixed(2)}dB,` +
+          `alimiter=limit=${lim.toFixed(4)}:attack=5:release=50:level=0`;
+        for (let k = 0; k < 2; k++) { // 实测两遍后与目标相差 1 LU 左右
+          try {
+            const logs = await run(['-hide_banner', '-i', input.path, '-vn', '-sn', '-dn',
+              '-af', `${chain(gain)},loudnorm=I=${LOUD_TARGET}:TP=${LOUD_TP}:LRA=11:print_format=json`, '-f', 'null', '-'], info.durationSec);
+            const got = parseFloat(parseLoudnormJSON(logs).input_i);
+            if (!Number.isFinite(got) || Math.abs(got - target) < 0.7) break;
+            gain = Math.min(MAX_GAIN_DB, gain + (target - got));
+          } catch (e) {
+            console.warn('响度试算失败，按估算值处理：', e);
+            break;
+          }
+        }
+        af.push(chain(gain));
+      } else {
+        af.push(`loudnorm=I=${target}:TP=${LOUD_TP}:LRA=${lra}` +
+          `:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}:measured_thresh=${m.input_thresh}` +
+          // offset 是第一遍按 -14 目标算出的微调量，目标变了就不能再用
+          (capped ? '' : `:offset=${m.target_offset}`) + ':linear=true:print_format=summary');
+      }
+      const dynamic = limited;
       plan.push(capped
         ? `音频：原片很安静（${loud.loudnessLUFS} LUFS），最多提升 ${MAX_GAIN_DB} dB 到 ${target} LUFS，避免把背景噪音一起放大；要达到 ${LOUD_TARGET} LUFS 建议重新录音，或在剪辑软件里降噪后再提升`
-        : `音频：双遍 loudnorm，${loud.loudnessLUFS} → ${LOUD_TARGET} LUFS（真峰值 ≤ ${LOUD_TP} dBTP）`);
+        : dynamic
+          ? `音频：原片峰值过高（${loud.truePeakDBTP} dBTP）、音量起伏大（响度范围 ${loud.loudnessRangeLU} LU）：先压缩音量起伏，再整体提升 ${gain.toFixed(1)} dB、限幅，目标约 ${LOUD_TARGET} LUFS、峰值 ≤ ${LOUD_TP} dBTP。轻声和响声的差距会变小`
+          : `音频：双遍 loudnorm，${loud.loudnessLUFS} → ${LOUD_TARGET} LUFS（真峰值 ≤ ${LOUD_TP} dBTP）`);
     }
     // 采样率：loudnorm 内部会升到 192kHz，所以做了响度统一也必须指定输出采样率
     let ar = null;
