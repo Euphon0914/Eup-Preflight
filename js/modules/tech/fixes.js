@@ -344,9 +344,8 @@ async function fastPipeline(o, fixes, t, label, enc, route) {
       plan.push(`视频（WebCodecs）：${fixes.vertical ? `横屏 ${o.info.width}×${o.info.height} → 竖屏 ${p.width}×${p.height}（上下模糊背景填充）` : size}，` +
         `${p.fps ? `固定 ${p.fps} fps${p.fpsNote}` : '保持原帧率'}，H.264 目标码率 ${used.kbps} kbps（${p.how}）`);
       if (retryNote) plan.push(retryNote);
-      // 微信 / QQ 内置浏览器实测：转码后画面颜色明显改变（发灰、偏黄绿），在处理记录里也提醒一次
-      const app = checkBrowser().inApp;
-      if (/微信|QQ/.test(app)) plan.push(`注意：在${app}里转码，实测画面颜色可能明显改变，请对比处理前后的画面；建议换 Chrome / Edge 重新处理`);
+      // 安卓手机浏览器实测：转码后画面颜色明显改变（发灰、偏黄绿），在处理记录里也提醒一次
+      if (checkBrowser().mobile) plan.push('注意：在手机浏览器里转码，实测画面颜色可能明显改变，请对比处理前后的画面；建议用电脑上的 Chrome / Edge 重新处理');
       if (o.info.isHDR) {
         // 浏览器转码一定输出 SDR（BT.709），没勾 HDR → SDR 也一样
         plan.push(`视频：HDR（${o.info.hdrFormat}）→ SDR BT.709，由浏览器完成色彩转换（实测与浏览器显示原片一致）` +
