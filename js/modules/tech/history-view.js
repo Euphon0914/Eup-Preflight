@@ -99,7 +99,7 @@ export async function renderHistory() {
   $('#clearHistory').disabled = !list.length;
   $('#countHistory').textContent = list.length || '';
   if (!list.length) {
-    $('#historyList').innerHTML = '<p class="hint">还没有处理结果。在「修复」里处理后会自动保存在这里。</p>';
+    $('#historyList').innerHTML = '<p class="hint">还没有处理结果。在「体检」里点「一键修复」处理后，会自动保存在这里。</p>';
     return;
   }
   const cnt = (c) => `${badge('fail')} ${c.fail} ${badge('warn')} ${c.warn} ${badge('pass')} ${c.pass}`;

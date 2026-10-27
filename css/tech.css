@@ -146,3 +146,55 @@ figcaption { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .diff { grid-template-columns: minmax(0, 1fr); }
   .diff-msg { grid-column: 1; }
 }
+
+/* ---------- 体检结论旁的「一键修复」 ---------- */
+.verdict-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin-top: 14px; }
+
+/* ---------- 处理好的视频：「体检」「对比」顶部常驻的结果条 ---------- */
+.fixed-bar:empty { display: none; }
+.fixed-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; padding: 12px 14px; margin-bottom: 16px;
+  border-radius: var(--radius); background: var(--pass-bg); border: 1px solid color-mix(in srgb, var(--pass) 22%, transparent); }
+.fb-icon { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex: none; font-weight: 700; font-size: 14px;
+  background: var(--pass); color: #fff; }
+.fb-text { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; }
+.fb-text .hint { overflow-wrap: anywhere; }
+
+/* ---------- 一键修复弹窗 ---------- */
+.dlg { padding: 0; border: 0; background: transparent; color: var(--text); max-width: none; max-height: none; overflow: visible; }
+.dlg::backdrop { background: rgba(0, 0, 0, .28); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.dlg[open] .dlg-box { animation: dlg-in .22s ease-out; }
+@keyframes dlg-in { from { opacity: 0; transform: translateY(12px) scale(.98); } }
+.dlg-box { width: min(640px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); display: flex; flex-direction: column;
+  border-radius: 24px; background: var(--glass-strong); overflow: hidden; }
+.dlg-box > * { position: relative; z-index: 1; }
+.dlg-head { display: flex; align-items: flex-start; gap: 12px; padding: 20px 22px 12px; }
+.dlg-head > div { flex: 1; }
+.dlg-head h2 { margin: 0 0 4px; font-size: 20px; letter-spacing: -.02em; }
+.dlg-head .hint { margin: 0; }
+.dlg-x { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 0; background: var(--fill); color: var(--muted);
+  font-size: 20px; line-height: 1; cursor: pointer; }
+.dlg-x:hover { background: var(--press); color: var(--text); }
+.dlg-body { padding: 4px 22px 18px; overflow-y: auto; overscroll-behavior: contain; }
+.dlg-foot { display: flex; align-items: center; gap: 12px; padding: 14px 22px; border-top: 1px solid var(--line); }
+.dlg-foot .hint { flex: 1; }
+.dlg .task { margin-bottom: 14px; }
+.fix-item.flash { animation: fix-flash 1.6s ease-out; }
+@keyframes fix-flash { 0%, 40% { background: var(--warn-bg); } 100% { background: transparent; } }
+
+/* 完成页 */
+.done-head { display: flex; align-items: center; gap: 12px; margin: 6px 0 18px; }
+.done-title { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+.btn.big { display: flex; width: 100%; justify-content: center; align-items: center; gap: 8px; font-size: 15px; padding: 13px 20px; text-decoration: none; }
+.done-file { text-align: center; margin: 8px 0 18px; overflow-wrap: anywhere; }
+.done-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.done-plan { margin-top: 18px; font-size: 12.5px; color: var(--muted); }
+.done-plan ul { padding-left: 18px; line-height: 1.6; }
+.done-plan pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; background: var(--fill); padding: 10px; border-radius: 10px; }
+
+/* 手机：弹窗贴底，像系统的底部面板 */
+@media (max-width: 600px) {
+  .dlg { margin: auto 0 0; width: 100%; }
+  .dlg-box { width: 100vw; max-height: 88dvh; border-radius: 24px 24px 0 0; }
+  .dlg-head, .dlg-body, .dlg-foot { padding-left: 16px; padding-right: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .dlg[open] .dlg-box, .fix-item.flash { animation: none; } }

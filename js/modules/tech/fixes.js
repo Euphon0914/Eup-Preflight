@@ -1,8 +1,8 @@
 // ============================================================
-// fixes.js —— 技术体检 › 修复：修复项定义、建议勾选、处理流程（快速通道 / 退回 ffmpeg）、处理结果
+// fixes.js —— 技术体检 › 一键修复（弹窗见 fix-dialog.js）：修复项定义、建议勾选、处理流程（快速通道 / 退回 ffmpeg）、处理结果
 // ============================================================
-import { state, notify, goto, currentPlatform, currentRules, metricsOf } from '../../core/store.js';
-import { $, esc, fmtMB, stampName, showTask, hideTask, showError, clearError, setBusy, timed, currentMode } from '../../core/ui.js';
+import { state, notify, currentPlatform, currentRules, metricsOf } from '../../core/store.js';
+import { $, esc, showTask, hideTask, showError, clearError, setBusy, timed, currentMode } from '../../core/ui.js';
 import { ensureFFmpeg, analyzeSlot, revokeSlot } from '../../core/media.js';
 import { probeFile } from '../../lib/probe.js';
 import { runFix, terminateFFmpeg, extractFrames, outputFps, LOUD_TARGET, LOUD_TP, MAX_GAIN_DB } from '../../lib/ffmpeg-tools.js';
@@ -26,8 +26,7 @@ export function resetOutputs() {
     (state.original.frames || []).forEach((u) => u && URL.revokeObjectURL(u));
     state.original.frames = null;
   }
-  $('#fixResult').innerHTML = '';
-  $('#verticalResult').innerHTML = '';
+  $('#fixDone').innerHTML = '';
 }
 
 
@@ -150,11 +149,15 @@ export function applySuggestedFixes() {
   updateFixButton();
 }
 
-/** 按勾选数量更新“开始处理”按钮和标签页上的数字 */
+/** 勾选了几项修复 */
+export const selectedCount = () => Object.values(selectedFixes()).filter(Boolean).length;
+
+/** 按勾选数量更新弹窗里的“开始处理”和体检结论旁的“一键修复”按钮 */
 export function updateFixButton() {
-  const n = Object.values(selectedFixes()).filter(Boolean).length;
+  const n = selectedCount();
   $('#fixBtn').textContent = n ? `开始处理（${n} 项）` : '开始处理';
-  $('#countFix').textContent = n || '';
+  const open = $('#openFix');
+  if (open) open.textContent = n ? `一键修复（${n} 项）` : '更多处理选项';
 }
 
 export function selectedFixes() {
@@ -166,10 +169,11 @@ export function selectedFixes() {
 /**
  * 执行处理（一键修复 或 横屏转竖屏），之后自动复检、截帧对比
  * @param {'fix'|'vertical'} kind
+ * @returns {Promise<boolean>} 是否处理成功（结果在 state.fixed）
  */
 export async function doProcess(kind) {
   const o = state.original;
-  if (!o?.info || state.busy) return;
+  if (!o?.info || state.busy) return false;
   let fixes = selectedFixes();
   if (kind === 'vertical') {
     if (!$('#verticalWithFixes').checked) fixes = {};
@@ -177,7 +181,7 @@ export async function doProcess(kind) {
     fixes.upscale = false; // 竖屏输出固定 1080×1920，放大项没有意义
   } else if (!Object.values(fixes).some(Boolean)) {
     alert('请至少勾选一项修复');
-    return;
+    return false;
   }
   clearError();
   setBusy(true);
@@ -187,7 +191,6 @@ export async function doProcess(kind) {
   const crf = +$('#crfSel').value;
   const targets = resolveOutputFloor(fixTargets(currentPlatform(), o.info), o.info, fixes);
   const label = kind === 'vertical' ? '横屏转竖屏' : '一键修复';
-  const resultBox = kind === 'vertical' ? '#verticalResult' : '#fixResult';
   const t0 = performance.now();
   state.canceled = false;
   try {
@@ -217,8 +220,8 @@ export async function doProcess(kind) {
     }
 
     // processMs：转码总耗时（不含复检），用于“算总账”；out：结果在本地磁盘（OPFS）上的位置
-    state.fixed = { file: res.file, plan: res.plan, args: res.args, kind, fixes, processMs: performance.now() - t0, out: res.out || null, url: URL.createObjectURL(res.file) };
-    renderProcessResult(resultBox);
+    state.fixed = { file: res.file, plan: res.plan, args: res.args, kind, fixes, processMs: performance.now() - t0, out: res.out || null,
+      url: URL.createObjectURL(res.file), createdAt: Date.now() };
     // 处理后自动复检
     await analyzeSlot(state.fixed, '处理后');
     // 截取同一时间点的画面，用于直观对比
@@ -226,11 +229,12 @@ export async function doProcess(kind) {
     // 存进处理历史，之后重新处理或刷新页面都不会丢
     await saveHistory();
     notify('fixed');
-    goto('tech:compare');
+    return true;
   } catch (e) {
     console.error(e);
     terminateFFmpeg(); // 出错后 worker 状态可能不干净，下次重新加载
     showError(state.canceled ? `${label}已取消。` : `${label}失败：` + (e.message || e));
+    return false;
   } finally {
     state.conversion = null;
     setBusy(false);
@@ -442,34 +446,13 @@ async function captureFrames() {
   state.frameTimes = times;
 }
 
-function renderProcessResult(box) {
-  const f = state.fixed;
-  $(box).innerHTML = `
-    <div class="fix-out">
-      <div class="fix-out-head">
-        <span class="fix-out-title">处理完成</span>
-        <span>${fmtMB(state.original.file.size)} → <b>${fmtMB(f.file.size)}</b></span>
-        <a class="btn sm" href="${f.url}" download="${esc(stampName(f.file.name, Date.now()))}">下载</a>
-        <button class="btn ghost sm" data-goto="tech:compare">查看对比</button>
-      </div>
-      <details><summary>处理明细（${f.plan.length} 条）</summary>
-        <ul>${f.plan.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
-        ${f.args.length ? `<pre>ffmpeg ${esc(f.args.join(' '))}</pre>` : ''}
-      </details>
-    </div>`;
-}
-
-
-// ---------- 修复（列表由 applySuggestedFixes 生成，这里只管空状态和竖屏按钮） ----------
+// ---------- 修复弹窗（列表由 applySuggestedFixes 生成，这里只管按钮状态和竖屏选项） ----------
 export function renderFixTab() {
   const o = state.original;
-  const has = !!o?.info;
-  $('#fixEmpty').hidden = has;
-  $('#fixBody').hidden = !has;
-  if (!has) return;
+  if (!o?.info) return;
   $('#fixBtn').disabled = state.busy;
-  $('#verticalSec').hidden = !o.info.hasVideo;
   const landscape = o.info.orientation === '横屏';
+  $('#verticalSec').hidden = !o.info.hasVideo || !landscape; // 只有横屏视频才需要“横屏转竖屏”
   $('#verticalBtn').disabled = state.busy || !landscape;
   $('#verticalHint').textContent = landscape ? '' : `当前视频是${o.info.orientation}，不需要转换。`;
 }

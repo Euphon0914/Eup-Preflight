@@ -63,7 +63,7 @@ function render() {
   if (f?.info) {
     const c = summarize(evaluate(currentRules(), metricsOf(f), { loudnessPending: f.loudPending }));
     const left = c.fail + c.warn;
-    fixedNote = `<div class="fixed-note">已在「技术体检 › 修复」生成处理后的版本：技术体检${left ? `还剩 ${left} 项需要处理` : '的问题都已解决'}。
+    fixedNote = `<div class="fixed-note">已用「一键修复」生成处理后的版本：技术体检${left ? `还剩 ${left} 项需要处理` : '的问题都已解决'}。
       <button class="btn ghost sm" data-goto="tech:compare">查看对比</button></div>`;
   }
   $('#summaryHead').innerHTML = `

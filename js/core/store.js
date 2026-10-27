@@ -7,13 +7,13 @@
 /**
  * slot（一个视频）的结构：
  *   { file, url, info, loud, loudPending, loudError, frames,         // 原视频 / 处理后都有
- *     plan, args, kind, fixes, processMs, out, historyId }          // 只有处理后的视频有（技术体检 › 修复）
+ *     plan, args, kind, fixes, processMs, out, historyId }          // 只有处理后的视频有（技术体检 › 一键修复）
  */
 export const state = {
   config: null,          // config/platforms.json 的内容
   platform: 'douyin',    // 当前目标平台（顶栏切换）
   original: null,        // 原视频 slot
-  fixed: null,           // 处理后的视频 slot（技术体检 › 修复的结果）
+  fixed: null,           // 处理后的视频 slot（技术体检 › 一键修复的结果）
   busy: false,           // 是否有任务在跑（按钮会禁用）
   canceled: false,       // 用户点了取消（取消时不自动退回 ffmpeg）
   conversion: null,      // 正在执行的 WebCodecs 转码（取消用）

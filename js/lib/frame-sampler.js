@@ -13,7 +13,7 @@ export function openVideo(url) {
     v.muted = true;
     v.playsInline = true;
     v.preload = 'auto';
-    const fail = () => reject(new Error('浏览器无法播放这个视频（编码或格式不支持），可以先在「技术体检 › 修复」里转成 MP4 再检查。'));
+    const fail = () => reject(new Error('浏览器无法播放这个视频（编码或格式不支持），可以先在「技术体检」里点「一键修复」转成 MP4 再检查。'));
     v.onerror = fail;
     v.onloadeddata = async () => {
       if (!v.videoWidth || !v.videoHeight) return fail();

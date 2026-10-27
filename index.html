@@ -156,7 +156,6 @@
       <div class="panel" data-panel="tech">
         <nav class="subtabs" id="techTabs">
           <button data-subtab="report" class="on">体检 <span class="count" id="countReport"></span></button>
-          <button data-subtab="fix">修复 <span class="count" id="countFix"></span></button>
           <button data-subtab="compare">对比 <span class="count dot" id="countCompare" hidden></span></button>
           <button data-subtab="history">历史 <span class="count" id="countHistory"></span></button>
         </nav>
@@ -168,6 +167,7 @@
             <p>会检查格式、清晰度、流畅度、色彩和声音是否适合发布到当前平台。</p>
           </div>
           <div id="reportBody" hidden>
+            <div class="fixed-bar" id="fixedBar" hidden></div>
             <div id="summary" class="verdict"></div>
             <div id="issueList" class="checks"></div>
             <details id="passGroup" class="fold">
@@ -178,40 +178,14 @@
           </div>
         </div>
 
-        <!-- 修复 -->
-        <div data-subpanel="fix" hidden>
-          <div class="empty" id="fixEmpty">
-            <div class="empty-title">先选择一个视频</div>
-            <p>体检完成后，这里会列出可以一键修复的问题。</p>
-          </div>
-          <div id="fixBody" hidden>
-            <div id="fixList"></div>
-            <div class="action-bar">
-              <button id="fixBtn" class="btn primary">开始处理</button>
-              <span id="fixHint" class="hint">所有勾选项合并成一次处理，输出 MP4。</span>
-            </div>
-            <div id="fixResult"></div>
-
-            <div class="card extra" id="verticalSec">
-              <div class="extra-title">横屏转竖屏</div>
-              <p class="hint">把横屏画面放在 1080×1920 中间，上下用模糊背景填满，适合全屏播放。横屏、竖屏本来都能发布，这是可选的二次加工。</p>
-              <label class="check-line"><input type="checkbox" id="verticalWithFixes" checked> 同时应用上面勾选的修复项（只处理一次）</label>
-              <div class="action-bar">
-                <button id="verticalBtn" class="btn">生成竖屏版</button>
-                <span id="verticalHint" class="hint"></span>
-              </div>
-              <div id="verticalResult"></div>
-            </div>
-          </div>
-        </div>
-
         <!-- 对比 -->
         <div data-subpanel="compare" hidden>
           <div class="empty" id="compareEmpty">
             <div class="empty-title">还没有处理结果</div>
-            <p>在“修复”里处理一次，这里会并排显示处理前后的体检结果、画面和声音。</p>
+            <p>在「体检」里点「一键修复」处理一次，这里会并排显示处理前后的体检结果、画面和声音。</p>
           </div>
           <div id="compareBody" hidden>
+            <div class="fixed-bar" id="compareFixedBar"></div>
             <div id="compareCards" class="score-row"></div>
             <div class="size-row">
               <div id="sizeCompare"></div>
@@ -403,6 +377,37 @@
   </main>
 
   <!-- ===== 署名 ===== -->
+  <!-- ===== 一键修复弹窗：选修复项 → 处理进度 → 完成（下载 / 对比） ===== -->
+  <dialog id="fixDialog" class="dlg" aria-labelledby="fixDlgTitle">
+    <div class="dlg-box glass">
+      <header class="dlg-head">
+        <div><h2 id="fixDlgTitle">一键修复</h2><p class="hint" id="fixDlgSub">勾选的项目合并成一次处理，输出 MP4；视频只在本机处理，不会上传。</p></div>
+        <button class="dlg-x" id="fixDlgClose" aria-label="关闭">×</button>
+      </header>
+      <div class="dlg-body">
+        <!-- 处理进度和错误：打开弹窗时把面板上的进度条 / 错误框挪进来，关闭时放回去 -->
+        <div id="dlgTaskSlot"></div>
+        <div id="fixPick">
+          <div id="fixList"></div>
+          <div class="card extra" id="verticalSec">
+            <div class="extra-title">横屏转竖屏</div>
+            <p class="hint">把横屏画面放在 1080×1920 中间，上下用模糊背景填满，适合全屏播放。横屏、竖屏本来都能发布，这是可选的二次加工。</p>
+            <label class="check-line"><input type="checkbox" id="verticalWithFixes" checked> 同时应用上面勾选的修复项（只处理一次）</label>
+            <div class="action-bar">
+              <button id="verticalBtn" class="btn">生成竖屏版</button>
+              <span id="verticalHint" class="hint"></span>
+            </div>
+          </div>
+        </div>
+        <div id="fixDone" hidden></div>
+      </div>
+      <footer class="dlg-foot" id="fixPickFoot">
+        <span id="fixHint" class="hint">处理完会自动复检，可以对比前后结果。</span>
+        <button id="fixBtn" class="btn primary">开始处理</button>
+      </footer>
+    </div>
+  </dialog>
+
   <footer class="sign" data-version="1.0">
     <span class="sign-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M16.5 6.5H8.5v11h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 12l2.6 2.3 5.4-5.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     <span><b>Eup</b> Preflight v1.0</span><span class="sign-dot">·</span><span>made by Eup</span><span class="sign-dot">·</span><a href="licenses.html" target="_blank" rel="noopener">开源组件与许可</a>

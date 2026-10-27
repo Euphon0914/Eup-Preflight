@@ -17,7 +17,7 @@ function checkRow(r) {
     <summary>
       <span class="dot"></span>
       <div><div class="c-title">${esc(r.rule.item)}<span class="c-val">${esc(r.actual)}</span></div><div class="c-msg">${esc(r.message)}</div></div>
-      <div class="c-side">${fixable ? '<button class="c-fix" data-goto="tech:fix">可修复</button>' : r.status === 'info' ? badge('info') : r.status === 'na' ? badge('na') : ''}</div>
+      <div class="c-side">${fixable ? `<button class="c-fix" data-open-fix="${esc(r.rule.fix)}">可修复</button>` : r.status === 'info' ? badge('info') : r.status === 'na' ? badge('na') : ''}</div>
     </summary>
     <div class="c-detail"><span>要求</span><b>${esc(r.rule.requirement)}</b><span>类型</span><b>${TYPE_TEXT[r.rule.type] || r.rule.type}</b><span>来源</span><b>${esc(r.rule.source)}（${esc(r.rule.date)}）</b></div>
   </details>`;
@@ -40,7 +40,11 @@ export function renderReport() {
   $('#summary').innerHTML = `
     <div class="verdict-title"><span class="verdict-icon ${c.verdict}">${VERDICT_ICON[c.verdict]}</span>${title}</div>
     <div class="verdict-meta">${badge('fail')} ${c.fail} ${badge('warn')} ${c.warn} ${badge('pass')} ${c.pass}
-      <span class="hint">按${pname}规则检查 ${results.length} 项${c.pending ? ' · 声音分析中…' : ''}</span></div>`;
+      <span class="hint">按${pname}规则检查 ${results.length} 项${c.pending ? ' · 声音分析中…' : ''}</span></div>
+    <div class="verdict-actions">
+      <button class="btn ${c.fail + c.warn ? 'primary' : 'ghost sm'}" id="openFix">一键修复</button>
+      <span class="hint">${c.fail + c.warn ? '勾选的问题合并成一次处理，处理完可以直接下载' : '没有需要修复的问题，也可以转 MP4、压缩体积、横屏转竖屏'}</span>
+    </div>`;
 
   // 先列问题（不通过 → 警告），再列提示 / 分析中；通过和不适用的折叠起来
   const order = { fail: 0, warn: 1, info: 2, pending: 3 };
