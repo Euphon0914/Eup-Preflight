@@ -25,5 +25,5 @@ class Server(socketserver.ThreadingMixIn, http.server.HTTPServer):
     daemon_threads = True
     allow_reuse_address = True
 
-print(f'视频上传体检 已启动： http://localhost:{PORT}  （Ctrl+C 退出）')
+print(f'Eup Preflight 已启动： http://localhost:{PORT}  （Ctrl+C 退出）')
 Server(('127.0.0.1', PORT), Handler).serve_forever()
