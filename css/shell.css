@@ -107,7 +107,7 @@
   .drop { min-height: 200px; }
   .player video { height: 220px; }
   .right { padding: 16px 16px 20px; }
-  .steps { flex-direction: row; overflow-x: auto; }
+  .steps { flex-direction: row; overflow-x: auto; order: 1; } /* 排在视频和参数下面，紧挨着下方的检查结果 */
   .steps button { flex: 0 0 auto; width: auto; padding: 6px 12px 6px 6px; }
   .step-txt small { display: none; }
   .brand-sub { display: none; }
