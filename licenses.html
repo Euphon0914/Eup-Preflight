@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Crect%20width%3D%2224%22%20height%3D%2224%22%20rx%3D%226%22%20fill%3D%22%231d1d1f%22/%3E%3Cpath%20d%3D%22M16.5%206.5H8.5v11h8%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M8.5%2012l2.6%202.3%205.4-5.3%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E">
+  <title>开源组件与许可 · Eup Preflight</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    /* 许可说明页：读取 THIRD_PARTY_NOTICES.md 并显示。
+       不直接打开 .md：静态托管返回的 .md 不带字符集，浏览器会把中文显示成乱码 */
+    .lic { width: min(920px, calc(100% - 32px)); margin: 20px auto 40px; padding: 28px clamp(16px, 4vw, 40px); }
+    .lic h1 { font-size: 26px; margin: 0 0 14px; }
+    .lic h2 { font-size: 18px; margin: 30px 0 10px; }
+    .lic p, .lic li { line-height: 1.7; color: var(--text); }
+    .lic code { font-size: .9em; padding: 1px 5px; border-radius: 5px; background: var(--line); }
+    .lic a { color: inherit; word-break: break-all; }
+    .lic .tbl { overflow-x: auto; }
+    .lic table { border-collapse: collapse; font-size: 13px; min-width: 640px; }
+    .lic th, .lic td { border-bottom: 1px solid var(--line-strong); padding: 8px 10px; text-align: left; vertical-align: top; }
+    .lic pre { white-space: pre-wrap; font-size: 12px; line-height: 1.55; color: var(--muted); max-height: 420px; overflow: auto; padding: 14px; border-radius: 12px; background: var(--line); }
+    .lic hr { border: 0; border-top: 1px solid var(--line-strong); margin: 32px 0; }
+    .lic .back { margin-bottom: 18px; }
+  </style>
+</head>
+<body>
+  <main class="lic glass">
+    <a class="btn ghost sm back" href="index.html">返回 Preflight</a>
+    <div id="out">正在读取…</div>
+  </main>
+  <script type="module">
+    // 只认 THIRD_PARTY_NOTICES.md 里用到的几种写法：标题、段落、列表、表格、代码块、加粗、行内代码、网址
+    const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const inline = (s) => esc(s)
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+      .replace(/(https?:\/\/[^\s<）)，、]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+    const cells = (line) => line.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
+
+    function render(md) {
+      const lines = md.split('\n'), html = [];
+      for (let i = 0; i < lines.length; i++) {
+        const l = lines[i];
+        if (l.startsWith('```')) {                       // 代码块（许可证原文）
+          const buf = [];
+          while (++i < lines.length && !lines[i].startsWith('```')) buf.push(lines[i]);
+          html.push('<pre>' + esc(buf.join('\n')) + '</pre>');
+        } else if (/^#{1,3} /.test(l)) {
+          const n = l.indexOf(' ');
+          html.push('<h' + n + '>' + inline(l.slice(n + 1)) + '</h' + n + '>');
+        } else if (l.startsWith('|')) {                    // 表格：第一行表头，第二行分隔线
+          const head = cells(l); i++;
+          const rows = [];
+          while (i + 1 < lines.length && lines[i + 1].startsWith('|')) rows.push(cells(lines[++i]));
+          html.push('<div class="tbl"><table><thead><tr>' + head.map((c) => '<th>' + inline(c) + '</th>').join('') + '</tr></thead><tbody>'
+            + rows.map((r) => '<tr>' + r.map((c) => '<td>' + inline(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>');
+        } else if (/^\s*- /.test(l)) {                     // 列表（含一层缩进）
+          const items = [];
+          i--;
+          while (i + 1 < lines.length && /^\s*- /.test(lines[i + 1])) {
+            const m = lines[++i];
+            items.push('<li' + (/^\s{2,}/.test(m) ? ' style="margin-left:1.4em"' : '') + '>' + inline(m.replace(/^\s*- /, '')) + '</li>');
+          }
+          html.push('<ul>' + items.join('') + '</ul>');
+        } else if (l.trim() === '---') {
+          html.push('<hr>');
+        } else if (l.trim()) {
+          html.push('<p>' + inline(l) + '</p>');
+        }
+      }
+      return html.join('\n');
+    }
+
+    try {
+      const r = await fetch('THIRD_PARTY_NOTICES.md', { cache: 'no-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      document.getElementById('out').innerHTML = render(await r.text());   // text() 固定按 UTF-8 解码
+    } catch (e) {
+      document.getElementById('out').textContent = '读取 THIRD_PARTY_NOTICES.md 失败（' + e.message + '）。离线包里可以直接打开这个文件查看。';
+    }
+  </script>
+</body>
+</html>

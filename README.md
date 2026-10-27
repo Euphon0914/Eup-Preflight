@@ -193,6 +193,7 @@ serve.json / serve.py        本地服务器配置（带 COOP/COEP 头；serve.p
 启动 Eup Preflight.command    macOS 双击启动
 启动 Eup Preflight（Windows）.bat  Windows 双击启动
 vendor/                      第三方库（固定版本）
+licenses.html                页脚「开源组件与许可」打开的页面，读取并显示 THIRD_PARTY_NOTICES.md
 THIRD_PARTY_NOTICES.md       第三方组件的版本、许可证和原文（ffmpeg 核心为 GPL，附源码地址）
 ```
 
