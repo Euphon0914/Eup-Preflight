@@ -65,7 +65,7 @@ function renderDone() {
     </div>
     <details class="done-plan"><summary>处理明细（${f.plan.length} 条）</summary>
       <ul>${f.plan.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
-      ${f.args?.length ? `<pre>ffmpeg ${esc(f.args.join(' '))}</pre>` : ''}
+      ${f.args?.length ? `<pre class="tech-detail">ffmpeg ${esc(f.args.join(' '))}</pre>` : ''}
     </details>`;
 }
 

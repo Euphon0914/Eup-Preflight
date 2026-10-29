@@ -43,6 +43,9 @@
         <label class="check-line adv-note"><input type="checkbox" id="autoChecks" checked>导入视频后自动在后台检查画面遮挡、选好封面帧（5 分钟以内的视频；抽帧间隔按时长自动选：1 分钟以内每 1 秒、5 分钟以内每 2 秒）</label>
       </div>
       <div class="adv-row">
+        <label class="check-line adv-note"><input type="checkbox" id="showTech">显示技术细节：抽帧和识别耗时、规则所在的配置文件、界面区域和封面比例的具体参数（给开发和核验用，创作者一般不需要）</label>
+      </div>
+      <div class="adv-row">
         <div class="field">
           <label class="label" for="modeSel">ffmpeg 核心</label>
           <select id="modeSel">
@@ -178,7 +181,7 @@
               <summary id="passSummary"></summary>
               <div id="passList" class="checks"></div>
             </details>
-            <p class="foot">规则来自 <code>config/platforms.json</code>：标“官方”的来自平台官方页面，标“经验值”的是平台没有公开要求的常见经验值，标“占位”的还没有核实。点开任意一项可以看要求和来源。</p>
+            <p class="foot"><span class="tech-detail">规则来自 <code>config/platforms.json</code>：</span>标“官方”的来自平台官方页面，标“经验值”的是平台没有公开要求的常见经验值，标“占位”的还没有核实。点开任意一项可以看要求和来源。</p>
           </div>
         </div>
 
@@ -291,9 +294,9 @@
             <div class="tl-track" id="occTrack"><div class="tl-head" id="occHead"></div></div>
             <div class="tl-legend hint"><span><i class="m occ"></i>被界面挡住</span><span><i class="m crop"></i>在边缘被裁掉</span><span>点击时间轴跳到对应画面</span></div>
           </div>
-          <p class="hint occ-stats" id="occStats"></p>
+          <p class="hint occ-stats tech-detail" id="occStats"></p>
 
-          <details class="occ-config">
+          <details class="occ-config tech-detail">
             <summary><span id="occPlatformCfg"></span> 界面区域设置 <span class="hint">来自 config/platforms.json</span></summary>
             <div class="occ-config-body">
               <a class="btn sm" id="occCalibrate" href="calibrate.html">用截图校准</a>
@@ -356,7 +359,7 @@
           </div>
           <div class="cover-crops" id="coverCrops"></div>
 
-          <details class="occ-config">
+          <details class="occ-config tech-detail">
             <summary><span class="cover-pname"></span> 封面比例设置 <span class="hint">来自 config/platforms.json</span></summary>
             <div class="occ-config-body"><div id="coverConfig"></div></div>
           </details>

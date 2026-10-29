@@ -173,6 +173,15 @@ function bindEvents() {
   document.addEventListener('click', (e) => { if (!e.target.closest('.menu-wrap')) toggleRecent(false); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleRecent(false); });
   // 自动检查开关
+  // 技术细节（抽帧耗时、配置文件、区域参数）默认收起，在「高级」里打开；记在本机浏览器
+  let tech = false;
+  try { tech = localStorage.getItem('showTech') === '1'; } catch { /* 忽略 */ }
+  $('#showTech').checked = tech;
+  document.body.classList.toggle('show-tech', tech);
+  $('#showTech').addEventListener('change', (e) => {
+    document.body.classList.toggle('show-tech', e.target.checked);
+    try { localStorage.setItem('showTech', e.target.checked ? '1' : '0'); } catch { /* 忽略 */ }
+  });
   $('#autoChecks').checked = autoChecksEnabled();
   $('#autoChecks').addEventListener('change', (e) => setAutoChecks(e.target.checked));
   $('#modeSel').addEventListener('change', renderTimings);

@@ -71,7 +71,8 @@
 }
 
 * { box-sizing: border-box; }
-[hidden] { display: none !important; } /* 有些元素设置了 display，确保 hidden 属性仍然生效 */
+[hidden] { display: none !important; }
+body:not(.show-tech) .tech-detail { display: none !important; } /* 技术细节：在「高级」里打开后才显示 */ /* 有些元素设置了 display，确保 hidden 属性仍然生效 */
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; color: var(--text); min-height: 100vh;
