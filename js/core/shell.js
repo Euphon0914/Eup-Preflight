@@ -98,6 +98,9 @@ function renderLeft() {
   $('#fileNote').hidden = !o.restored;
   $('#fileName').textContent = (showFixed ? f : o).file.name;
   $('#fileName').title = (showFixed ? f : o).file.name;
+  const i = o.info; // 收起时的一行摘要
+  $('#paramBrief').textContent = [i.width ? `${i.width}×${i.height}` : '', i.frameRate != null ? `${i.frameRate} 帧` : '',
+    fmtClock(i.durationSec), `${i.fileSizeMB} MB`].filter(Boolean).join(' · ');
   $('#paramList').innerHTML = PARAM_ROWS.map(([k, main, sub]) => {
     const a = main(o.info, o.loud, o);
     let as = sub(o.info, o.loud, o);
@@ -113,6 +116,12 @@ function renderLeft() {
 
 // ---------- 事件 ----------
 function bindEvents() {
+  // 视频参数展开 / 收起：记住上次的选择；没选过时宽屏展开、窄屏（手机、侧边窗口）收起，少占位置
+  const fold = $('#paramFold');
+  let pref = null;
+  try { pref = localStorage.getItem('paramsOpen'); } catch { /* 隐私模式等情况下读不到 */ }
+  fold.open = pref === null ? !matchMedia('(max-width: 900px)').matches : pref === '1';
+  fold.addEventListener('toggle', () => { try { localStorage.setItem('paramsOpen', fold.open ? '1' : '0'); } catch { /* 忽略 */ } });
   const drop = $('#drop'), input = $('#fileInput');
   // 选文件：点拖放区任意位置（“生成测试视频”除外）或“换一个”
   drop.addEventListener('click', (e) => { if (!e.target.closest('#testBtn')) input.click(); });

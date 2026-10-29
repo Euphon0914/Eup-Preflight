@@ -132,7 +132,11 @@
           <button id="changeBtn" class="btn ghost sm">换一个</button>
         </div>
         <p class="hint file-note" id="fileNote" hidden>已自动载入上次的视频 · <button class="link" data-goto="tech:history">最近导入的视频</button></p>
-        <dl id="paramList" class="params"></dl>
+        <!-- 视频参数：可以收起，收起后只显示一行摘要 -->
+        <details class="params-fold" id="paramFold" open>
+          <summary><span class="pf-title">视频参数</span><span class="pf-brief" id="paramBrief"></span></summary>
+          <dl id="paramList" class="params"></dl>
+        </details>
       </div>
 
     </aside>
