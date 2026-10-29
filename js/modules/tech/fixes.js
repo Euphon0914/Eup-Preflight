@@ -157,7 +157,8 @@ export function updateFixButton() {
   const n = selectedCount();
   $('#fixBtn').textContent = n ? `开始处理（${n} 项）` : '开始处理';
   const open = $('#openFix');
-  if (open) open.textContent = n ? `一键修复（${n} 项）` : '更多处理选项';
+  // 有问题但修复项还没算出来（例如声音还在分析）时仍叫“一键修复”；确实没问题才叫“更多处理选项”
+  if (open) open.textContent = n ? `一键修复（${n} 项）` : open.classList.contains('primary') ? '一键修复' : '更多处理选项';
 }
 
 export function selectedFixes() {
