@@ -19,7 +19,7 @@ import { attachBoxEditor, boxHtml } from '../../core/box-editor.js';
 export const id = 'cover';
 export const title = '封面适配';
 
-const COLORS = ['#f97316', '#22c55e', '#a855f7', '#06b6d4'];  // 各比例裁切框的颜色
+const COLORS = ['#3b82f6', '#a855f7', '#ec4899', '#06b6d4'];  // 各比例裁切框的颜色（避开绿 / 橙 / 红，免得和“通过 / 警告 / 不通过”混淆）
 const OCR_SIDE = 1280;        // 识别文字时把封面缩小到长边 1280
 
 const C = {
@@ -68,14 +68,36 @@ function results() {
   });
 }
 
+/**
+ * 问题列表（右栏和总报告共用）：每个比例的问题前面写上比例名；
+ * “清晰度不够”各比例几乎总是一起出现，合并成一条，免得刷屏
+ */
+function mergedIssues(list) {
+  const out = [];
+  const blurry = [];
+  list.forEach(({ r, issues }) => issues.forEach((it) => {
+    if (it.kind === 'resolution') blurry.push({ r, it });
+    else out.push({ ...it, title: `${r.name}（${r.ratio.join(':')}）：${it.title}` });
+  }));
+  if (blurry.length) {
+    const by = blurry.map(({ r, it }) => `${r.ratio.join(':')} 要放大 ${(it.scale || 0).toFixed(1)} 倍`).join('，');
+    out.push({
+      kind: 'resolution', title: `清晰度不够（${by}）`,
+      reason: `${C.mode === 'video' ? '截取的视频画面' : '这张图'}只有 ${C.src.W}×${C.src.H}，按平台尺寸导出时要放大，会有点糊。`,
+      suggestion: C.mode === 'video' ? '上传做好的高清封面图（点上方「上传图片」），或从更高清的原视频里截帧。' : '换一张更清晰的原图。',
+    });
+  }
+  return out;
+}
+
 /** 总报告用：还没选封面或文字还在识别时返回 null（显示“尚未检查”） */
 export function getReportItems() {
   if (!C.src || C.ocr === 'running' || C.ocr === 'idle') return null;
   const list = results();
-  const items = list.flatMap(({ r, issues }) => issues.map((it) => ({
-    module: id, moduleName: title, status: 'warn', title: `${r.name}（${r.ratio.join(':')}）：${it.title}`, value: '',
+  const items = mergedIssues(list).map((it) => ({
+    module: id, moduleName: title, status: 'warn', title: it.title, value: '',
     reason: it.reason, suggestion: it.suggestion, fixable: false, goto: 'cover',
-  })));
+  }));
   if (items.length) return items;
   return [{
     module: id, moduleName: title, status: 'pass', title: '封面在各个比例下都没问题', value: list.map(({ r }) => r.ratio.join(':')).join(' / '),
@@ -238,21 +260,22 @@ function renderManual() {
   document.querySelectorAll('#coverEditSeg button').forEach((b) => b.classList.toggle('on', b.dataset.mode === C.editMode));
   $('#coverEditHint').innerHTML = C.editMode === 'text'
     ? '在原图上拖动，框出<b>识别不到的重要文字</b>（花字、竖排字、半透明字等）；选中后可拖动、拖角调整，点 × 删除。'
-    : '蓝色框是<b>主体</b>（最重要的部分），拖动、拖角调整；彩色虚线是各比例的裁切范围，黄色细框是识别到的文字，橙色框是手动标记的文字。';
+    : '蓝色框是<b>主体</b>（最重要的部分），拖动、拖角调整；彩色虚线是各比例的裁切范围（颜色和下方预览卡片对应），黄色细框是识别到的文字，橙色框是手动标记的文字。';
 }
 
 /** 右：结论和问题列表 */
 function renderSide() {
   if (!C.src) { $('#coverVerdict').innerHTML = ''; $('#coverIssues').innerHTML = ''; return; }
   const list = results();
-  const n = list.reduce((s, x) => s + x.issues.length, 0);
+  const issues = mergedIssues(list);
+  const n = issues.length;
   const ocrNote = C.ocr === 'running' || C.ocr === 'idle' ? '正在识别封面上的标题文字…' : C.ocr === 'error' ? '标题文字识别失败，只检查了主体和清晰度。' : (C.texts.length ? `识别到 ${C.texts.length} 处标题文字（黄框）。` : '封面上没有识别到文字。') + (C.manual.length ? ` 另有 ${C.manual.length} 处手动标记（橙框）。` : C.texts.length ? '' : '如果有重要文字没认出来，可以切到「标记文字」手动框出。');
   $('#coverVerdict').innerHTML = `<div class="verdict-title"><span class="verdict-icon ${n ? 'warn' : 'pass'}">${n ? '!' : '✓'}</span>${n
     ? `发现 ${n} 处需要注意`
     : `${list.length} 个比例都没问题`}</div><div class="hint">${esc(ocrNote)} 按 ${esc(pname())} 的 ${list.map(({ r }) => r.ratio.join(':')).join('、')} 检查。</div>`;
-  $('#coverIssues').innerHTML = list.flatMap(({ r, issues, color }) => issues.map((it) => `<li style="--dot:${color}">
-      <span class="ev-title">${esc(r.name)}（${esc(r.ratio.join(':'))}）：${esc(it.title)}</span><span>${esc(it.reason)}</span>
-      <span class="ev-sug"><b>建议：</b>${esc(it.suggestion)}</span></li>`)).join('');
+  $('#coverIssues').innerHTML = issues.map((it) => `<li>
+      <span class="ev-title">${esc(it.title)}</span><span>${esc(it.reason)}</span>
+      <span class="ev-sug"><b>建议：</b>${esc(it.suggestion)}</span></li>`).join('');
   $('#countCover').textContent = n || '';
   $('#countCover').className = `count ${n ? 'warn' : ''}`;
 }

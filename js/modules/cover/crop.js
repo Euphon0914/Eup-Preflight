@@ -119,7 +119,7 @@ export function checkCrop({ W, H, crop, subject, texts = [], ratioCfg, zones = [
   const scale = ratioCfg.size[0] / crop.w;
   if (scale > 1.25) {
     issues.push({
-      kind: 'resolution', title: `清晰度不够（要放大 ${scale.toFixed(1)} 倍）`,
+      kind: 'resolution', scale, title: `清晰度不够（要放大 ${scale.toFixed(1)} 倍）`,
       reason: `裁出来的画面只有 ${Math.round(crop.w)}×${Math.round(crop.h)}，导出 ${ratioCfg.size.join('×')} 时要放大，会有点糊。`,
       suggestion: '换一张更清晰的原图，或从更高清的视频里截帧。',
     });

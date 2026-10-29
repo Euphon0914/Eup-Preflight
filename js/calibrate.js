@@ -131,7 +131,8 @@ function renderStage() {
   html += `<div class="va" style="${rectStyle(area)}">${S.mode === 'area' ? `<span class="z-name">视频播放区域</span>${handles()}` : ''}</div>`;
   ov.zones.forEach((z, i) => {
     const sel = i === S.sel;
-    html += `<div class="z ${sel ? 'sel' : ''}" data-i="${i}" style="${rectStyle(z)}"><span class="z-name">${esc(z.name || '未命名')}</span>${sel && S.mode === 'zones' ? handles() : ''}</div>`;
+    // 靠右的区域（如右侧按钮列）标签往左伸出，窄区域里的名字也能完整显示
+    html += `<div class="z ${sel ? 'sel' : ''} ${z.x + z.w / 2 > 50 ? 'r' : ''}" data-i="${i}" style="${rectStyle(z)}"><span class="z-name">${esc(z.name || '未命名')}</span>${sel && S.mode === 'zones' ? handles() : ''}</div>`;
   });
   $('#layer').innerHTML = html;
   renderFoot();

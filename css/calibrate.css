@@ -37,9 +37,10 @@
 /* 遮挡区域 */
 .z { position: absolute; background: rgba(239, 68, 68, .22); border: 1.5px solid rgba(239, 68, 68, .95); cursor: move; }
 .z .z-name {
-  position: absolute; left: 0; top: 0; max-width: 100%; padding: 1px 5px; font-size: 11px; line-height: 16px;
+  position: absolute; left: 0; top: 0; padding: 1px 5px; font-size: 11px; line-height: 16px;
   color: #fff; background: rgba(185, 28, 28, .85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
 }
+.z.r .z-name { left: auto; right: 0; }
 .z.sel { background: rgba(59, 130, 246, .2); border-color: #3b82f6; z-index: 2; }
 .z.sel .z-name { background: #2563eb; }
 .mode-area .z { pointer-events: none; opacity: .45; }

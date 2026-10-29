@@ -222,10 +222,10 @@ function drawFrame(f) {
   if (hits.length) {
     msg.innerHTML = hits.map((h) => {
       const d = describeEvent({ ...h, kind: h.item.kind, label: h.item.label, start: f.t, end: f.t, crop: !!h.crop }, pname());
-      return `<p><b>${esc(d.title)}</b>，建议${esc(d.suggestion)}</p>`;
+      return `<p><b>当前画面（第 ${esc(fmtAt(f.t))}）：</b>${esc(d.title.replace(/^.*?的/, ''))}，建议${esc(d.suggestion)}</p>`;
     }).join('');
   } else {
-    msg.innerHTML = `<p>第 ${fmtAt(f.t)}：${items.length ? `${items.length} 处字幕 / 文字（绿框），都没有被挡住。` : '这一帧没有识别到字幕或文字。'}</p>`;
+    msg.innerHTML = `<p>当前画面（第 ${fmtAt(f.t)}）：${items.length ? `${items.length} 处字幕 / 文字（绿框），都没有被挡住。` : '这一帧没有识别到字幕或文字。'}</p>`;
   }
 }
 

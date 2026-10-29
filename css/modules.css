@@ -109,8 +109,10 @@
 .cv-subject .hd[data-h=se] { left: 100%; top: 100%; cursor: nwse-resize; }
 .cv-subject .hd[data-h=sw] { left: 0; top: 100%; cursor: nesw-resize; }
 .cover-side { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
-.cover-export { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
-.cover-export .field { min-width: 150px; }
+.crops-head { display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; margin: 22px 0 10px; }
+.crops-head .sec-title { margin: 0; }
+.cover-export { display: flex; align-items: center; gap: 8px; }
+.cover-export select { width: auto; }
 .cover-crops { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
 .crop-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; display: flex; flex-direction: column; gap: 6px; width: 220px; }
 .crop-card.bad { border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); }

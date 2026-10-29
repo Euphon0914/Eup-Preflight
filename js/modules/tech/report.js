@@ -42,7 +42,7 @@ export function renderReport() {
     <div class="verdict-meta">${badge('fail')} ${c.fail} ${badge('warn')} ${c.warn} ${badge('pass')} ${c.pass}
       <span class="hint">按${pname}规则检查 ${results.length} 项${c.pending ? ' · 声音分析中…' : ''}</span></div>
     <div class="verdict-actions">
-      <button class="btn ${c.fail + c.warn ? 'primary' : 'ghost sm'}" id="openFix">一键修复</button>
+      <button class="btn ${c.fail + c.warn ? 'primary' : 'sm'}" id="openFix">一键修复</button>
       <span class="hint">${c.fail + c.warn ? '勾选的问题合并成一次处理，处理完可以直接下载' : '没有需要修复的问题，也可以转 MP4、压缩体积、横屏转竖屏'}</span>
     </div>`;
 
@@ -50,7 +50,7 @@ export function renderReport() {
   const order = { fail: 0, warn: 1, info: 2, pending: 3 };
   const top = results.filter((r) => r.status in order).sort((a, b) => order[a.status] - order[b.status]);
   const rest = results.filter((r) => !(r.status in order));
-  $('#issueList').innerHTML = top.length ? top.map(checkRow).join('') : '<p class="hint" style="margin:8px 0">没有需要处理的问题。</p>';
+  $('#issueList').innerHTML = top.map(checkRow).join(''); // 没有问题时结论下方已经说明，这里不再重复
   $('#passSummary').textContent = `${c.pass} 项已通过${c.na ? `，${c.na} 项不适用` : ''}`;
   $('#passList').innerHTML = rest.map(checkRow).join('');
   $('#passGroup').hidden = !rest.length;
