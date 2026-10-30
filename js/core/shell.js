@@ -130,8 +130,9 @@ function bindEvents() {
   input.addEventListener('change', () => { if (input.files[0]) loadVideo(input.files[0]); input.value = ''; });
   $('#testBtn').addEventListener('click', (e) => { e.stopPropagation(); loadTestVideo(); });
   // 整个页面都可以拖放
-  ['dragenter', 'dragover'].forEach((ev) => document.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
-  ['dragleave', 'drop'].forEach((ev) => document.addEventListener(ev, (e) => { e.preventDefault(); if (ev === 'drop' || e.target === document.documentElement) drop.classList.remove('over'); }));
+  const drops = [drop, $('#heroDrop')]; // 工作台左栏和首屏的拖放区
+  ['dragenter', 'dragover'].forEach((ev) => document.addEventListener(ev, (e) => { e.preventDefault(); drops.forEach((d) => d.classList.add('over')); }));
+  ['dragleave', 'drop'].forEach((ev) => document.addEventListener(ev, (e) => { e.preventDefault(); if (ev === 'drop' || e.target === document.documentElement) drops.forEach((d) => d.classList.remove('over')); }));
   document.addEventListener('drop', (e) => {
     const f = e.dataTransfer?.files?.[0];
     if (!f) return;

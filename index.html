@@ -9,17 +9,18 @@
   <link rel="stylesheet" href="css/shell.css">
   <link rel="stylesheet" href="css/tech.css">
   <link rel="stylesheet" href="css/modules.css">
+  <link rel="stylesheet" href="css/hero.css">
 </head>
 <body>
   <!-- ===== 顶栏：产品名 / 平台切换 / 高级 ===== -->
   <header class="topbar glass">
-    <div class="brand">
+    <button class="brand" id="homeBtn" type="button" aria-label="回到首页" title="回到首页">
       <span class="logo" aria-hidden="true"></span>
-      <div>
-        <div class="brand-name">Preflight <span class="brand-tag" title="Eup 的个人作品">Eup</span></div>
-        <div class="brand-sub">Preflight for 抖音 / TikTok · 技术、遮挡、封面一站检查 · 本机处理，不上传</div>
-      </div>
-    </div>
+      <span class="brand-txt">
+        <span class="brand-name">Preflight <span class="brand-tag" title="Eup 的个人作品">Eup</span></span>
+        <span class="brand-sub">Preflight for 抖音 / TikTok · 技术、遮挡、封面一站检查 · 本机处理，不上传</span>
+      </span>
+    </button>
     <div class="top-actions">
       <!-- 平台按钮由 config/platforms.json 生成 -->
       <div class="seg" id="platformSeg" role="group" aria-label="目标平台"></div>
@@ -80,8 +81,46 @@
     </div>
   </section>
 
+  <!-- ===== 首屏：没有载入视频时显示（js/core/hero.js）；点顶栏 logo 也能回到这里 ===== -->
+  <section id="hero" class="hero" hidden>
+    <canvas id="heroCanvas" aria-hidden="true"></canvas>
+    <div class="hero-main">
+      <div class="hero-copy">
+        <p class="hero-kicker">抖音 / TikTok 发片前检查 · 本机处理，不上传</p>
+        <h1 class="hero-title">发片之前，<br>先 <mark>Preflight</mark> 一遍</h1>
+        <button class="btn hero-continue" id="heroContinue" type="button" hidden>继续检查 <b id="heroContinueName"></b> →</button>
+        <div id="heroDrop" class="drop hero-drop glass lit" tabindex="0">
+          <div class="drop-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28"><path d="M12 15V4m0 0-4 4m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="drop-main">把视频拖到这里</div>
+          <button class="btn primary" id="heroPick" type="button">选择视频</button>
+          <button class="link" id="heroTest" type="button">没有素材？生成一段测试视频</button>
+        </div>
+      </div>
+      <!-- 手机框演示：扫描 → 界面区域浮现 → 字幕被挡住的位置闪烁 → 打勾，循环播放 -->
+      <div class="hero-demo" aria-hidden="true">
+        <div class="hero-phone" id="heroPhone">
+          <div class="hp-screen">
+            <div class="hp-zone hp-zone-side"><span>按钮</span></div>
+            <div class="hp-zone hp-zone-bottom"><span>文案</span></div>
+            <div class="hp-sub">这句字幕会被挡住吗？</div>
+            <div class="hp-alert"></div>
+            <div class="hp-scan"></div>
+            <svg class="hp-check" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22"/><polyline points="14 25 21 32 34 17"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-caps">
+      <div class="hero-cap glass"><span class="step-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13a8 8 0 1 1 16 0"/><path d="M12 13l4-4"/><path d="M8 19h8"/></svg></span><div><b>技术体检</b><small>规格不对一键修复</small></div></div>
+      <div class="hero-cap glass"><span class="step-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M6 16.5h12"/><path d="M9 13h6"/></svg></span><div><b>画面遮挡</b><small>字幕会不会被按钮挡</small></div></div>
+      <div class="hero-cap glass"><span class="step-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M3.5 15l4.5-4 4 3.5 3-2.5 5 4"/><circle cx="15.5" cy="9.5" r="1.3"/></svg></span><div><b>封面适配</b><small>各比例裁切预览</small></div></div>
+    </div>
+  </section>
+
   <!-- ===== 工作台：左 视频（所有模块共用），右 四个标签页 ===== -->
-  <main class="workspace">
+  <main class="workspace" hidden>
     <aside class="left">
       <!-- 检查步骤（一级导航） -->
       <nav class="steps glass" id="mainTabs" role="tablist" aria-label="检查步骤">

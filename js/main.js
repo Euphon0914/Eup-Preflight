@@ -10,6 +10,7 @@
 import { state, notify } from './core/store.js';
 import { loadConfig } from './core/config.js';
 import { mountShell } from './core/shell.js';
+import { mountHero } from './core/hero.js';
 import { mountCompatNotice } from './core/compat.js';
 import { mountGlassLight } from './core/glass-light.js';
 import { loadVideo } from './core/media.js';
@@ -30,6 +31,7 @@ import * as summary from './modules/summary/index.js';
   }
 
   mountShell();
+  mountHero();
   mountCompatNotice(); // 不支持或没测试过的浏览器：顶部提示改用 Chrome / Edge
   mountGlassLight();   // 玻璃上的鼠标反光
   tech.mount();
@@ -50,13 +52,18 @@ import * as summary from './modules/summary/index.js';
   const last = listRecent()[0];
   if (last && autoLoadEnabled() && !state.original && state.config) {
     try {
-      await loadVideo(await openRecent(last.id), { remember: false, restored: true });
+      const loading = loadVideo(await openRecent(last.id), { remember: false, restored: true });
+      state.heroSuppressed = false; // 视频已经开始载入（state.original 有了），之后点 logo 可以回首屏
+      await loading;
     } catch (e) {
       console.warn('自动载入上次的视频失败：', e);
       await removeRecent(last.id);
       notify('recent');
     }
   }
+  // 自动载入的事处理完了（载入了、失败了或者不需要）：没有视频时可以显示首屏了
+  state.heroSuppressed = false;
+  notify('update');
 
   // 方便调试：在控制台可通过 window.__app 访问
   window.__app = { state, notify, loadVideo };

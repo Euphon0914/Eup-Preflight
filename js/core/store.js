@@ -24,6 +24,8 @@ export const state = {
   frameTimes: null,      // 对比截帧的时间点
   coverImage: null,      // 拖进页面的图片，交给封面适配（'cover-image' 通知）
   navArg: null,          // 跳转附带的参数，例如 goto('occlusion:12') 里的 '12'（画面遮挡检查跳到第 12 秒）
+  view: 'workspace',     // 'hero' 点了顶栏 logo 回到首屏 / 'workspace' 工作台（没有视频时首屏自动显示，见 core/hero.js）
+  heroSuppressed: true,  // 打开页面时先不显示首屏，等确定不会自动载入上次的视频再说（避免首屏一闪而过）
 };
 
 // ---------- 事件通知 ----------
