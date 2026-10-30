@@ -19,8 +19,6 @@ import { attachBoxEditor, boxHtml } from '../../core/box-editor.js';
 export const id = 'cover';
 export const title = '封面适配';
 
-// 各比例裁切框的颜色：避开状态色（青 / 蓝 / 紫）、主体框（蓝）、识别文字框（黄）、手动标记（橙）
-const COLORS = ['#e0458f', '#e5484d', '#a39e93', '#a26b3a'];
 const OCR_SIDE = 1280;        // 识别文字时把封面缩小到长边 1280
 
 const C = {
@@ -65,7 +63,7 @@ function results() {
     const crop = cropOf(r);
     const zones = zonesFor(r, currentPlatform());
     const issues = checkCrop({ W: C.src.W, H: C.src.H, crop, subject: C.subject, texts: allTexts(), ratioCfg: r, zones });
-    return { r, i, crop, zones, issues, color: COLORS[i % COLORS.length] };
+    return { r, i, crop, zones, issues };
   });
 }
 
@@ -248,7 +246,8 @@ function renderEditor() {
   ed.style.setProperty('--ca', C.src.W / C.src.H);
   if (C.src.url && $('#coverImg').getAttribute('src') !== C.src.url) $('#coverImg').src = C.src.url;
   const list = results();
-  let html = list.map(({ r, crop, color }) => `<div class="cv-crop" style="${pctRect(crop)};--c:${color}"><span>${esc(r.ratio.join(':'))}</span></div>`).join('');
+  // 裁切范围：白色细框，比例标签按顺序放在不同的角上（data-corner），鼠标移到下方对应的预览卡片上时高亮（.on）
+  let html = list.map(({ r, i, crop }) => `<div class="cv-crop" data-rid="${esc(r.id)}" data-corner="${i % 4}" style="${pctRect(crop)}"><span>${esc(r.ratio.join(':'))}</span></div>`).join('');
   html += (C.ocr === 'done' ? C.texts : []).map((t) => `<div class="cv-text" style="${pctRect(t)}"></div>`).join('');
   // 调整主体时，手动框只显示不能编辑（编辑在 #coverManual 图层里）
   if (C.editMode !== 'text') html += C.manual.map((b, i) => `<div class="mb static" style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%"><span>标记 ${i + 1}</span></div>`).join('');
@@ -265,7 +264,7 @@ function renderManual() {
   document.querySelectorAll('#coverEditSeg button').forEach((b) => b.classList.toggle('on', b.dataset.mode === C.editMode));
   $('#coverEditHint').innerHTML = C.editMode === 'text'
     ? '在原图上拖动，框出<b>识别不到的重要文字</b>（花字、竖排字、半透明字等）；选中后可拖动、拖角调整，点 × 删除。'
-    : '蓝色框是<b>主体</b>（最重要的部分），拖动、拖角调整；彩色虚线是各比例的裁切范围（颜色和下方预览卡片对应），黄色细框是识别到的文字，橙色框是手动标记的文字。';
+    : '白色圆角框是<b>主体</b>（最重要的部分），拖动、拖角调整；细线框是各比例的裁切范围（鼠标移到下方的预览卡片上，对应的框会高亮），半透明白块是识别到的文字，柠檬色框是手动标记的文字。';
 }
 
 /** 右：结论和问题列表 */
@@ -274,7 +273,7 @@ function renderSide() {
   const list = results();
   const issues = mergedIssues(list);
   const n = issues.length;
-  const ocrNote = C.ocr === 'running' || C.ocr === 'idle' ? '正在识别封面上的标题文字…' : C.ocr === 'error' ? '标题文字识别失败，只检查了主体和清晰度。' : (C.texts.length ? `识别到 ${C.texts.length} 处标题文字（黄框）。` : '封面上没有识别到文字。') + (C.manual.length ? ` 另有 ${C.manual.length} 处手动标记（橙框）。` : C.texts.length ? '' : '如果有重要文字没认出来，可以切到「标记文字」手动框出。');
+  const ocrNote = C.ocr === 'running' || C.ocr === 'idle' ? '正在识别封面上的标题文字…' : C.ocr === 'error' ? '标题文字识别失败，只检查了主体和清晰度。' : (C.texts.length ? `识别到 ${C.texts.length} 处标题文字（半透明白块）。` : '封面上没有识别到文字。') + (C.manual.length ? ` 另有 ${C.manual.length} 处手动标记（柠檬色框）。` : C.texts.length ? '' : '如果有重要文字没认出来，可以切到「标记文字」手动框出。');
   $('#coverVerdict').innerHTML = `<div class="verdict-title">${verdictIcon(n ? 'warn' : 'pass')}${n
     ? `发现 ${n} 处需要注意`
     : `${list.length} 个比例都没问题`}</div><div class="hint">${esc(ocrNote)} 按 ${esc(pname())} 的 ${list.map(({ r }) => r.ratio.join(':')).join('、')} 检查。</div>`;
@@ -288,9 +287,9 @@ function renderSide() {
 /** 下：每个比例的预览卡片 */
 function renderCrops() {
   if (!C.src) { $('#coverCrops').innerHTML = ''; return; }
-  $('#coverCrops').innerHTML = results().map(({ r, crop, zones, issues, color }) => `
+  $('#coverCrops').innerHTML = results().map(({ r, crop, zones, issues }) => `
     <div class="crop-card ${issues.length ? 'bad' : ''}" data-rid="${esc(r.id)}">
-      <div class="crop-card-head"><b style="color:${color}">${esc(r.name)}</b><span class="tag">${esc(r.ratio.join(':'))}</span><span class="hint">${esc(r.desc || '')}</span></div>
+      <div class="crop-card-head"><b>${esc(r.name)}</b><span class="tag">${esc(r.ratio.join(':'))}</span><span class="hint">${esc(r.desc || '')}</span></div>
       <div class="crop-view" data-rid="${esc(r.id)}" style="aspect-ratio:${r.ratio[0]}/${r.ratio[1]}">
         <img src="${esc(C.src.url || '')}" alt="" style="${imgStyle(crop)}">
         ${zones.map((z) => `<div class="cz" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%"><span>${esc(z.name)}</span></div>`).join('')}
@@ -493,6 +492,10 @@ export function mount() {
     renderEditor();
   });
   const crops = $('#coverCrops');
+  // 鼠标移到某张预览卡片上：原图上对应的裁切框高亮
+  const lightCrop = (rid) => document.querySelectorAll('#coverLayer .cv-crop').forEach((el) => el.classList.toggle('on', el.dataset.rid === rid));
+  crops.addEventListener('pointerover', (e) => lightCrop(e.target.closest('.crop-card')?.dataset.rid));
+  crops.addEventListener('pointerleave', () => lightCrop(null));
   crops.addEventListener('pointerdown', onCropDown);
   crops.addEventListener('pointermove', onCropMove);
   crops.addEventListener('pointerup', onCropUp);

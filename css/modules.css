@@ -40,14 +40,21 @@
 .occ-video { position: absolute; }
 .occ-video video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; display: block; cursor: pointer; }
 .occ-boxes, .occ-zl { position: absolute; inset: 0; pointer-events: none; }
-.ob { position: absolute; border: 1.5px dashed rgba(74, 222, 128, .95); border-radius: 2px; }
-.ob.bad { border: 2px solid var(--fail); background: color-mix(in srgb, var(--fail) 18%, transparent); }
-.ob span { position: absolute; left: -1px; bottom: 100%; font-size: 10px; line-height: 14px; padding: 0 3px; color: #fff; background: rgba(21, 128, 61, .9); white-space: nowrap; border-radius: 2px 2px 0 0; }
-.ob.bad span { background: var(--fail); }
-.oz { position: absolute; border: 1px dashed rgba(255, 255, 255, .55); background: rgba(255, 255, 255, .06); }
-.oz span { position: absolute; right: 2px; top: 2px; font-size: 9.5px; line-height: 13px; color: rgba(255, 255, 255, .85); background: rgba(0, 0, 0, .45); padding: 0 3px; border-radius: 2px; max-width: calc(100% - 4px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.oz.hit { border: 1.5px solid var(--fail); background: color-mix(in srgb, var(--fail) 14%, transparent); }
-.oz.hit span { background: #dc2626; color: #fff; }
+/* ---------- 画面上的框（画面遮挡、封面适配共用一套样式） ----------
+   和玻璃风格保持一致：圆角、细实线、玻璃小胶囊标签；不用彩色虚线和直角色块。
+   白色 = 系统给出的（识别到的文字、界面区域、裁切范围）；柠檬色 = 自己标的；状态色（紫）= 有问题 */
+/* 识别到的文字：半透明白底，像荧光笔涂过 */
+.ob { position: absolute; border-radius: 4px; background: rgba(255, 255, 255, .2); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55); }
+.ob span { position: absolute; left: 0; bottom: calc(100% + 3px); font-size: 10px; line-height: 17px; padding: 0 7px; border-radius: 999px; white-space: nowrap;
+  color: #fff; background: rgba(18, 18, 20, .58); border: 1px solid rgba(255, 255, 255, .18); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.ob.bad { background: color-mix(in srgb, var(--fail) 26%, transparent); box-shadow: inset 0 0 0 1.5px var(--fail), 0 0 14px color-mix(in srgb, var(--fail) 45%, transparent); }
+.ob.bad span { background: var(--fail); border-color: transparent; }
+/* 平台界面区域：磨砂的浅色块 */
+.oz { position: absolute; border-radius: 6px; background: rgba(255, 255, 255, .08); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3); }
+.oz span { position: absolute; right: 3px; top: 3px; font-size: 9.5px; line-height: 15px; padding: 0 6px; border-radius: 999px; color: rgba(255, 255, 255, .9);
+  background: rgba(18, 18, 20, .55); max-width: calc(100% - 6px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oz.hit { background: color-mix(in srgb, var(--fail) 16%, transparent); box-shadow: inset 0 0 0 1.5px var(--fail); }
+.oz.hit span { background: var(--fail); color: #fff; }
 .occ-zl.mock .oz { background: rgba(10, 10, 12, .55); border: 0; }    /* 仅预览：像真实界面一样压暗 */
 .occ-zl.mock .oz span { left: 50%; right: auto; top: 50%; transform: translate(-50%, -50%); background: none; font-size: 10.5px; }
 .occ-controls { display: flex; align-items: center; gap: 10px; }
@@ -93,17 +100,33 @@
 .cover-editor {
   position: relative; --ca: 0.5625;
   width: min(320px, calc(62vh * var(--ca)), 100%); aspect-ratio: var(--ca);
-  background: #1d2026; border-radius: 8px; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
+  background: #111113; border-radius: 14px; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
 }
 .cover-editor img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
 .cover-layer { position: absolute; inset: 0; }
 .cover-editor-hint { max-width: 320px; margin: 0; }
-.cv-crop { position: absolute; border: 1.5px dashed var(--c); pointer-events: none; }
-.cv-crop span { position: absolute; left: 0; top: 0; font-size: 10px; line-height: 14px; padding: 0 4px; color: #fff; background: var(--c); }
-.cv-text { position: absolute; border: 1px solid rgba(250, 204, 21, .95); pointer-events: none; }
-.cv-subject { position: absolute; border: 2px solid #3b82f6; background: rgba(59, 130, 246, .12); cursor: move; }
-.cv-subject > span { position: absolute; left: -2px; bottom: 100%; font-size: 10.5px; line-height: 15px; padding: 0 5px; color: #fff; background: #2563eb; border-radius: 2px 2px 0 0; pointer-events: none; }
-.cv-subject .hd { position: absolute; width: 11px; height: 11px; background: #fff; border: 1.5px solid #2563eb; border-radius: 2px; transform: translate(-50%, -50%); }
+.cv-crop { position: absolute; border-radius: 8px; pointer-events: none; transition: box-shadow var(--dur-fast) var(--ease);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .7), 0 0 0 1px rgba(0, 0, 0, .25); }
+/* 比例标签：深色玻璃小胶囊，按顺序放在不同的角上，几个比例的框重叠时标签不会叠在一起 */
+.cv-crop span { position: absolute; font-size: 10px; line-height: 17px; padding: 0 7px; border-radius: 999px; white-space: nowrap; color: #fff;
+  background: rgba(18, 18, 20, .58); border: 1px solid rgba(255, 255, 255, .18); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  transition: background var(--dur-fast), color var(--dur-fast); }
+.cv-crop[data-corner="0"] span { left: 5px; top: 5px; }
+.cv-crop[data-corner="1"] span { right: 5px; top: 5px; }
+.cv-crop[data-corner="2"] span { left: 5px; bottom: 5px; }
+.cv-crop[data-corner="3"] span { right: 5px; bottom: 5px; }
+/* 鼠标移到下方的预览卡片上：对应的裁切框加粗高亮 */
+.cv-crop.on { box-shadow: inset 0 0 0 2px #fff, 0 0 0 1px rgba(0, 0, 0, .3), 0 0 22px rgba(255, 255, 255, .35); }
+.cv-crop.on span { background: #fff; color: #111; border-color: transparent; }
+.cv-text { position: absolute; border-radius: 4px; background: rgba(255, 255, 255, .2); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55); pointer-events: none; }
+/* 主体：白色圆角框 + 白色圆点手柄（像系统相册的裁切框） */
+.cv-subject { position: absolute; border-radius: 10px; cursor: move; background: rgba(255, 255, 255, .06);
+  box-shadow: inset 0 0 0 2px #fff, 0 0 0 1px rgba(0, 0, 0, .3), 0 6px 24px rgba(0, 0, 0, .3); }
+/* “主体”标签放在框里面的左上角：放外面会和裁切框的比例标签挤在一起 */
+.cv-subject > span { position: absolute; left: 6px; top: 6px; font-size: 10.5px; font-weight: 600; line-height: 18px; padding: 0 8px; border-radius: 999px;
+  color: #111; background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); pointer-events: none; }
+.cv-subject .hd { position: absolute; width: 12px; height: 12px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 1px 4px rgba(0, 0, 0, .45); }
 .cv-subject .hd[data-h=nw] { left: 0; top: 0; cursor: nwse-resize; }
 .cv-subject .hd[data-h=ne] { left: 100%; top: 0; cursor: nesw-resize; }
 .cv-subject .hd[data-h=se] { left: 100%; top: 100%; cursor: nwse-resize; }
@@ -114,39 +137,44 @@
 .cover-export { display: flex; align-items: center; gap: 8px; }
 .cover-export select { width: auto; }
 .cover-crops { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
-.crop-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; display: flex; flex-direction: column; gap: 6px; width: 220px; }
-.crop-card.bad { border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); }
+.crop-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; display: flex; flex-direction: column; gap: 6px; width: 220px; background: var(--surface); transition: border-color var(--dur-fast), box-shadow var(--dur-fast); }
+.crop-card:hover { border-color: var(--line-strong); box-shadow: 0 6px 20px rgba(0, 0, 0, .08); }
+.crop-card.bad { border-color: var(--line); } /* 有问题时只用下面的状态文字提示，卡片边框保持中性 */
 .crop-card-head { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; font-size: 13px; }
 .crop-card-head b { font-size: 13.5px; }
-.crop-view { position: relative; width: 100%; overflow: hidden; border-radius: 6px; background: #1d2026; cursor: grab; touch-action: none; }
+.crop-view { position: relative; width: 100%; overflow: hidden; border-radius: 10px; background: #111113; cursor: grab; touch-action: none; }
 .crop-view:active { cursor: grabbing; }
 .crop-view img { position: absolute; max-width: none; pointer-events: none; user-select: none; }
-.crop-view .cz { position: absolute; background: rgba(10, 10, 12, .55); display: grid; place-items: center; pointer-events: none; }
-.crop-view .cz span { font-size: 9.5px; color: rgba(255, 255, 255, .85); text-align: center; padding: 1px; }
+.crop-view .cz { position: absolute; display: grid; place-items: center; pointer-events: none; border-radius: 6px;
+  background: rgba(18, 18, 20, .5); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.crop-view .cz span { font-size: 9.5px; color: rgba(255, 255, 255, .9); text-align: center; padding: 1px 3px; }
 .crop-card .c-status { font-size: 12.5px; }
 .crop-card .c-status.ok { color: var(--pass); }
 .crop-card .c-status.bad { color: var(--warn); }
 .crop-card .actions { display: flex; gap: 6px; }
 
 /* ---------- 手动框选的文字（画面遮挡检查、封面适配共用） ---------- */
-.mb { position: absolute; border: 2px dashed #f59e0b; background: rgba(245, 158, 11, .14); cursor: move; }
-.mb.sel { border-style: solid; background: rgba(245, 158, 11, .22); z-index: 2; }
-.mb > span { position: absolute; left: -2px; bottom: 100%; font-size: 10px; line-height: 14px; padding: 0 4px; color: #1b1e24; background: #f59e0b; border-radius: 2px 2px 0 0; white-space: nowrap; pointer-events: none; }
-.mb .hd { position: absolute; width: 11px; height: 11px; background: #fff; border: 1.5px solid #d97706; border-radius: 2px; transform: translate(-50%, -50%); }
+.mb { position: absolute; border-radius: 6px; cursor: move; background: rgba(200, 240, 60, .14); box-shadow: inset 0 0 0 1.5px var(--brand); }
+.mb.sel { background: rgba(200, 240, 60, .22); box-shadow: inset 0 0 0 2px var(--brand), 0 0 16px var(--brand-glow); z-index: 2; }
+.mb > span { position: absolute; left: 0; bottom: calc(100% + 3px); font-size: 10px; font-weight: 600; line-height: 17px; padding: 0 7px; border-radius: 999px;
+  color: var(--on-brand); background: var(--brand); white-space: nowrap; pointer-events: none; }
+.mb .hd { position: absolute; width: 11px; height: 11px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 1.5px var(--brand), 0 1px 4px rgba(0, 0, 0, .4); }
 .mb .hd[data-h=nw] { left: 0; top: 0; cursor: nwse-resize; }
 .mb .hd[data-h=ne] { left: 100%; top: 0; cursor: nesw-resize; }
 .mb .hd[data-h=se] { left: 100%; top: 100%; cursor: nwse-resize; }
 .mb .hd[data-h=sw] { left: 0; top: 100%; cursor: nesw-resize; }
-.mb-del { position: absolute; right: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%; background: #dc2626; color: #fff; font: 600 13px/18px sans-serif; text-align: center; cursor: pointer; z-index: 3; }
+.mb-del { position: absolute; right: -10px; top: -10px; width: 20px; height: 20px; border-radius: 50%; color: #fff; font: 600 13px/20px sans-serif; text-align: center; cursor: pointer; z-index: 3;
+  background: rgba(18, 18, 20, .75); box-shadow: 0 0 0 1px rgba(255, 255, 255, .25), 0 2px 6px rgba(0, 0, 0, .35); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.mb-del:hover { background: var(--fail); }
 .occ-manual { position: absolute; inset: 0; pointer-events: none; }
 .cover-manual { position: absolute; inset: 0; pointer-events: none; }
 .cover-manual.on { pointer-events: auto; cursor: crosshair; }
 .mb.static { pointer-events: none; }
 .occ-manual.on { pointer-events: auto; cursor: crosshair; background: rgba(0, 0, 0, .12); }
-.ob.manual { border-color: rgba(245, 158, 11, .95); }
-.ob.manual span { background: #d97706; }
-.ob.manual.bad { border-color: var(--fail); }
-.ob.manual.bad span { background: var(--fail); }
+.ob.manual { background: rgba(200, 240, 60, .14); box-shadow: inset 0 0 0 1.5px var(--brand); }
+.ob.manual span { background: var(--brand); color: var(--on-brand); border-color: transparent; }
+.ob.manual.bad { background: color-mix(in srgb, var(--fail) 26%, transparent); box-shadow: inset 0 0 0 1.5px var(--fail), 0 0 14px color-mix(in srgb, var(--fail) 45%, transparent); }
+.ob.manual.bad span { background: var(--fail); color: #fff; }
 .man-list:empty { display: none; }
 .man-list { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; }
 .man-head { display: flex; flex-direction: column; gap: 1px; }
