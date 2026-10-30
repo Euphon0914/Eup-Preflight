@@ -180,8 +180,20 @@
       <div class="hero-cap glass"><span class="mono-tag">03 / 封面适配</span><div class="cap-stat"><b class="num" id="statRatios">3</b><small>种封面比例<br>同时裁切预览</small></div></div>
     </div>
 
-    <!-- 首屏下方：功能说明、数据与隐私（往下滚动查看） -->
+    <!-- 首屏下方（往下滚动查看）：怎么用、功能说明、使用前须知、数据与隐私、关于作者 -->
     <div class="hero-more">
+      <section class="hm-sec" aria-labelledby="hmHowTitle">
+        <header class="hm-head"><span class="mono-tag">HOW IT WORKS</span><h2 id="hmHowTitle">三步用起来</h2></header>
+        <div class="hm-grid cols-3">
+          <article class="hm-card glass"><span class="mono-tag">01</span><h3>拖入视频</h3>
+            <p>把视频拖到上面的框里，或点“选择视频”。手边没有素材，可以先生成一段测试视频试试。</p></article>
+          <article class="hm-card glass"><span class="mono-tag">02</span><h3>看检查结果</h3>
+            <p>导入后自动开始技术体检，5 分钟以内的视频还会在后台跑完画面遮挡和封面检查。左栏切换步骤，“总报告”汇总所有问题。</p></article>
+          <article class="hm-card glass"><span class="mono-tag">03</span><h3>修复并下载</h3>
+            <p>规格有问题就点“一键修复”，处理完直接下载 MP4，还能和原片对比；封面可以一次导出所有比例。</p></article>
+        </div>
+      </section>
+
       <section class="hm-sec" aria-labelledby="hmFeatTitle">
         <header class="hm-head"><span class="mono-tag">FEATURES</span><h2 id="hmFeatTitle">发布之前，四步检查完</h2>
           <p>规则按平台分开：顶栏切换抖音 / TikTok，所有检查跟着换。每条规则都标了来源和核实日期。</p></header>
@@ -197,6 +209,20 @@
         </div>
       </section>
 
+      <section class="hm-sec" aria-labelledby="hmNoteTitle">
+        <header class="hm-head"><span class="mono-tag">BEFORE YOU START</span><h2 id="hmNoteTitle">使用前须知</h2></header>
+        <div class="hm-grid">
+          <article class="hm-card glass"><span class="mono-tag">BROWSER</span><h3>用电脑上的 Chrome 或 Edge</h3>
+            <p>检查和修复依赖浏览器的硬件编解码（WebCodecs）和本地文件存储。Safari、Firefox 没有完整测试过，打开时页面顶部会提示。</p></article>
+          <article class="hm-card glass"><span class="mono-tag">MOBILE</span><h3>手机上只看结果</h3>
+            <p>手机浏览器可以体检、看报告；但在手机上修复，实测画面可能偏色，大视频也容易中途失败。修复视频请用电脑。</p></article>
+          <article class="hm-card glass"><span class="mono-tag">FIRST RUN</span><h3>第一次会慢几秒</h3>
+            <p>第一次分析要加载约 32 MB 的处理组件，第一次识别文字要加载识别模型。都从本机读取，不联网，之后就快了。</p></article>
+          <article class="hm-card glass"><span class="mono-tag">RULES</span><h3>规则从哪来</h3>
+            <p>标“官方”的来自平台官方页面；标“经验值”的是平台没有公开、业内常用的数值；标“占位”的还没核实（TikTok 有部分规则是这样）。点开任意检查项可以看来源和核实日期。</p></article>
+        </div>
+      </section>
+
       <section class="hm-sec" aria-labelledby="hmPrivTitle">
         <header class="hm-head"><span class="mono-tag">PRIVACY</span><h2 id="hmPrivTitle">视频不离开你的电脑</h2>
           <p>这个网页没有服务器、不需要登录，所有处理都在你的浏览器里完成。</p></header>
@@ -209,6 +235,17 @@
             <p>最近导入的 5 个视频（合计不超过 3 GB）和处理结果存在这个浏览器的本地存储里，下次打开不用重新选文件；深浅色、语言等设置也只记在本机。</p></article>
           <article class="hm-card glass"><span class="mono-tag">DELETE</span><h3>随时可以删掉</h3>
             <p>在「技术体检 › 历史」里逐条删除，或关掉“自动载入”；清除浏览器的网站数据会全部删除。删除只影响浏览器里的副本，不影响电脑上的原文件。</p></article>
+        </div>
+      </section>
+
+      <section class="hm-sec" aria-labelledby="hmAboutTitle">
+        <header class="hm-head"><span class="mono-tag">ABOUT</span><h2 id="hmAboutTitle">关于作者</h2>
+          <p>Eup Preflight 是 Eup 的个人作品。发现规则不准、识别有误，或者有想加的功能，欢迎联系。</p></header>
+        <div class="hm-grid cols-3">
+          <a class="hm-card hm-contact glass" href="mailto:41621722@qq.com"><span class="mono-tag">EMAIL</span><b translate="no">41621722@qq.com</b></a>
+          <a class="hm-card hm-contact glass" href="tel:+8618972423878"><span class="mono-tag">PHONE</span><b translate="no">189 7242 3878</b></a>
+          <!-- 上传到 GitHub 后：把这一项换成 <a class="hm-card hm-contact glass" href="仓库地址" target="_blank" rel="noopener">…</a>，<b> 里写仓库地址 -->
+          <div class="hm-card hm-contact glass"><span class="mono-tag">GITHUB</span><b>即将开源</b></div>
         </div>
       </section>
     </div>
