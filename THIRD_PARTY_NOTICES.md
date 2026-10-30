@@ -12,6 +12,7 @@ Eup Preflight 使用了下列开源组件。它们都以**未经修改**的原�
 | tesseract.js | 7.0.0 | 文字识别 | `vendor/tesseract/` | Apache-2.0 | https://github.com/naptha/tesseract.js |
 | tesseract.js-core | 7.0.0 | 文字识别引擎（Tesseract 的 WebAssembly 版） | `vendor/tesseract-core/` | Apache-2.0 | https://github.com/naptha/tesseract.js-core |
 | @tesseract.js-data/chi_sim、eng | 1.0.0 | 中文、英文识别模型 | `vendor/tesseract-lang/` | npm 包声明 MIT；模型数据出自 Tesseract 官方 tessdata，Apache-2.0 | https://github.com/naptha/tessdata |
+| motion | 14.2.0 | 界面动效（首屏过渡、结论揭晓、修复动画） | `vendor/motion/` | MIT | https://github.com/motiondivision/motion |
 
 tesseract.js 的打包文件里还内嵌了几个小型依赖（buffer、ieee754、regenerator-runtime、zlib.js 等，MIT / BSD-3-Clause），其声明保留在原文件注释中。
 
@@ -61,6 +62,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+```
+
+## MIT License（motion）
+
+```text
+The MIT License (MIT)
+
+Copyright (c) 2024 [Motion](https://motion.dev) B.V.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
 
 ## BSD-2-Clause（mediainfo.js / MediaInfoLib）

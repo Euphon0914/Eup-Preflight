@@ -17,6 +17,7 @@ MEDIABUNNY_VER="1.61.3"      # mediabunny（WebCodecs 测速页用的解封装 /
 TESSERACT_VER="7.0.0"        # tesseract.js（画面遮挡检查：文字识别）
 TESS_CORE_VER="7.0.0"        # tesseract.js-core（文字识别 wasm，只用 LSTM 版）
 TESS_DATA_VER="1.0.0"        # @tesseract.js-data/chi_sim、eng（语言数据，用 4.0.0_best_int）
+MOTION_VER="14.2.0"          # motion（界面动效，UMD 单文件，挂到 window.Motion）
 
 CDN="${CDN:-jsdelivr}"
 
@@ -106,5 +107,12 @@ for lang in chi_sim:1718768 eng:2952873; do
   fi
 done
 
-echo "完成。vendor/ 目录内容："
+# motion：界面动效（首屏过渡、结论揭晓等），UMD 单文件。npmmirror 同样不允许单独下载包里的文件
+if [ "$CDN" = "npmmirror" ]; then
+  get_from_tgz motion "$MOTION_VER" dist/motion.js vendor/motion/motion.js 153875
+else
+  get motion "$MOTION_VER" dist/motion.js vendor/motion/motion.js 153875
+fi
+
+echo "完成。vendor/ 目录内容：
 du -sh vendor/*
