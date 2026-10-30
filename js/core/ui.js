@@ -108,10 +108,22 @@ export function failStage() {
   if (cur) cur.className = 'err';
   stagesOn = false;
 }
-export function showError(msg) { $('#errorBox').hidden = false; $('#errorBox').textContent = msg; }
+export function showError(msg) {
+  $('#errorBox').hidden = false;
+  $('#errorBox').textContent = msg;
+  // 错误提示在工作台里：首屏上出的错（读配置失败、生成测试视频失败等）切到工作台才看得到
+  if (state.view !== 'workspace') { state.view = 'workspace'; notify('update'); }
+}
 export function clearError() {
   $('#errorBox').hidden = true;
-  if ($('#task').classList.contains('failed')) { $('#task').classList.remove('failed'); $('#task').hidden = true; $('#taskStages').innerHTML = ''; }
+  clearFailedStages();
+}
+/** 收起失败时保留的阶段清单（错误提示不动） */
+export function clearFailedStages() {
+  if (!$('#task').classList.contains('failed')) return;
+  $('#task').classList.remove('failed');
+  $('#task').hidden = true;
+  $('#taskStages').innerHTML = '';
 }
 
 /** 忙 / 闲切换：各模块在渲染时根据 state.busy 禁用自己的按钮 */

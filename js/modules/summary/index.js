@@ -84,7 +84,8 @@ function render() {
   // 揭晓：和技术体检同一套，时长减半；任一模块的结果变了（数量变化）才重播
   const o = state.original;
   const key = `${o.file.name}|${o.file.size}|${state.platform}|${verdict}|${perModule.map((x) => (x.items ? x.items.length : '-')).join(',')}`;
-  reveal($('#summaryHead'), key, () => {
+  // 总报告不在屏幕上时先不揭晓（不记 key），等打开总报告时再播
+  if ($('#summaryHead').offsetParent) reveal($('#summaryHead'), key, () => {
     animate($('#summaryHead'), { opacity: [0, 1], scale: [0.97, 1] }, { duration: 0.2 });
     drawStroke($('#summaryHead .verdict-icon svg'));
     $('#summaryHead').querySelectorAll('.vnum').forEach((el) => countUp(el, Number(el.dataset.n), { duration: 0.4 }));

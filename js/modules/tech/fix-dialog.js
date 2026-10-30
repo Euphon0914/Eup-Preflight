@@ -5,7 +5,7 @@
 //   处理好的视频在「体检」和「对比」顶部常驻一条结果条，随时可以下载。
 // ============================================================
 import { state, goto, currentPlatform, currentRules, metricsOf } from '../../core/store.js';
-import { $, esc, badge, fmtMB, stampName, clearError, verdictIcon } from '../../core/ui.js';
+import { $, esc, badge, fmtMB, stampName, clearError, clearFailedStages, verdictIcon } from '../../core/ui.js';
 import { animate, flyFrom, pulse, SPRING } from '../../core/motion.js';
 import { evaluate } from '../../lib/rules-engine.js';
 import { doProcess, selectedFixes, updateFixButton } from './fixes.js';
@@ -148,7 +148,7 @@ function closeFixDialog() {
 /** 关闭后把进度条 / 错误框放回面板原位置 */
 function restoreTask() {
   if (!taskHome) return;
-  if ($('#task').classList.contains('failed')) clearError(); // 失败的阶段清单只在弹窗里看，放回面板前收起
+  clearFailedStages(); // 失败的阶段清单只在弹窗里看，放回面板前收起（错误提示留在面板上）
   taskHome.parent.insertBefore($('#task'), taskHome.ref);
   taskHome.parent.insertBefore($('#errorBox'), taskHome.ref);
 }

@@ -32,6 +32,7 @@ const vnum = (n) => `<b class="vnum num" data-n="${n}">${n}</b>`;
  */
 function revealReport(o, c) {
   const sum = $('#summary');
+  if (!sum.offsetParent) return; // 体检不在屏幕上（在首屏、别的步骤）：先不揭晓，回来时再播
   const key = `${o.file.name}|${o.file.size}|${state.platform}|${c.verdict}|${c.pending ? 1 : 0}`;
   reveal(sum, key, () => {
     if (c.pending) { animate(sum, { opacity: [0, 1] }); return; }

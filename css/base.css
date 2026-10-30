@@ -183,10 +183,11 @@ a.btn { display: inline-block; text-decoration: none; } /* 链接做成按钮样
   position: absolute; z-index: 0; pointer-events: none; border-radius: 999px; transition: opacity var(--dur-fast);
   background: var(--glass-strong); box-shadow: 0 2px 8px rgba(0, 0, 0, .1), inset 0 1px 0 rgba(255, 255, 255, .6);
 }
-.steps .seg-thumb { border-radius: 16px; box-shadow: 0 4px 14px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .55); }
-.subtabs .seg-thumb { background: var(--surface); box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
+.has-thumb.has-thumb.steps > .seg-thumb { border-radius: 16px; box-shadow: 0 4px 14px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .55); }
+.has-thumb.has-thumb.subtabs > .seg-thumb { background: var(--surface); box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
 @media (prefers-color-scheme: dark) {
-  .seg-thumb { box-shadow: 0 2px 8px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .1); }
+  .has-thumb.has-thumb > .seg-thumb { box-shadow: 0 2px 8px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .1); }
+  .has-thumb.has-thumb.steps > .seg-thumb { box-shadow: 0 4px 14px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .1); }
 }
 
 select, input[type=number], input[type=text], textarea {

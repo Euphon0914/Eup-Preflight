@@ -1,6 +1,7 @@
 // ============================================================
 // hero.js —— 首屏：没有载入视频时占满工作区；点顶栏 logo 也能回到这里
-//   显示规则：state.view === 'hero'（点了 logo），或者还没有视频、也没有任务在跑。
+//   显示规则：state.view === 'hero'（点了 logo），或者 view 为 'auto' 且还没有视频、也没有任务在跑。
+//   拖入封面图、出错（错误提示在工作台里）、载入视频时 view 变成 'workspace'。
 //   打开页面时如果会自动载入上次的视频（state.heroSuppressed），先不显示，避免首屏一闪而过。
 //   右边手机框里循环播放一段演示：扫描 → 界面区域浮现 → 被挡住的字幕闪烁 → 打勾。
 // ============================================================
@@ -97,12 +98,17 @@ function flyIn(from) {
 
 /** 按当前状态决定显示首屏还是工作台 */
 export function syncHero() {
-  const want = !state.heroSuppressed && (state.view === 'hero' || (!state.original && !state.busy));
+  const want = !state.heroSuppressed && (state.view === 'hero' || (state.view === 'auto' && !state.original && !state.busy));
   const leaving = shown && !want;
   const from = leaving && flyNext
     ? { drop: $('#heroDrop').getBoundingClientRect(), caps: [...document.querySelectorAll('.hero-cap')].map((c) => c.getBoundingClientRect()) }
     : null;
   if (want) showHero(); else hideHero();
+  // 分析 / 处理中回到首屏：这时不能换视频，按钮禁用并说明
+  $('#heroPick').disabled = $('#heroTest').disabled = state.busy;
+  $('#heroDrop').setAttribute('aria-disabled', String(state.busy));
+  $('#heroBusy').hidden = !(want && state.busy);
+  if (state.busy && state.original) $('#heroBusyName').textContent = state.original.file.name;
   const ws = document.querySelector('.workspace');
   ws.hidden = want || (state.heroSuppressed && !state.original);
   if (!leaving) return;
@@ -114,9 +120,15 @@ export function syncHero() {
 export function mountHero() {
   const input = $('#fileInput'), drop = $('#heroDrop');
   const toWorkspace = () => { state.view = 'workspace'; notify('update'); };
-  drop.addEventListener('click', (e) => { if (!e.target.closest('#heroTest')) input.click(); });
-  drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
-  $('#heroTest').addEventListener('click', (e) => { e.stopPropagation(); state.view = 'workspace'; flyNext = true; loadTestVideo(); });
+  drop.addEventListener('click', (e) => { if (!state.busy && !e.target.closest('#heroTest')) input.click(); });
+  drop.addEventListener('keydown', (e) => { if (!state.busy && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); input.click(); } });
+  $('#heroTest').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (state.busy) return; // 正在处理别的视频：按钮本来就是禁用的，这里再挡一下
+    state.view = 'workspace';
+    flyNext = true;
+    loadTestVideo();
+  });
   $('#heroContinue').addEventListener('click', toWorkspace);
   $('#homeBtn').addEventListener('click', () => { state.view = 'hero'; notify('update'); });
   subscribe((reason) => {

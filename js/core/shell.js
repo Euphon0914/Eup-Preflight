@@ -164,7 +164,7 @@ function bindEvents() {
     const f = e.dataTransfer?.files?.[0];
     if (!f) return;
     // 拖进来的是图片：当作封面图，交给“封面适配”
-    if (f.type.startsWith('image/')) { state.coverImage = f; goto('cover'); notify('cover-image'); return; }
+    if (f.type.startsWith('image/')) { state.coverImage = f; state.view = 'workspace'; goto('cover'); notify('cover-image'); return; }
     loadVideo(f);
   });
 

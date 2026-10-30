@@ -114,5 +114,5 @@ else
   get motion "$MOTION_VER" dist/motion.js vendor/motion/motion.js 153875
 fi
 
-echo "完成。vendor/ 目录内容：
+echo "完成。vendor/ 目录内容："
 du -sh vendor/*

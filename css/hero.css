@@ -24,6 +24,9 @@
 .hero-continue { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 14px; max-width: 100%; }
 .hero-continue b { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
 .hero-drop { min-height: 250px; max-width: 520px; }
+.hero-drop[aria-disabled="true"] { cursor: default; }
+.hero-busy { margin: 0; }
+.hero-busy b { color: var(--text); font-weight: 600; }
 
 /* ---------- 手机框演示 ---------- */
 .hero-demo { display: flex; justify-content: center; }
