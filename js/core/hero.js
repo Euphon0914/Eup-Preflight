@@ -8,6 +8,7 @@ import { state, subscribe, notify } from './store.js';
 import { $ } from './ui.js';
 import { loadTestVideo } from './media.js';
 import { animate, stagger, drawStroke, hasMotion, reducedMotion, SPRING } from './motion.js';
+import * as heroCanvas from '../lib/hero-canvas.js';
 
 let shown = false;   // 首屏当前是否显示
 let shows = 0;       // 本次页面加载以来首屏出现了几次（验证“自动载入不闪”用）
@@ -68,6 +69,7 @@ export function showHero() {
   $('#heroContinue').hidden = !o;
   if (o) $('#heroContinueName').textContent = o.file.name;
   startDemo();
+  heroCanvas.start($('#heroCanvas'));
 }
 
 export function hideHero() {
@@ -76,6 +78,7 @@ export function hideHero() {
   $('#hero').hidden = true;
   document.body.classList.remove('on-hero');
   stopDemo();
+  heroCanvas.stop();
 }
 
 /** 按当前状态决定显示首屏还是工作台 */
