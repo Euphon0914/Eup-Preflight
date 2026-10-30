@@ -10,7 +10,7 @@ import { cleanOPFSDir } from '../../lib/webcodecs.js';
 import { renderReport } from './report.js';
 import { applySuggestedFixes, updateFixButton, resetOutputs, renderFixTab, fixAvailability, FIX_DEFS } from './fixes.js';
 import { bindFixDialog, openFixDialog, renderFixedBars } from './fix-dialog.js';
-import { renderCompare, renderSizeCompare } from './compare.js';
+import { renderCompare, renderSizeCompare, bindFrameSlider } from './compare.js';
 import { renderHistory, renderRecent, cleanupStorage, onHistoryAction, onRecentAction, onAutoLoadChange } from './history-view.js';
 
 export const id = 'tech';
@@ -73,6 +73,7 @@ function bindEvents() {
 
   // 对比
   $('#onlyChanged').addEventListener('change', renderCompare);
+  bindFrameSlider();
   // 上行带宽：改了就重算上传时间，并记在本机（下次打开还在）
   $('#bwInput').addEventListener('input', () => {
     try { localStorage.setItem('uploadMbps', $('#bwInput').value); } catch (e) { /* 隐私模式等情况下忽略 */ }

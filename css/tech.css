@@ -97,6 +97,20 @@ details pre { white-space: pre-wrap; word-break: break-all; font-size: 11.5px; b
 .frame-imgs { display: flex; gap: 8px; align-items: flex-start; }
 .frame-imgs figure, .videos figure { margin: 0; flex: 1 1 0; min-width: 0; text-align: center; }
 .frame-imgs img { max-width: 100%; max-height: 300px; border-radius: 6px; background: #000; }
+/* 叠放对比：拖动品牌色分隔线，左边是处理前、右边是处理后 */
+.frame-cmp { position: relative; width: fit-content; max-width: 100%; margin: 0 auto; border-radius: 10px; overflow: hidden; background: #000;
+  cursor: ew-resize; touch-action: none; user-select: none; -webkit-user-select: none; }
+.frame-cmp img { display: block; max-width: 100%; max-height: 340px; pointer-events: none; }
+.frame-cmp .fc-before { position: absolute; inset: 0; width: 100%; height: 100%; clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+.fc-tag { position: absolute; top: 8px; font-size: 11px; color: #fff; background: rgba(0, 0, 0, .5); padding: 1px 8px; border-radius: 999px; pointer-events: none; }
+.fc-tag.l { left: 8px; }
+.fc-tag.r { right: 8px; }
+.frame-handle { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; margin-left: -1px; padding: 0; border: 0; background: var(--brand);
+  box-shadow: 0 0 10px var(--brand-glow); cursor: ew-resize; }
+.frame-handle::after { content: "\2039\203A"; position: absolute; top: 50%; left: 50%; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 15px; font-weight: 700; letter-spacing: 1px; color: var(--on-brand); background: var(--brand);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .35); transition: transform var(--dur-fast) var(--ease); }
+.frame-cmp.dragging .frame-handle::after, .frame-handle:focus-visible::after { transform: scale(1.15); }
 figcaption { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
 .lbar { position: relative; height: 30px; background: var(--fill); border-radius: 6px; margin-top: 24px; }

@@ -2,7 +2,7 @@
 // compare.js —— 技术体检 › 对比：处理前后的总分、文件大小与上传时间、截帧、音量、播放、逐项对比
 // ============================================================
 import { state, currentPlatform, currentRules, metricsOf } from '../../core/store.js';
-import { $, esc, badge, fmtSec, fmtMB } from '../../core/ui.js';
+import { $, esc, badge, fmtSec, fmtMB, setHTML } from '../../core/ui.js';
 import { evaluate, summarize } from '../../lib/rules-engine.js';
 
 // ---------- 对比 ----------
@@ -36,14 +36,17 @@ export function renderCompare() {
 
   renderSizeCompare();
 
-  // 2) 画面对比
+  // 2) 画面对比：画面比例相同时叠在一起、拖动分隔线对比；比例不同（例如横屏转竖屏）时左右并排
+  //    内容不变时不重写，拖到一半的分隔线不会被别的状态更新弹回中间
   const times = state.frameTimes || [];
-  $('#frameCompare').innerHTML = !o.info.hasVideo ? '<p class="hint">没有视频轨。</p>' : !o.frames
+  const sameShape = Math.abs(o.info.width / o.info.height - f.info.width / f.info.height) < 0.01;
+  setHTML($('#frameCompare'), !o.info.hasVideo ? '<p class="hint">没有视频轨。</p>' : !o.frames
     ? '<p class="hint">截帧中…</p>'
     : times.map((t, i) => `<div class="frame-pair">
         <div class="frame-time">${t} 秒</div>
-        <div class="frame-imgs">${frameImg(o.frames[i], '处理前')}${frameImg(f.frames?.[i], '处理后')}</div>
-      </div>`).join('');
+        ${sameShape && o.frames[i] && f.frames?.[i] ? frameSlider(o.frames[i], f.frames[i], t)
+          : `<div class="frame-imgs">${frameImg(o.frames[i], '处理前')}${frameImg(f.frames?.[i], '处理后')}</div>`}
+      </div>`).join(''));
 
   // 3) 响度刻度尺
   $('#loudViz').innerHTML = renderLoudBar(o, f);
@@ -102,6 +105,47 @@ export function renderSizeCompare() {
       (viaSlim < direct ? `<span class="up">先处理再上传快 ${fmtSec(direct - viaSlim)}</span>` : `<span class="down">按这个带宽，直接上传原片更快</span>`);
   }
   $('#uploadEst').innerHTML = `<b>${fmtSec(t(a))}</b> → <b>${fmtSec(t(b))}</b>${verdict}`;
+}
+
+/** 叠放对比：底下是处理后，上面是处理前（只露出分隔线左边） */
+const frameSlider = (before, after, t) => `<div class="frame-cmp" style="--pos: 50%">
+    <img class="fc-after" src="${after}" alt="处理后 ${t} 秒">
+    <img class="fc-before" src="${before}" alt="处理前 ${t} 秒">
+    <span class="fc-tag l">处理前</span><span class="fc-tag r">处理后</span>
+    <button class="frame-handle" type="button" role="slider" aria-label="拖动对比处理前后" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"></button>
+  </div>`;
+
+function setSliderPos(cmp, pct) {
+  const p = Math.round(Math.min(100, Math.max(0, pct)));
+  cmp.style.setProperty('--pos', `${p}%`);
+  cmp.querySelector('.frame-handle').setAttribute('aria-valuenow', String(p));
+}
+
+/** 分隔线：鼠标 / 手指拖动，或聚焦后用左右方向键（每次 5%） */
+export function bindFrameSlider() {
+  const box = $('#frameCompare');
+  let drag = null;
+  const move = (e) => { const b = drag.getBoundingClientRect(); setSliderPos(drag, ((e.clientX - b.left) / b.width) * 100); };
+  box.addEventListener('pointerdown', (e) => {
+    const cmp = e.target.closest('.frame-cmp');
+    if (!cmp || e.button !== 0) return;
+    drag = cmp;
+    cmp.setPointerCapture(e.pointerId);
+    cmp.classList.add('dragging');
+    move(e);
+    e.preventDefault();
+  });
+  box.addEventListener('pointermove', (e) => { if (drag) move(e); });
+  const end = () => { drag?.classList.remove('dragging'); drag = null; };
+  box.addEventListener('pointerup', end);
+  box.addEventListener('pointercancel', end);
+  box.addEventListener('keydown', (e) => {
+    const h = e.target.closest('.frame-handle');
+    if (!h || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+    e.preventDefault();
+    const cmp = h.closest('.frame-cmp');
+    setSliderPos(cmp, parseFloat(cmp.style.getPropertyValue('--pos')) + (e.key === 'ArrowRight' ? 5 : -5));
+  });
 }
 
 const frameImg = (url, cap) => `<figure><img src="${url || ''}" alt="${cap}" ${url ? '' : 'hidden'}>${url ? '' : '<div class="hint">截帧失败</div>'}<figcaption>${cap}</figcaption></figure>`;
