@@ -68,7 +68,7 @@ function bindEvents() {
     const b = e.target.closest('#openFix, [data-open-fix]');
     if (!b) return;
     e.preventDefault(); // 「可修复」在 <summary> 里，不要顺带展开 / 收起
-    openFixDialog(b.dataset.openFix);
+    openFixDialog(b.dataset.openFix, b);
   });
 
   // 对比

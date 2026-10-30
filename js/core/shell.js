@@ -3,10 +3,10 @@
 // 左栏所有模块共用：视频只拖入一次。
 // ============================================================
 import { state, subscribe, notify, goto, autoChecksEnabled, setAutoChecks } from './store.js';
-import { $, esc, fmtClock, fmtRate, showError, renderTimings } from './ui.js';
+import { $, esc, fmtClock, fmtRate, showError, renderTimings, setHTML } from './ui.js';
 import { loadVideo, loadTestVideo } from './media.js';
 import { listRecent, openRecent } from '../lib/recent-videos.js';
-import { animate, SPRING } from './motion.js';
+import { animate, stagger, SPRING } from './motion.js';
 import { terminateFFmpeg } from '../lib/ffmpeg-tools.js';
 
 // ---------- 步骤导航（一级标签）+ 右侧大标题 ----------
@@ -72,6 +72,8 @@ const PARAM_ROWS = [
     (i, l) => (l && !l.audioSilent ? `峰值 ${l.truePeakDBTP} dBTP` : '')],
 ];
 
+let lastFixedUrl = null; // 上一次播放“参数变化”动画时的处理结果（同一个结果只播一次）
+
 function renderLeft() {
   const o = state.original, f = state.fixed;
   const has = !!o?.info;
@@ -103,7 +105,7 @@ function renderLeft() {
   const i = o.info; // 收起时的一行摘要
   $('#paramBrief').textContent = [i.width ? `${i.width}×${i.height}` : '', i.frameRate != null ? `${i.frameRate} 帧` : '',
     fmtClock(i.durationSec), `${i.fileSizeMB} MB`].filter(Boolean).join(' · ');
-  $('#paramList').innerHTML = PARAM_ROWS.map(([k, main, sub]) => {
+  setHTML($('#paramList'), PARAM_ROWS.map(([k, main, sub]) => {
     const a = main(o.info, o.loud, o);
     let as = sub(o.info, o.loud, o);
     let val = esc(a);
@@ -113,7 +115,15 @@ function renderLeft() {
       if (bs !== as) as = as && bs ? `${as} → ${bs}` : bs || as; // 小字说明也显示变化
     }
     return `<div class="pcell"><dt>${k}</dt><dd>${val}${as ? `<span class="sub">${esc(as)}</span>` : ''}</dd></div>`;
-  }).join('');
+  }).join(''));
+  // 修复完成后第一次显示新参数：旧值划掉、新值依次出现
+  if (f?.info && f.url !== lastFixedUrl) {
+    lastFixedUrl = f.url;
+    $('#paramList').classList.remove('strike-in');
+    void $('#paramList').offsetWidth;
+    $('#paramList').classList.add('strike-in');
+    stagger($('#paramList').querySelectorAll('.new'), { gap: 0.08, y: 4 });
+  }
 }
 
 // ---------- 事件 ----------

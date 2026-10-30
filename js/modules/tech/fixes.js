@@ -2,7 +2,7 @@
 // fixes.js —— 技术体检 › 一键修复（弹窗见 fix-dialog.js）：修复项定义、建议勾选、处理流程（快速通道 / 退回 ffmpeg）、处理结果
 // ============================================================
 import { state, notify, currentPlatform, currentRules, metricsOf } from '../../core/store.js';
-import { $, esc, showTask, hideTask, showError, clearError, setBusy, timed, currentMode } from '../../core/ui.js';
+import { $, esc, showTask, hideTask, showError, clearError, setBusy, timed, currentMode, beginStages, stage, failStage } from '../../core/ui.js';
 import { ensureFFmpeg, analyzeSlot, revokeSlot } from '../../core/media.js';
 import { probeFile } from '../../lib/probe.js';
 import { runFix, terminateFFmpeg, extractFrames, outputFps, LOUD_TARGET, LOUD_TP, MAX_GAIN_DB } from '../../lib/ffmpeg-tools.js';
@@ -186,6 +186,7 @@ export async function doProcess(kind) {
   }
   clearError();
   setBusy(true);
+  beginStages(); // 弹窗里的阶段清单：检查处理方式 → 处理声音 → 编码视频 → 合并音视频 → 复检 → 截取对比画面
   resetOutputs();
   notify('update');
   const preset = $('#presetSel').value;
@@ -213,6 +214,7 @@ export async function doProcess(kind) {
     }
     if (!res) {
       await ensureFFmpeg();
+      stage('处理中（ffmpeg.wasm）');
       showTask(`${label}：处理中（ffmpeg.wasm）…`, 0);
       res = await timed(`转码（${label}）`, o.file.name, o.info.durationSec,
         () => runFix(o.file, o.info, o.loud, fixes, { preset, crf, targets }, (p) => showTask(`${label}：处理中（ffmpeg.wasm）…`, p)),
@@ -224,6 +226,7 @@ export async function doProcess(kind) {
     state.fixed = { file: res.file, plan: res.plan, args: res.args, kind, fixes, processMs: performance.now() - t0, out: res.out || null,
       url: URL.createObjectURL(res.file), createdAt: Date.now() };
     // 处理后自动复检
+    stage('复检');
     await analyzeSlot(state.fixed, '处理后');
     // 截取同一时间点的画面，用于直观对比
     await captureFrames();
@@ -233,6 +236,7 @@ export async function doProcess(kind) {
     return true;
   } catch (e) {
     console.error(e);
+    failStage(); // 阶段清单里出错的那一步标红叉，留在弹窗里
     terminateFFmpeg(); // 出错后 worker 状态可能不干净，下次重新加载
     showError(state.canceled ? `${label}已取消。` : `${label}失败：` + (e.message || e));
     return false;
@@ -266,6 +270,7 @@ const needsAudioWork = (info, fixes) => !!(fixes.loudnorm || fixes.resample || f
 async function chooseRoute(o, fixes) {
   if (!o.info.hasVideo) return { fast: false, encode: false };
   const encode = needsVideoEncode(o.info, fixes);
+  stage('检查处理方式');
   showTask('检查处理方式…');
   if (encode) {
     const wc = await checkWebCodecs(o.file);
@@ -309,6 +314,7 @@ async function fastPipeline(o, fixes, t, label, enc, route) {
     if (audioWork) {
       await ensureFFmpeg();
       const l1 = stepLabel('音频处理（ffmpeg）');
+      stage('处理声音');
       showTask(l1, 0);
       const r1 = await timed('音频处理（ffmpeg）', o.file.name, dur,
         () => runFix(o.file, o.info, o.loud, fixes, { ...enc, targets: t, audioOnly: true }, (p) => showTask(l1, p)),
@@ -323,6 +329,7 @@ async function fastPipeline(o, fixes, t, label, enc, route) {
     if (route.encode) {
       const p = { ...videoParams(o.info, fixes, t, dur), trimEnd, noAudio: !!audioFile };
       const l2 = stepLabel(fixes.vertical ? '横屏转竖屏（WebCodecs）' : '视频转码（WebCodecs）');
+      stage('编码视频');
       showTask(l2, 0);
       let i = 0;
       const encode = (pp, step) => timed(step, o.file.name, dur,
@@ -366,6 +373,7 @@ async function fastPipeline(o, fixes, t, label, enc, route) {
 
     // ③ 合并（视频、音频都直接复制）
     const l3 = stepLabel('合并音视频（不重新编码）');
+    stage('合并音视频');
     showTask(l3, 0);
     const audioSrc = audioFile || (o.info.hasAudio ? o.file : null);
     const r3 = await timed('合并音视频', o.file.name, dur,
@@ -439,6 +447,7 @@ async function captureFrames() {
     used.push('ffmpeg');
     return extractFrames(file, times);
   };
+  stage('截取对比画面');
   showTask('截取对比画面…');
   await timed('截取对比画面', `${o.file.name} / ${f.file.name}`, null, async () => {
     o.frames = await grab(o.file);

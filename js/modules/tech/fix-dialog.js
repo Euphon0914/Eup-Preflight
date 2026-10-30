@@ -5,7 +5,8 @@
 //   处理好的视频在「体检」和「对比」顶部常驻一条结果条，随时可以下载。
 // ============================================================
 import { state, goto, currentPlatform, currentRules, metricsOf } from '../../core/store.js';
-import { $, esc, fmtMB, stampName, clearError, verdictIcon } from '../../core/ui.js';
+import { $, esc, badge, fmtMB, stampName, clearError, verdictIcon } from '../../core/ui.js';
+import { animate, flyFrom, pulse, SPRING } from '../../core/motion.js';
 import { evaluate } from '../../lib/rules-engine.js';
 import { doProcess, selectedFixes, updateFixButton } from './fixes.js';
 
@@ -15,7 +16,7 @@ let view = 'pick';   // 弹窗当前状态
 
 const dlg = () => $('#fixDialog');
 
-/** 处理前后按当前平台规则比较：变好 / 变差各几项 */
+/** 处理前后按当前平台规则比较：变好 / 变差各几项；solved 是从“警告 / 不通过”变成“通过”的项 */
 function delta() {
   const o = state.original, f = state.fixed;
   if (!o?.info || !f?.info) return null;
@@ -24,6 +25,7 @@ function delta() {
   return {
     improved: before.filter((b, i) => RANK[after[i].status] > RANK[b.status]).length,
     regressed: before.filter((b, i) => RANK[after[i].status] < RANK[b.status]).length,
+    solved: before.filter((b, i) => (b.status === 'warn' || b.status === 'fail') && after[i].status === 'pass'),
   };
 }
 const deltaText = (d) => d ? `${d.improved} 项变好${d.regressed ? `，${d.regressed} 项变差` : '，没有变差的项'}` : '';
@@ -54,6 +56,7 @@ function renderDone() {
         <div class="hint">按${esc(currentPlatform().name)}规则：${deltaText(d)} · ${fmtMB(o.file.size)} → ${fmtMB(f.file.size)}</div>
       </div>
     </div>
+    ${d?.solved.length ? `<div class="done-flips">${d.solved.map((r) => `<span class="flip">${badge(r.status)}<span>${esc(r.rule.item)}</span></span>`).join('')}</div>` : ''}
     <a class="btn primary big" href="${f.url}" download="${esc(downloadName())}">
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       下载处理后的视频（MP4）</a>
@@ -67,6 +70,24 @@ function renderDone() {
       <ul>${f.plan.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
       ${f.args?.length ? `<pre class="tech-detail">ffmpeg ${esc(f.args.join(' '))}</pre>` : ''}
     </details>`;
+}
+
+/**
+ * 完成时的揭晓：解决了的问题标签逐个翻转成“通过”，然后下载按钮亮一下。
+ * 只在“处理中 → 完成”时播放一次（重新打开弹窗看完成页不重播）。
+ */
+function playDone() {
+  const flips = [...$('#fixDone').querySelectorAll('.flip .badge')];
+  flips.forEach((b, i) => {
+    setTimeout(() => {
+      animate(b, { rotateX: [0, 90] }, { duration: 0.14 }).then(() => {
+        b.outerHTML = badge('pass');
+        const nb = $('#fixDone').querySelectorAll('.flip')[i]?.querySelector('.badge');
+        animate(nb, { rotateX: [-90, 0] }, SPRING.snappy);
+      });
+    }, 250 + i * 120);
+  });
+  setTimeout(() => pulse($('#fixDone .btn.primary.big')), 300 + flips.length * 120 + 250);
 }
 
 /** 「体检」「对比」顶部的结果条：有处理好的视频就一直显示，随时下载 */
@@ -87,8 +108,9 @@ export function renderFixedBars() {
 /**
  * 打开弹窗
  * @param {string} [focusId] 从某条问题的「可修复」打开时，勾上并定位到对应的修复项
+ * @param {Element} [originEl] 被点的按钮：弹窗从它的位置展开
  */
-export function openFixDialog(focusId) {
+export function openFixDialog(focusId, originEl) {
   if (!state.original?.info) return;
   const d = dlg();
   // 进度条和错误框挪进弹窗，处理时看得到、能取消
@@ -96,7 +118,13 @@ export function openFixDialog(focusId) {
   // 正在处理时重新打开：继续显示进度；刚处理完：显示完成页（可下载）；其他情况回到选择修复项
   const keepDone = view === 'done' && state.fixed?.info && !focusId;
   if (view !== 'running' && !keepDone) { clearError(); setView('pick'); }
-  if (!d.open) d.showModal();
+  if (!d.open) {
+    d.showModal();
+    const box = d.querySelector('.dlg-box');
+    const r = originEl?.isConnected ? originEl.getBoundingClientRect() : null;
+    if (r?.width) { flyFrom(r, box); animate(box, { opacity: [0, 1] }, { duration: 0.2 }); }
+    else animate(box, { opacity: [0, 1], y: [12, 0] }, SPRING.soft);
+  }
   if (focusId && view === 'pick') {
     const box = document.querySelector(`#fixList input[data-fix="${focusId}"]`);
     if (box && !box.disabled) {
@@ -120,6 +148,7 @@ function closeFixDialog() {
 /** 关闭后把进度条 / 错误框放回面板原位置 */
 function restoreTask() {
   if (!taskHome) return;
+  if ($('#task').classList.contains('failed')) clearError(); // 失败的阶段清单只在弹窗里看，放回面板前收起
   taskHome.parent.insertBefore($('#task'), taskHome.ref);
   taskHome.parent.insertBefore($('#errorBox'), taskHome.ref);
 }
@@ -131,6 +160,7 @@ async function run(kind) {
   if (ok) {
     renderDone();
     setView('done');
+    playDone();
   } else {
     setView('pick'); // 失败或取消：错误信息显示在弹窗顶部，可以改选后重试
   }

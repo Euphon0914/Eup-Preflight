@@ -58,14 +58,18 @@ export function stampName(name, ts) {
 // ---------- 进度条 / 错误提示（右侧顶部，所有标签页共用） ----------
 export function showTask(label, pct = null) {
   $('#task').hidden = false;
+  $('#task').classList.remove('failed');
   $('#taskLabel').textContent = label;
   $('#taskPct').textContent = pct === null ? '' : `${Math.round(pct * 100)}%`;
   $('#taskBar').style.width = pct === null ? '100%' : `${pct * 100}%`;
   $('#taskBar').style.opacity = pct === null ? '.35' : '1';
 }
 export function hideTask() {
-  $('#task').hidden = true;
-  $('#taskStages').innerHTML = '';
+  // 有步骤出错时保留阶段清单（只收起进度条），让人看到是哪一步失败；下次开始任务或清除错误时再收起
+  const failed = !!$('#taskStages li.err');
+  $('#task').classList.toggle('failed', failed);
+  $('#task').hidden = !failed;
+  if (!failed) $('#taskStages').innerHTML = '';
   stagesOn = false;
 }
 
@@ -77,6 +81,7 @@ const STAGE_ICON = '<span class="st-ico"><svg viewBox="0 0 16 16" aria-hidden="t
 
 export function beginStages() {
   stagesOn = true;
+  $('#task').classList.remove('failed');
   $('#taskStages').innerHTML = '';
 }
 
@@ -104,7 +109,10 @@ export function failStage() {
   stagesOn = false;
 }
 export function showError(msg) { $('#errorBox').hidden = false; $('#errorBox').textContent = msg; }
-export const clearError = () => { $('#errorBox').hidden = true; };
+export function clearError() {
+  $('#errorBox').hidden = true;
+  if ($('#task').classList.contains('failed')) { $('#task').classList.remove('failed'); $('#task').hidden = true; $('#taskStages').innerHTML = ''; }
+}
 
 /** 忙 / 闲切换：各模块在渲染时根据 state.busy 禁用自己的按钮 */
 export function setBusy(b) {
