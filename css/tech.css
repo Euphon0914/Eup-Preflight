@@ -141,7 +141,8 @@ figcaption { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .panel-head p { margin: 0; flex: 1; }
 .hist-list { display: flex; flex-direction: column; gap: 8px; }
 .hist-item { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; }
-.hist-item.current { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+/* 当前这一项：和左栏选中的步骤一样，浮起的玻璃底 + 柔和阴影，不加粗边框 */
+.hist-item.current { border-color: transparent; background: var(--glass-strong); box-shadow: 0 4px 14px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .55); }
 .hist-head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 13px; }
 .hist-head b { font-variant-numeric: tabular-nums; }
 .hist-item .actions { display: flex; gap: 6px; margin-top: 4px; }
