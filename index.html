@@ -194,18 +194,61 @@
         </div>
       </section>
 
-      <section class="hm-sec" aria-labelledby="hmFeatTitle">
+      <!-- 功能介绍：左边大字目录固定不动，右边四块随滚动经过；滚到哪一块，目录就点亮哪一项（js/core/hero-more.js） -->
+      <section class="hm-sec hm-feat" aria-labelledby="hmFeatTitle">
         <header class="hm-head"><span class="mono-tag">FEATURES</span><h2 id="hmFeatTitle">发布之前，四步检查完</h2>
           <p>规则按平台分开：顶栏切换抖音 / TikTok，所有检查跟着换。每条规则都标了来源和核实日期。</p></header>
-        <div class="hm-grid">
-          <article class="hm-card glass"><span class="mono-tag">01 / 技术体检</span><h3>规格不对，一键修好</h3>
-            <p>读取格式、分辨率、帧率、码率、色彩和声音，按平台规则逐项判定，说清原因和改法。不合格的项可以一键修复成 MP4 直接下载，也能把横屏转成竖屏。</p></article>
-          <article class="hm-card glass"><span class="mono-tag">02 / 画面遮挡</span><h3>字幕会不会被挡住</h3>
-            <p>把视频放进平台播放页的布局里，抽帧识别字幕和画面文字，标出会被按钮、文案挡住或被裁掉的时间段，并建议往哪个方向移、移多少。</p></article>
-          <article class="hm-card glass"><span class="mono-tag">03 / 封面适配</span><h3>一张封面，适配所有比例</h3>
-            <p>从视频选一帧或上传封面图，按平台用到的各个封面比例同时裁切预览，检查主体和标题有没有被裁掉、被角标挡住、够不够清晰，一次导出全部尺寸。</p></article>
-          <article class="hm-card glass"><span class="mono-tag">04 / 总报告</span><h3>发之前看这一页就够</h3>
-            <p>三步的结果按“不通过 / 警告 / 提示”排好，每条附原因、修改建议和“去修复”按钮，处理过的版本还会和原片对比。</p></article>
+        <div class="feat-scroll">
+          <nav class="feat-nav" aria-label="功能目录">
+            <button type="button" class="on"><span class="mono-tag">01</span>技术体检</button>
+            <button type="button"><span class="mono-tag">02</span>画面遮挡</button>
+            <button type="button"><span class="mono-tag">03</span>封面适配</button>
+            <button type="button"><span class="mono-tag">04</span>总报告</button>
+          </nav>
+          <div class="feat-panels">
+            <article class="feat-panel on">
+              <div class="feat-vis fv-tech" aria-hidden="true">
+                <div class="fv-row"><span class="mono-tag">FORMAT</span><b class="num">Matroska</b><i>→</i><b class="num ok">MP4</b></div>
+                <div class="fv-row"><span class="mono-tag">FPS</span><b class="num">29.97 VFR</b><i>→</i><b class="num ok">30 CFR</b></div>
+                <div class="fv-row"><span class="mono-tag">LOUDNESS</span><b class="num">−9.8 LUFS</b><i>→</i><b class="num ok">−14 LUFS</b></div>
+                <div class="fv-row"><span class="mono-tag">CHANNELS</span><b class="num">5.1</b><i>→</i><b class="num ok">2.0</b></div>
+              </div>
+              <span class="mono-tag">01 / 技术体检</span><h3>规格不对，一键修好</h3>
+              <p>读取格式、分辨率、帧率、码率、色彩和声音，按平台规则逐项判定，说清原因和改法。不合格的项可以一键修复成 MP4 直接下载，也能把横屏转成竖屏。</p>
+            </article>
+            <article class="feat-panel">
+              <div class="feat-vis fv-occ" aria-hidden="true">
+                <div class="fv-phone">
+                  <div class="fz fz-side"></div><div class="fz fz-cap"></div><div class="fz fz-nav"></div>
+                  <div class="fv-sub"></div>
+                </div>
+                <div class="fv-tip"><span class="mono-tag">00:12</span><b>字幕被「底部标题和文案区」遮挡</b><small>建议：上移约 8% 画面高度</small></div>
+              </div>
+              <span class="mono-tag">02 / 画面遮挡</span><h3>字幕会不会被挡住</h3>
+              <p>把视频放进平台播放页的布局里，抽帧识别字幕和画面文字，标出会被按钮、文案挡住或被裁掉的时间段，并建议往哪个方向移、移多少。</p>
+            </article>
+            <article class="feat-panel">
+              <div class="feat-vis fv-cover" aria-hidden="true">
+                <div class="fv-img"><div class="fv-subject"></div>
+                  <div class="fc fc-916"><span class="mono-tag">9:16</span></div>
+                  <div class="fc fc-34"><span class="mono-tag">3:4</span></div>
+                  <div class="fc fc-43"><span class="mono-tag">4:3</span></div>
+                </div>
+              </div>
+              <span class="mono-tag">03 / 封面适配</span><h3>一张封面，适配所有比例</h3>
+              <p>从视频选一帧或上传封面图，按平台用到的各个封面比例同时裁切预览，检查主体和标题有没有被裁掉、被角标挡住、够不够清晰，一次导出全部尺寸。</p>
+            </article>
+            <article class="feat-panel">
+              <div class="feat-vis fv-report" aria-hidden="true">
+                <div class="fv-item"><span class="badge fail">不通过</span><b>文件大小</b><span class="mono-tag">TECH</span></div>
+                <div class="fv-item"><span class="badge warn">警告</span><b>固定帧率（CFR）</b><span class="mono-tag">TECH</span></div>
+                <div class="fv-item"><span class="badge warn">警告</span><b>字幕</b><span class="mono-tag">OCCLUSION</span></div>
+                <div class="fv-item"><span class="badge pass">✓ 通过</span><b>清晰度</b><span class="mono-tag">COVER</span></div>
+              </div>
+              <span class="mono-tag">04 / 总报告</span><h3>发之前看这一页就够</h3>
+              <p>三步的结果按“不通过 / 警告 / 提示”排好，每条附原因、修改建议和“去修复”按钮，处理过的版本还会和原片对比。</p>
+            </article>
+          </div>
         </div>
       </section>
 
@@ -223,18 +266,29 @@
         </div>
       </section>
 
-      <section class="hm-sec" aria-labelledby="hmPrivTitle">
+      <!-- 数据与隐私：三行大字随滚动逐行点亮，下面是三个 0 和细线网格里的四条细节（js/core/hero-more.js） -->
+      <section class="hm-sec hm-priv" aria-labelledby="hmPrivTitle">
         <header class="hm-head"><span class="mono-tag">PRIVACY</span><h2 id="hmPrivTitle">视频不离开你的电脑</h2>
           <p>这个网页没有服务器、不需要登录，所有处理都在你的浏览器里完成。</p></header>
-        <div class="hm-grid">
-          <article class="hm-card glass"><span class="mono-tag">LOCAL</span><h3>本机处理，不上传</h3>
-            <p>读取参数、识别文字、转码修复都在浏览器里完成，视频和图片不会发送到任何服务器。</p></article>
-          <article class="hm-card glass"><span class="mono-tag">OFFLINE</span><h3>不联网，没有统计</h3>
-            <p>ffmpeg、文字识别模型等组件都随网页放在本地，打开后不会请求外部网站；没有统计、广告或追踪代码。</p></article>
-          <article class="hm-card glass"><span class="mono-tag">STORAGE</span><h3>存在哪里</h3>
-            <p>最近导入的 5 个视频（合计不超过 3 GB）和处理结果存在这个浏览器的本地存储里，下次打开不用重新选文件；深浅色、语言等设置也只记在本机。</p></article>
-          <article class="hm-card glass"><span class="mono-tag">DELETE</span><h3>随时可以删掉</h3>
-            <p>在「技术体检 › 历史」里逐条删除，或关掉“自动载入”；清除浏览器的网站数据会全部删除。删除只影响浏览器里的副本，不影响电脑上的原文件。</p></article>
+        <div class="priv-lines">
+          <p>不上传。</p>
+          <p>不联网。</p>
+          <p>不追踪。</p>
+        </div>
+        <div class="priv-stats">
+          <div><b class="num">0<small>B</small></b><span>上传到服务器的数据</span></div>
+          <div><b class="num">0</b><span>外部网络请求</span></div>
+          <div><b class="num">0</b><span>统计、广告和追踪代码</span></div>
+        </div>
+        <div class="hl-grid">
+          <article class="hl-cell"><header><span class="mono-tag">[01]</span><span class="mono-tag">LOCAL</span></header>
+            <h3>本机处理，不上传</h3><p>读取参数、识别文字、转码修复都在浏览器里完成，视频和图片不会发送到任何服务器。</p></article>
+          <article class="hl-cell"><header><span class="mono-tag">[02]</span><span class="mono-tag">OFFLINE</span></header>
+            <h3>不联网，没有统计</h3><p>ffmpeg、文字识别模型等组件都随网页放在本地，打开后不会请求外部网站；没有统计、广告或追踪代码。</p></article>
+          <article class="hl-cell"><header><span class="mono-tag">[03]</span><span class="mono-tag">STORAGE</span></header>
+            <h3>存在哪里</h3><p>最近导入的 5 个视频（合计不超过 3 GB）和处理结果存在这个浏览器的本地存储里，下次打开不用重新选文件；深浅色、语言等设置也只记在本机。</p></article>
+          <article class="hl-cell"><header><span class="mono-tag">[04]</span><span class="mono-tag">DELETE</span></header>
+            <h3>随时可以删掉</h3><p>在「技术体检 › 历史」里逐条删除，或关掉“自动载入”；清除浏览器的网站数据会全部删除。删除只影响浏览器里的副本，不影响电脑上的原文件。</p></article>
         </div>
       </section>
 

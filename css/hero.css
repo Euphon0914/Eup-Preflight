@@ -148,6 +148,98 @@
 a.hm-contact { transition: transform var(--dur-fast) var(--ease); }
 a.hm-contact:hover { transform: translateY(-2px); }
 
+/* ---------- 功能介绍：左边大字目录固定，右边四块随滚动经过（参考 Cerebrium / Heron） ---------- */
+.feat-scroll { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.4fr); gap: 56px; align-items: start; }
+.feat-nav { position: sticky; top: 130px; display: flex; flex-direction: column; gap: 4px; }
+.feat-nav button {
+  display: flex; align-items: baseline; gap: 14px; padding: 4px 0; border: 0; background: none; text-align: left; cursor: pointer;
+  font: 700 clamp(30px, 3.6vw, 46px)/1.15 "SF Pro Display", var(--font); letter-spacing: -.045em; color: var(--line-strong);
+  transition: color var(--dur-base) var(--ease);
+}
+.feat-nav button .mono-tag { font-size: 12px; color: inherit; }
+.feat-nav button:hover { color: var(--subtle); }
+.feat-nav button.on { color: var(--text); }
+.feat-nav button.on .mono-tag { color: var(--brand-ink); }
+.feat-panels { display: flex; flex-direction: column; }
+.feat-panel { min-height: 62vh; display: flex; flex-direction: column; justify-content: center; gap: 10px; opacity: .3; transition: opacity var(--dur-emph) var(--ease); }
+.feat-panel.on { opacity: 1; }
+.feat-panel h3 { font: 700 24px/1.25 "SF Pro Display", var(--font); letter-spacing: -.03em; }
+.feat-panel > p { margin: 0; max-width: 52ch; font-size: 14px; line-height: 1.7; color: var(--muted); }
+/* 示意图：细线框 + 淡网格底，像图纸 */
+.feat-vis {
+  position: relative; height: 270px; margin-bottom: 14px; border: 1px solid var(--line-strong); border-radius: 18px; overflow: hidden;
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 24px,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 24px 100%,
+    var(--surface);
+}
+.feat-vis .mono-tag { font-size: 10.5px; }
+/* 01 技术体检：参数读数，原值 → 修复后 */
+.fv-tech { display: flex; flex-direction: column; justify-content: center; padding: 10px 26px; }
+.fv-row { display: grid; grid-template-columns: 96px minmax(0, 1fr) 24px minmax(0, 1fr); align-items: center; padding: 13px 0; border-bottom: 1px dashed var(--line-strong); }
+.fv-row:last-child { border-bottom: 0; }
+.fv-row b { font-size: 15px; font-weight: 500; }
+.fv-row i { font-style: normal; color: var(--subtle); }
+.fv-row b.ok { justify-self: start; padding: 1px 9px; border-radius: 8px; background: var(--pass-bg); color: var(--pass); }
+/* 02 画面遮挡：线稿手机 + 被挡住的字幕 + 建议 */
+.fv-occ { display: flex; align-items: center; gap: 26px; padding: 0 26px; }
+.fv-phone { position: relative; flex: none; width: 118px; height: 230px; border: 1.5px solid var(--text); border-radius: 20px; }
+.fz { position: absolute; border: 1px dashed var(--subtle); border-radius: 6px; }
+.fz-side { right: 6px; bottom: 16%; width: 17px; height: 52%; }
+.fz-cap { left: 8px; right: 30px; bottom: 9%; height: 17%; }
+.fz-nav { left: 0; right: 0; bottom: 0; height: 7%; border-width: 1px 0 0; border-radius: 0; }
+.fv-sub {
+  position: absolute; left: 12%; right: 12%; bottom: 15%; height: 9%; border: 2px solid var(--text); border-radius: 5px;
+  background: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--text) 35%, transparent) 0 3px, transparent 3px 7px);
+}
+.feat-panel.on .fv-sub { animation: fv-blink 1.6s steps(1) infinite; }
+@keyframes fv-blink { 50% { border-color: transparent; } }
+.fv-tip { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border: 1px solid var(--line-strong); border-radius: 14px; background: var(--glass-strong); }
+.fv-tip b { font-size: 14px; }
+.fv-tip small { font-size: 12.5px; color: var(--muted); }
+/* 03 封面适配：一张图上叠三个比例的裁切框 */
+.fv-cover { display: grid; place-items: center; padding: 16px; }
+.fv-img { position: relative; width: 100%; height: 100%; border-radius: 10px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--text) 6%, transparent), color-mix(in srgb, var(--text) 18%, transparent)); }
+.fv-subject { position: absolute; left: 50%; top: 46%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--text) 30%, transparent), color-mix(in srgb, var(--text) 12%, transparent)); }
+.fc { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border: 1.5px solid var(--text); border-radius: 6px; }
+.fc span { position: absolute; left: 6px; top: 4px; color: var(--text); }
+.fc-916 { height: 92%; aspect-ratio: 9 / 16; }
+.fc-34 { height: 92%; aspect-ratio: 3 / 4; border-style: dashed; border-color: var(--muted); }
+.fc-34 span { top: auto; bottom: 4px; color: var(--muted); }
+.fc-43 { height: 66%; aspect-ratio: 4 / 3; border-color: var(--subtle); }
+.fc-43 span { left: auto; right: 6px; color: var(--subtle); }
+/* 04 总报告：按轻重排好的条目 */
+.fv-report { display: flex; flex-direction: column; justify-content: center; padding: 10px 26px; }
+.fv-item { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px dashed var(--line-strong); }
+.fv-item:last-child { border-bottom: 0; }
+.fv-item b { flex: 1; font-size: 14.5px; font-weight: 500; }
+
+/* ---------- 数据与隐私：三行大字随滚动逐行点亮 + 三个 0 + 细线网格（参考 Prime Security / Heron） ---------- */
+.priv-lines { margin: 28px 0 44px; }
+.priv-lines p {
+  margin: 0; font: 800 clamp(52px, 9vw, 124px)/1.02 "SF Pro Display", var(--font); letter-spacing: -.055em;
+  color: var(--line-strong); transition: color .6s var(--ease);
+}
+.priv-lines p.lit { color: var(--text); }
+.priv-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line-strong); margin-bottom: 40px; }
+.priv-stats > div { display: flex; align-items: flex-start; gap: 14px; padding: 18px 18px 6px 0; }
+.priv-stats b { font-size: clamp(64px, 7.5vw, 104px); line-height: .9; font-weight: 400; letter-spacing: -.06em; }
+.priv-stats b small { margin-left: 4px; font-size: .38em; letter-spacing: 0; }
+.priv-stats span { max-width: 11em; padding-top: 8px; font-size: 13px; line-height: 1.45; color: var(--muted); }
+.hl-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line-strong); border-left: 1px solid var(--line-strong); }
+.hl-cell { display: flex; flex-direction: column; gap: 8px; padding-bottom: 22px; border-right: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--bg) 78%, transparent); } /* 够不透明，背景柔光透过来也不影响读字 */
+.hl-cell header { display: flex; justify-content: space-between; padding: 10px 14px; margin-bottom: 10px; border-bottom: 1px dashed var(--line-strong); }
+.hl-cell h3, .hl-cell p { padding: 0 16px; }
+.hl-cell h3 { font-size: 15px; }
+.hl-cell p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) {
+  .feat-panel, .feat-nav button, .priv-lines p { transition: none; }
+  .feat-panel.on .fv-sub { animation: none; }
+}
+
 /* ---------- 窄屏：上下堆叠 ---------- */
 @media (max-width: 900px) {
   .hero { width: calc(100% - 24px); padding-top: 18px; }
@@ -159,7 +251,10 @@ a.hm-contact:hover { transform: translateY(-2px); }
   .hero-readout li[data-stage]:not([data-stage="3"])::after { height: calc(100% + 12px - 18px); }
   .hero-readout .rd-count b { font-size: 26px; }
   .hw-nav { border-radius: 0 0 24px 24px; }
-  .hm-grid, .hm-grid.cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hm-grid, .hm-grid.cols-3, .hl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .feat-scroll { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .feat-nav { display: none; } /* 窄屏：不要固定目录，四块依次排下来 */
+  .feat-panel { min-height: 0; opacity: 1; padding: 20px 0; }
   .hero-more { margin-top: 48px; gap: 40px; }
   .hp-screen { border-radius: 24px; }
   .hp-check { width: 52px; height: 52px; margin: -26px 0 0 -26px; }
@@ -170,5 +265,11 @@ a.hm-contact:hover { transform: translateY(-2px); }
   .hero-readout .mono-tag { font-size: 11px; }
   .hero-caps { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .cap-stat b { font-size: 36px; }
-  .hm-grid, .hm-grid.cols-3 { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .hm-grid, .hm-grid.cols-3, .hl-grid, .priv-stats { grid-template-columns: minmax(0, 1fr); }
+  .hm-grid, .hm-grid.cols-3 { gap: 8px; }
+  .feat-vis { height: 230px; }
+  .fv-occ { gap: 14px; padding: 0 14px; }
+  .fv-phone { width: 96px; height: 196px; }
+  .fv-tech, .fv-report { padding: 6px 16px; }
+  .fv-row { grid-template-columns: 76px minmax(0, 1fr) 18px minmax(0, 1fr); }
 }

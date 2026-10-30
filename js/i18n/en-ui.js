@@ -409,4 +409,13 @@ export default {
   "关于作者": "About the author",
   "Eup Preflight 是 Eup 的个人作品。发现规则不准、识别有误，或者有想加的功能，欢迎联系。": "Eup Preflight is a personal project by Eup. If a rule looks wrong, recognition misses something, or there's a feature you'd like, get in touch.",
   "即将开源": "Open source soon",
+  "功能目录": "Features",
+  "字幕被「底部标题和文案区」遮挡": "Subtitle covered by “Bottom title and caption area”",
+  "建议：上移约 8% 画面高度": "Suggestion: move up about 8% of the frame height",
+  "不上传。": "No uploads.",
+  "不联网。": "No network.",
+  "不追踪。": "No tracking.",
+  "上传到服务器的数据": "data uploaded to a server",
+  "外部网络请求": "requests to outside sites",
+  "统计、广告和追踪代码": "lines of analytics, ad, or tracking code",
 };

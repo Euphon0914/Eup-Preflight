@@ -12,6 +12,7 @@ import { tr, getLang } from './i18n.js';
 import { loadTestVideo } from './media.js';
 import { animate, countUp, drawStroke, flyFrom, hasMotion, reducedMotion, SPRING, DUR } from './motion.js';
 import * as heroCanvas from '../lib/hero-canvas.js';
+import { mountHeroMore } from './hero-more.js';
 import { FIX_DEFS } from '../modules/tech/fixes.js';
 
 let shown = false;   // 首屏当前是否显示
@@ -203,6 +204,7 @@ export function syncHero() {
 
 export function mountHero() {
   splitLede();
+  mountHeroMore();
   const input = $('#fileInput'), drop = $('#heroDrop');
   const toWorkspace = () => { state.view = 'workspace'; notify('update'); };
   drop.addEventListener('click', (e) => { if (!state.busy && !e.target.closest('#heroTest')) input.click(); });
