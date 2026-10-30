@@ -142,11 +142,6 @@
 .hm-card h3 { font-size: 15px; }
 .hm-card p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
 .hm-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-/* 联系方式：整张卡片可点（邮箱、电话） */
-.hm-contact { gap: 6px; color: var(--text); text-decoration: none; }
-.hm-contact b { font: 500 15px/1.4 var(--mono); letter-spacing: -.01em; overflow-wrap: anywhere; }
-a.hm-contact { transition: transform var(--dur-fast) var(--ease); }
-a.hm-contact:hover { transform: translateY(-2px); }
 
 /* ---------- 功能介绍：左边大字目录固定，右边四块随滚动经过（参考 Cerebrium / Heron） ---------- */
 .feat-scroll { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.4fr); gap: 56px; align-items: start; }

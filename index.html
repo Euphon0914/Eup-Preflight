@@ -180,7 +180,7 @@
       <div class="hero-cap glass"><span class="mono-tag">03 / 封面适配</span><div class="cap-stat"><b class="num" id="statRatios">3</b><small>种封面比例<br>同时裁切预览</small></div></div>
     </div>
 
-    <!-- 首屏下方（往下滚动查看）：怎么用、功能说明、使用前须知、数据与隐私、关于作者 -->
+    <!-- 首屏下方（往下滚动查看）：怎么用、功能说明、使用前须知、数据与隐私（作者联系方式在页脚） -->
     <div class="hero-more">
       <section class="hm-sec" aria-labelledby="hmHowTitle">
         <header class="hm-head"><span class="mono-tag">HOW IT WORKS</span><h2 id="hmHowTitle">三步用起来</h2></header>
@@ -292,16 +292,6 @@
         </div>
       </section>
 
-      <section class="hm-sec" aria-labelledby="hmAboutTitle">
-        <header class="hm-head"><span class="mono-tag">ABOUT</span><h2 id="hmAboutTitle">关于作者</h2>
-          <p>Eup Preflight 是 Eup 的个人作品。发现规则不准、识别有误，或者有想加的功能，欢迎联系。</p></header>
-        <div class="hm-grid cols-3">
-          <a class="hm-card hm-contact glass" href="mailto:41621722@qq.com"><span class="mono-tag">EMAIL</span><b translate="no">41621722@qq.com</b></a>
-          <a class="hm-card hm-contact glass" href="tel:+8618972423878"><span class="mono-tag">PHONE</span><b translate="no">189 7242 3878</b></a>
-          <!-- 上传到 GitHub 后：把这一项换成 <a class="hm-card hm-contact glass" href="仓库地址" target="_blank" rel="noopener">…</a>，<b> 里写仓库地址 -->
-          <div class="hm-card hm-contact glass"><span class="mono-tag">GITHUB</span><b>即将开源</b></div>
-        </div>
-      </section>
     </div>
   </section>
 
@@ -644,8 +634,16 @@
   </dialog>
 
   <footer class="sign" data-version="1.0">
-    <span class="sign-mark" aria-hidden="true"></span>
-    <span><b>Eup</b> Preflight v1.0</span><span class="sign-dot">·</span><span>made by Eup</span><span class="sign-dot">·</span><a href="licenses.html" target="_blank" rel="noopener">开源组件与许可</a>
+    <div class="sign-line">
+      <span class="sign-mark" aria-hidden="true"></span>
+      <span><b>Eup</b> Preflight v1.0</span><span class="sign-dot">·</span><span>made by Eup</span><span class="sign-dot">·</span><a href="licenses.html" target="_blank" rel="noopener">开源组件与许可</a>
+    </div>
+    <!-- 作者联系方式，一行一项；上传到 GitHub 后把“即将开源”换成 <a href="仓库地址" target="_blank" rel="noopener">仓库地址</a> -->
+    <ul class="sign-contact">
+      <li><span class="mono-tag">EMAIL</span><a href="mailto:41621722@qq.com" translate="no">41621722@qq.com</a></li>
+      <li><span class="mono-tag">PHONE</span><a href="tel:+8618972423878" translate="no">189 7242 3878</a></li>
+      <li><span class="mono-tag">GITHUB</span><span>即将开源</span></li>
+    </ul>
   </footer>
 
   <script src="vendor/motion/motion.js"></script>

@@ -406,8 +406,6 @@ export default {
   "第一次分析要加载约 32 MB 的处理组件，第一次识别文字要加载识别模型。都从本机读取，不联网，之后就快了。": "The first analysis loads about 32 MB of processing components, and the first text recognition loads its model. Both are read from this computer, not the internet, and it's fast after that.",
   "规则从哪来": "Where the rules come from",
   "标“官方”的来自平台官方页面；标“经验值”的是平台没有公开、业内常用的数值；标“占位”的还没核实（TikTok 有部分规则是这样）。点开任意检查项可以看来源和核实日期。": "“Official” rules come from the platform's own pages; “Rule of thumb” marks values the platform doesn't publish but the industry commonly uses; “Placeholder” hasn't been verified yet (some TikTok rules are like this). Open any check item to see its source and verification date.",
-  "关于作者": "About the author",
-  "Eup Preflight 是 Eup 的个人作品。发现规则不准、识别有误，或者有想加的功能，欢迎联系。": "Eup Preflight is a personal project by Eup. If a rule looks wrong, recognition misses something, or there's a feature you'd like, get in touch.",
   "即将开源": "Open source soon",
   "功能目录": "Features",
   "字幕被「底部标题和文案区」遮挡": "Subtitle covered by “Bottom title and caption area”",
