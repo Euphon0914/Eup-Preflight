@@ -41,7 +41,8 @@ async function demoLoop(token) {
   const alertBox = phone.querySelector('.hp-alert'), check = phone.querySelector('.hp-check');
   const issues = $('#heroIssues');
   while (token === loopToken) {
-    // 01 线稿：只看得到虚线框
+    // 01 线稿：只看得到虚线框。先清掉上一轮留下的动画（结束后会停在最后一帧，盖住下面设的样式）
+    [scan, real, alertBox, check].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
     [scan, alertBox, check].forEach((el) => { el.style.opacity = '0'; });
     real.style.opacity = '1';
     real.style.clipPath = CLIP_HIDDEN;
@@ -143,6 +144,8 @@ export function showHero() {
   shown = true;
   shows++;
   $('#hero').hidden = false;
+  $('#homeNav').classList.add('on');
+  $('#homeNav').setAttribute('aria-current', 'page');
   document.body.classList.add('on-hero');
   const o = state.original;
   $('#heroContinue').hidden = !o;
@@ -157,6 +160,8 @@ export function hideHero() {
   if (!shown) return;
   shown = false;
   $('#hero').hidden = true;
+  $('#homeNav').classList.remove('on');
+  $('#homeNav').removeAttribute('aria-current');
   document.body.classList.remove('on-hero');
   stopDemo();
   heroCanvas.stop();
@@ -210,7 +215,9 @@ export function mountHero() {
     loadTestVideo();
   });
   $('#heroContinue').addEventListener('click', toWorkspace);
-  $('#homeBtn').addEventListener('click', () => { state.view = 'hero'; notify('update'); });
+  const toHero = () => { state.view = 'hero'; notify('update'); scrollTo({ top: 0 }); };
+  $('#homeBtn').addEventListener('click', toHero);
+  $('#homeNav').addEventListener('click', toHero);
   subscribe((reason) => {
     if (reason === 'before-new-file') { state.view = 'workspace'; flyNext = true; } // 载入了新视频：飞入工作台
     if (reason === 'lang') { splitLede(); if (shown) lightLede(); }

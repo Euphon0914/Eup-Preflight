@@ -233,6 +233,9 @@ body.on-hero .brand-sub { display: none; } /* 首屏有大标题，顶栏副标�
 .brand-name { font-weight: 700; font-size: 15px; letter-spacing: -.02em; }
 .brand-sub { font-size: 11.5px; color: var(--muted); }
 .top-actions { display: flex; align-items: center; gap: 6px; }
+/* 首页按钮：房子图标 + 文字；在首屏时高亮 */
+.home-nav { display: inline-flex; align-items: center; gap: 5px; }
+.home-nav svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
 /* 深浅色切换：只有图标的方形按钮；浅色时显示月亮，深色时显示太阳 */
 .icon-btn { width: 34px; padding: 0; display: inline-grid; place-items: center; }
 .icon-btn svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }

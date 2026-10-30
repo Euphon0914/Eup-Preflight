@@ -34,6 +34,10 @@
       </span>
     </button>
     <div class="top-actions">
+      <!-- 首页：导入视频后也能回到首屏（看功能说明、数据隐私等），在首屏点“继续检查”回到当前视频 -->
+      <button id="homeNav" class="btn ghost home-nav" type="button">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg>首页
+      </button>
       <!-- 平台按钮由 config/platforms.json 生成 -->
       <div class="seg" id="platformSeg" role="group" aria-label="目标平台"></div>
       <div class="menu-wrap">
@@ -174,6 +178,39 @@
       <div class="hero-cap glass"><span class="mono-tag">01 / 技术体检</span><div class="cap-stat"><b class="num" id="statFixes">13</b><small>项规格问题<br>可以一键修复</small></div></div>
       <div class="hero-cap glass"><span class="mono-tag">02 / 画面遮挡</span><div class="cap-stat"><b class="num" id="statPlatforms">2</b><small>个平台的播放页布局<br>检查字幕会不会被挡</small></div></div>
       <div class="hero-cap glass"><span class="mono-tag">03 / 封面适配</span><div class="cap-stat"><b class="num" id="statRatios">3</b><small>种封面比例<br>同时裁切预览</small></div></div>
+    </div>
+
+    <!-- 首屏下方：功能说明、数据与隐私（往下滚动查看） -->
+    <div class="hero-more">
+      <section class="hm-sec" aria-labelledby="hmFeatTitle">
+        <header class="hm-head"><span class="mono-tag">FEATURES</span><h2 id="hmFeatTitle">发布之前，四步检查完</h2>
+          <p>规则按平台分开：顶栏切换抖音 / TikTok，所有检查跟着换。每条规则都标了来源和核实日期。</p></header>
+        <div class="hm-grid">
+          <article class="hm-card glass"><span class="mono-tag">01 / 技术体检</span><h3>规格不对，一键修好</h3>
+            <p>读取格式、分辨率、帧率、码率、色彩和声音，按平台规则逐项判定，说清原因和改法。不合格的项可以一键修复成 MP4 直接下载，也能把横屏转成竖屏。</p></article>
+          <article class="hm-card glass"><span class="mono-tag">02 / 画面遮挡</span><h3>字幕会不会被挡住</h3>
+            <p>把视频放进平台播放页的布局里，抽帧识别字幕和画面文字，标出会被按钮、文案挡住或被裁掉的时间段，并建议往哪个方向移、移多少。</p></article>
+          <article class="hm-card glass"><span class="mono-tag">03 / 封面适配</span><h3>一张封面，适配所有比例</h3>
+            <p>从视频选一帧或上传封面图，按平台用到的各个封面比例同时裁切预览，检查主体和标题有没有被裁掉、被角标挡住、够不够清晰，一次导出全部尺寸。</p></article>
+          <article class="hm-card glass"><span class="mono-tag">04 / 总报告</span><h3>发之前看这一页就够</h3>
+            <p>三步的结果按“不通过 / 警告 / 提示”排好，每条附原因、修改建议和“去修复”按钮，处理过的版本还会和原片对比。</p></article>
+        </div>
+      </section>
+
+      <section class="hm-sec" aria-labelledby="hmPrivTitle">
+        <header class="hm-head"><span class="mono-tag">PRIVACY</span><h2 id="hmPrivTitle">视频不离开你的电脑</h2>
+          <p>这个网页没有服务器、不需要登录，所有处理都在你的浏览器里完成。</p></header>
+        <div class="hm-grid">
+          <article class="hm-card glass"><span class="mono-tag">LOCAL</span><h3>本机处理，不上传</h3>
+            <p>读取参数、识别文字、转码修复都在浏览器里完成，视频和图片不会发送到任何服务器。</p></article>
+          <article class="hm-card glass"><span class="mono-tag">OFFLINE</span><h3>不联网，没有统计</h3>
+            <p>ffmpeg、文字识别模型等组件都随网页放在本地，打开后不会请求外部网站；没有统计、广告或追踪代码。</p></article>
+          <article class="hm-card glass"><span class="mono-tag">STORAGE</span><h3>存在哪里</h3>
+            <p>最近导入的 5 个视频（合计不超过 3 GB）和处理结果存在这个浏览器的本地存储里，下次打开不用重新选文件；深浅色、语言等设置也只记在本机。</p></article>
+          <article class="hm-card glass"><span class="mono-tag">DELETE</span><h3>随时可以删掉</h3>
+            <p>在「技术体检 › 历史」里逐条删除，或关掉“自动载入”；清除浏览器的网站数据会全部删除。删除只影响浏览器里的副本，不影响电脑上的原文件。</p></article>
+        </div>
+      </section>
     </div>
   </section>
 

@@ -130,6 +130,17 @@
 .cap-stat b { font-size: clamp(40px, 4.4vw, 56px); line-height: .9; font-weight: 500; letter-spacing: -.05em; }
 .cap-stat small { font-size: 12.5px; line-height: 1.4; color: var(--muted); padding-bottom: 2px; }
 
+/* ---------- 首屏下方：功能说明、数据与隐私 ---------- */
+.hero-more { display: flex; flex-direction: column; gap: 56px; margin-top: 72px; }
+.hm-head { max-width: 640px; margin-bottom: 18px; }
+.hm-head h2 { margin: 6px 0 6px; font-family: "SF Pro Display", var(--font); font-size: clamp(24px, 2.6vw, 32px); line-height: 1.25; font-weight: 700; letter-spacing: -.03em; }
+.hm-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.hm-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.hm-card { display: flex; flex-direction: column; gap: 8px; padding: 16px 18px 18px; border-radius: 20px; }
+.hm-card > * { position: relative; z-index: 1; }
+.hm-card h3 { font-size: 15px; }
+.hm-card p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
+
 /* ---------- 窄屏：上下堆叠 ---------- */
 @media (max-width: 900px) {
   .hero { width: calc(100% - 24px); padding-top: 18px; }
@@ -141,6 +152,8 @@
   .hero-readout li[data-stage]:not([data-stage="3"])::after { height: calc(100% + 12px - 18px); }
   .hero-readout .rd-count b { font-size: 26px; }
   .hw-nav { border-radius: 0 0 24px 24px; }
+  .hm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero-more { margin-top: 48px; gap: 40px; }
   .hp-screen { border-radius: 24px; }
   .hp-check { width: 52px; height: 52px; margin: -26px 0 0 -26px; }
 }
@@ -150,4 +163,5 @@
   .hero-readout .mono-tag { font-size: 11px; }
   .hero-caps { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .cap-stat b { font-size: 36px; }
+  .hm-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 }
