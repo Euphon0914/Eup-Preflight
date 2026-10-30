@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Crect%20width%3D%2224%22%20height%3D%2224%22%20rx%3D%226.5%22%20fill%3D%22%23C8F03C%22%2F%3E%3C%2Fsvg%3E">
   <title>Eup Preflight</title>
+  <!-- 先按上次的选择设好深浅色和语言，免得先显示浅色 / 中文再跳过去（js/core/prefs.js）；英文模式下翻译完成前先不显示页面 -->
+  <script>
+    try {
+      if (localStorage.getItem('theme') === 'dark') document.documentElement.dataset.theme = 'dark';
+      if (localStorage.getItem('lang') === 'en') {
+        document.documentElement.lang = 'en';
+        document.documentElement.classList.add('i18n-pending');
+        setTimeout(function () { document.documentElement.classList.remove('i18n-pending'); }, 3000); // 脚本出错时兜底
+      }
+    } catch (e) { /* 隐私模式等情况下读不到，用默认的浅色、中文 */ }
+  </script>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/shell.css">
   <link rel="stylesheet" href="css/tech.css">
@@ -30,6 +41,16 @@
         <div id="recentMenu" class="menu glass" role="menu" hidden></div>
       </div>
       <button id="advBtn" class="btn ghost" aria-expanded="false" aria-controls="advPanel">高级</button>
+      <!-- 中英文切换：选项本身不翻译 -->
+      <div class="seg seg-sm" id="langSeg" role="group" aria-label="语言 / Language" translate="no">
+        <button type="button" data-lang="zh" class="on" lang="zh-CN">中文</button>
+        <button type="button" data-lang="en" lang="en">EN</button>
+      </div>
+      <!-- 深浅色切换：浅色时显示月亮（点了变深色），深色时显示太阳 -->
+      <button id="themeBtn" class="btn ghost icon-btn" type="button" aria-pressed="false" title="切换到深色模式" aria-label="切换到深色模式">
+        <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+        <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>
+      </button>
     </div>
   </header>
 
@@ -91,7 +112,7 @@
         <h1 class="hero-title">发片之前，<br>先 <mark>Preflight</mark> 一遍</h1>
         <!-- 痛点：进入首屏时逐字点亮（hero.js 把文字拆成单字，读屏软件读 .sr-only 里的整句） -->
         <p class="hero-lede" id="heroLede"><span class="sr-only">字幕被按钮挡住、封面标题被裁掉、声音被平台压低——发出去才发现，就晚了。</span></p>
-        <button class="btn hero-continue" id="heroContinue" type="button" hidden>继续检查 <b id="heroContinueName"></b> →</button>
+        <button class="btn hero-continue" id="heroContinue" type="button" hidden>继续检查 <b translate="no" id="heroContinueName"></b> →</button>
         <div id="heroDrop" class="drop hero-drop glass lit" tabindex="0">
           <div class="drop-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="28" height="28"><path d="M12 15V4m0 0-4 4m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -99,7 +120,7 @@
           <div class="drop-main">把视频拖到这里</div>
           <button class="btn primary" id="heroPick" type="button">选择视频</button>
           <button class="link" id="heroTest" type="button">没有素材？生成一段测试视频</button>
-          <p class="hint hero-busy" id="heroBusy" hidden>正在处理 <b id="heroBusyName"></b>，完成后才能换视频</p>
+          <p class="hint hero-busy" id="heroBusy" hidden>正在处理 <b translate="no" id="heroBusyName"></b>，完成后才能换视频</p>
         </div>
       </div>
       <!-- 手机框演示：扫描 → 界面区域浮现 → 字幕被挡住的位置闪烁 → 打勾，循环播放 -->
@@ -138,7 +159,7 @@
               <i style="width: 96%"></i><i style="width: 72%"></i>
               <div class="hp-music"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17V6l10-2v11"/><circle cx="6.5" cy="17" r="2.5"/><circle cx="16.5" cy="15" r="2.5"/></svg><i style="width: 58%"></i></div>
             </div>
-            <div class="hp-sub">这句字幕会被挡住吗？</div>
+            <div class="hp-sub">这句会被挡住吗？</div>
             <div class="hp-nav"><span class="on">首页</span><span>朋友</span><span class="hp-plus">+</span><span>消息</span><span>我</span></div>
             </div>
             <div class="hp-alert"></div>
@@ -207,7 +228,7 @@
           <button data-src="fixed">处理后</button>
         </div>
         <div class="file-head">
-          <div class="file-name" id="fileName"></div>
+          <div class="file-name" translate="no" id="fileName"></div>
           <button id="changeBtn" class="btn ghost sm">换一个</button>
         </div>
         <p class="hint file-note" id="fileNote" hidden>已自动载入上次的视频 · <button class="link" data-goto="tech:history">最近导入的视频</button></p>

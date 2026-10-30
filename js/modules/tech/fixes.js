@@ -10,6 +10,7 @@ import { hasWebCodecs, checkWebCodecs, transcodeWithWebCodecs, captureFramesWebC
   removeOPFSFile, VERTICAL_W, VERTICAL_H } from '../../lib/webcodecs.js';
 import { evaluate, suggestFixes, resolveCheck } from '../../lib/rules-engine.js';
 import { saveHistory } from './history-view.js';
+import { t } from '../../core/i18n.js';
 import { checkBrowser } from '../../core/compat.js';
 
 /** 清掉上一次的处理结果 */
@@ -181,7 +182,7 @@ export async function doProcess(kind) {
     fixes.vertical = true;
     fixes.upscale = false; // 竖屏输出固定 1080×1920，放大项没有意义
   } else if (!Object.values(fixes).some(Boolean)) {
-    alert('请至少勾选一项修复');
+    alert(t('请至少勾选一项修复'));
     return false;
   }
   clearError();

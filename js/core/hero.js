@@ -7,7 +7,8 @@
 //   左边的演示进度（#heroReadout）跟着高亮当前阶段。
 // ============================================================
 import { state, subscribe, notify, currentPlatform } from './store.js';
-import { $ } from './ui.js';
+import { $, esc } from './ui.js';
+import { tr, getLang } from './i18n.js';
 import { loadTestVideo } from './media.js';
 import { animate, countUp, drawStroke, flyFrom, hasMotion, reducedMotion, SPRING, DUR } from './motion.js';
 import * as heroCanvas from '../lib/hero-canvas.js';
@@ -92,15 +93,25 @@ function startDemo() {
 }
 const stopDemo = () => { loopToken++; };
 
-/** 痛点一句拆成单字（只拆一次），读屏软件读旁边 .sr-only 里的整句 */
+/**
+ * 痛点一句拆成一个个小块逐个点亮：中文按字拆，英文按词拆（切换语言时重拆）。
+ * 读屏软件读旁边 .sr-only 里的整句；拆开的部分标 translate="no"，免得被逐字翻译
+ */
+let ledeZh = '';
 function splitLede() {
   const p = $('#heroLede');
-  if (p.querySelector('[aria-hidden]')) return;
-  const text = p.querySelector('.sr-only').textContent;
-  const wrap = document.createElement('span');
-  wrap.setAttribute('aria-hidden', 'true');
-  wrap.innerHTML = [...text].map((ch, i) => `<span style="--i:${i}">${ch}</span>`).join('');
-  p.appendChild(wrap);
+  const sr = p.querySelector('.sr-only');
+  ledeZh ||= sr.textContent;
+  const text = tr(ledeZh);
+  const parts = getLang() === 'en' ? text.split(/(\s+)/) : [...text];
+  let wrap = p.querySelector('[aria-hidden]');
+  if (!wrap) {
+    wrap = document.createElement('span');
+    wrap.setAttribute('aria-hidden', 'true');
+    wrap.setAttribute('translate', 'no');
+    p.appendChild(wrap);
+  }
+  wrap.innerHTML = parts.map((w, i) => (/^\s+$/.test(w) ? w : `<span style="--i:${i}">${esc(w)}</span>`)).join('');
 }
 /** 每次进入首屏重新点亮一遍 */
 function lightLede() {
@@ -202,6 +213,7 @@ export function mountHero() {
   $('#homeBtn').addEventListener('click', () => { state.view = 'hero'; notify('update'); });
   subscribe((reason) => {
     if (reason === 'before-new-file') { state.view = 'workspace'; flyNext = true; } // 载入了新视频：飞入工作台
+    if (reason === 'lang') { splitLede(); if (shown) lightLede(); }
     syncHero();
   });
   syncHero();

@@ -15,6 +15,7 @@ import { ensureOCR, recognizeText } from '../../lib/detectors.js';
 import { mergeTextBlocks } from '../occlusion/analyze.js';
 import { defaultCrop, clampCrop, zonesFor, checkCrop } from './crop.js';
 import { attachBoxEditor, boxHtml } from '../../core/box-editor.js';
+import { t } from '../../core/i18n.js';
 
 export const id = 'cover';
 export const title = '封面适配';
@@ -193,7 +194,7 @@ async function loadImage(file) {
     $('#coverImageName').textContent = file.name;
     setSource(c, 'image', file.name);
   } catch (e) {
-    alert(`这张图片打不开：${e.message || e}`);
+    alert(t('这张图片打不开：{0}', { 0: e.message || e }));
   }
 }
 

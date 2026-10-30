@@ -11,6 +11,7 @@ import { saveOutput, listOutputs, deleteOutput, storageUsage } from '../../lib/h
 import { readOPFSFile, removeOPFSFile, cleanOPFSDir } from '../../lib/webcodecs.js';
 import { listRecent, openRecent, removeRecent, autoLoadEnabled, setAutoLoad } from '../../lib/recent-videos.js';
 import { loadVideo } from '../../core/media.js';
+import { t } from '../../core/i18n.js';
 
 // 历史表里显示的修复项简称
 const FIX_SHORT = {
@@ -76,7 +77,7 @@ export async function onRecentAction(e) {
     }
   } else if (btn.dataset.ract === 'delete') {
     const r = listRecent().find((x) => x.id === id);
-    if (!r || !confirm(`从“最近导入的视频”里删除？\n${r.name}\n只删除浏览器里保存的副本，不影响你电脑上的原文件。`)) return;
+    if (!r || !confirm(t('从“最近导入的视频”里删除？\n{name}\n只删除浏览器里保存的副本，不影响你电脑上的原文件。', { name: r.name }))) return;
     await removeRecent(id);
   }
   renderRecent();
@@ -161,7 +162,7 @@ export async function onHistoryAction(e) {
     historyPlayerUrl = URL.createObjectURL(file);
     $('#historyPlayer').innerHTML = `<p class="hint">正在播放：${esc(rec.name)}（${fmtTime(rec.createdAt)}）</p><video src="${historyPlayerUrl}" controls autoplay playsinline></video>`;
   } else if (btn.dataset.act === 'delete') {
-    if (!confirm(`删除这条记录？\n${rec.name}（${fmtTime(rec.createdAt)}）\n删除后无法恢复。`)) return;
+    if (!confirm(t('删除这条记录？\n{name}（{time}）\n删除后无法恢复。', { name: rec.name, time: fmtTime(rec.createdAt) }))) return;
     await deleteOutput(id);
     if (state.fixed?.historyId === id) {
       // 正在对比的就是这条：先留着磁盘文件（页面还在用），下次重新处理时再删

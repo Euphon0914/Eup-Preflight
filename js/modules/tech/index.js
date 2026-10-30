@@ -4,6 +4,7 @@
 // ============================================================
 import { state, subscribe, currentRules, metricsOf } from '../../core/store.js';
 import { $ } from '../../core/ui.js';
+import { t } from '../../core/i18n.js';
 import { evaluate } from '../../lib/rules-engine.js';
 import { clearOutputs } from '../../lib/history.js';
 import { cleanOPFSDir } from '../../lib/webcodecs.js';
@@ -93,7 +94,7 @@ function bindEvents() {
   $('#recentList').addEventListener('click', onRecentAction);
   $('#autoLoadLast').addEventListener('change', onAutoLoadChange);
   $('#clearHistory').addEventListener('click', async () => {
-    if (!confirm('清空全部处理结果？已保存的处理后视频会被删除，无法恢复。（最近导入的视频不受影响）')) return;
+    if (!confirm(t('清空全部处理结果？已保存的处理后视频会被删除，无法恢复。（最近导入的视频不受影响）'))) return;
     await clearOutputs();
     // 删除磁盘上的结果文件；正在对比的、正在检查的那个先保留，下次重新处理 / 打开页面时再删
     const keep = new Set([state.fixed?.out?.onDisk && state.fixed.out.name, state.original?.ref?.name].filter(Boolean));

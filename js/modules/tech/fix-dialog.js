@@ -9,6 +9,7 @@ import { $, esc, badge, fmtMB, stampName, clearError, clearFailedStages, verdict
 import { animate, flyFrom, pulse, SPRING } from '../../core/motion.js';
 import { evaluate } from '../../lib/rules-engine.js';
 import { doProcess, selectedFixes, updateFixButton } from './fixes.js';
+import { t } from '../../core/i18n.js';
 
 const RANK = { fail: 0, warn: 1, pass: 2 };
 let taskHome = null; // 进度条 / 错误框在面板上的原位置（关闭弹窗时放回去）
@@ -154,7 +155,7 @@ function restoreTask() {
 }
 
 async function run(kind) {
-  if (kind === 'fix' && !Object.values(selectedFixes()).some(Boolean)) { alert('请至少勾选一项修复'); return; }
+  if (kind === 'fix' && !Object.values(selectedFixes()).some(Boolean)) { alert(t('请至少勾选一项修复')); return; }
   setView('running');
   const ok = await doProcess(kind);
   if (ok) {

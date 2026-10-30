@@ -23,7 +23,7 @@ const brandPos = { x: 0.7, y: 0.4 };          // 品牌色那团的实际位置�
 
 export const isRunning = () => running;
 
-const isDark = () => matchMedia('(prefers-color-scheme: dark)').matches;
+const isDark = () => document.documentElement.dataset.theme === 'dark'; // 顶栏切换键设的（js/core/prefs.js）
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function resize() {

@@ -256,7 +256,7 @@ export function mountShell() {
   // 选中块滑动：步骤导航、平台、技术体检的二级标签、预览原片 / 处理后、遮挡和封面里的分段控件
   attachSegSlider($('#mainTabs'), 'button[data-tab]');
   attachSegSlider($('#techTabs'), 'button[data-subtab]');
-  ['#platformSeg', '#previewSeg', '#occSrcSeg', '#coverSrcSeg', '#coverEditSeg'].forEach((s) => attachSegSlider($(s), 'button'));
+  ['#platformSeg', '#langSeg', '#previewSeg', '#occSrcSeg', '#coverSrcSeg', '#coverEditSeg'].forEach((s) => attachSegSlider($(s), 'button'));
   renderPlatforms();
   renderTimings();
   subscribe((reason) => {
