@@ -5,6 +5,7 @@ import { state, notify } from './store.js';
 import { canUseMT } from '../lib/ffmpeg-tools.js';
 import { hasWebCodecs } from '../lib/webcodecs.js';
 import { animate, drawStroke, stagger } from './motion.js';
+import { recentThumb } from '../lib/recent-videos.js';
 
 export const $ = (s) => document.querySelector(s);
 /** 内容变了才写 innerHTML：状态通知很频繁，原样重写会打断正在播放的动画（数字滚动、列表依次出现） */
@@ -36,6 +37,22 @@ export function setStepBusy(tab, on) {
   const was = b.classList.contains('busy');
   b.classList.toggle('busy', on);
   if (was && !on) animate(b.querySelector('.count'), { scale: [0.6, 1.15, 1] }, { duration: 0.45 });
+}
+
+// ---------- 最近导入的视频：缩略图（「历史」列表和顶栏「最近」菜单共用） ----------
+const FILM_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="2.5"/><path d="M8 3.5v17M16 3.5v17M4 8h4M4 12h4M4 16h4M16 8h4M16 12h4M16 16h4"/></svg>';
+/** 一条记录的缩略图位置：有缓存直接显示，没有先放占位图标，之后由 fillRecentThumbs 补上 */
+export const recentThumbHtml = (r) =>
+  `<span class="r-thumb" data-thumb-id="${r.id}">${r.thumb ? `<img src="${r.thumb}" alt="">` : FILM_ICON}</span>`;
+/** 给 root 里还没有图的缩略图位置取帧补上（一次一个，取到一个补一个） */
+export function fillRecentThumbs(root) {
+  root.querySelectorAll('.r-thumb[data-thumb-id]:not(:has(img))').forEach((el) => {
+    recentThumb(+el.dataset.thumbId).then((url) => {
+      if (!url) return;
+      // 列表可能已经重新渲染过：按 id 找当前的位置
+      document.querySelectorAll(`.r-thumb[data-thumb-id="${el.dataset.thumbId}"]`).forEach((t) => { t.innerHTML = `<img src="${url}" alt="">`; });
+    });
+  });
 }
 
 // ---------- 格式化 ----------

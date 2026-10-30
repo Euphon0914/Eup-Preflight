@@ -3,7 +3,7 @@
 // 左栏所有模块共用：视频只拖入一次。
 // ============================================================
 import { state, subscribe, notify, goto, autoChecksEnabled, setAutoChecks } from './store.js';
-import { $, esc, fmtClock, fmtRate, showError, renderTimings, setHTML } from './ui.js';
+import { $, esc, fmtClock, fmtRate, showError, renderTimings, setHTML, recentThumbHtml, fillRecentThumbs } from './ui.js';
 import { loadVideo, loadTestVideo } from './media.js';
 import { listRecent, openRecent } from '../lib/recent-videos.js';
 import { animate, stagger, SPRING, DUR, EASE } from './motion.js';
@@ -44,10 +44,11 @@ function renderRecentMenu() {
   const size = (b) => (b >= 1024 ** 3 ? `${(b / 1024 ** 3).toFixed(1)} GB` : `${(b / 1048576).toFixed(1)} MB`);
   const when = (t) => { const d = new Date(t); return `${d.getMonth() + 1}-${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
   $('#recentMenu').innerHTML = (list.length
-    ? list.map((r) => `<button class="menu-item ${isCur(r) ? 'on' : ''}" role="menuitem" data-rid="${r.id}">
-        <span class="m-name">${esc(r.name)}</span><span class="m-sub">${size(r.size)} · ${when(r.usedAt)}${r.opfs.dir === 'outputs' ? ' · 处理结果' : ''}</span></button>`).join('')
+    ? list.map((r) => `<button class="menu-item ${isCur(r) ? 'on' : ''}" role="menuitem" data-rid="${r.id}">${recentThumbHtml(r)}
+        <span class="m-txt"><span class="m-name">${esc(r.name)}</span><span class="m-sub">${size(r.size)} · ${when(r.usedAt)}${r.opfs.dir === 'outputs' ? ' · 处理结果' : ''}</span></span></button>`).join('')
     : '<div class="menu-empty">导入的视频会出现在这里，下次打开页面不用重新选文件。</div>')
     + '<div class="menu-sep"></div><button class="menu-item" role="menuitem" data-goto="tech:history"><span class="m-name">管理最近的视频和处理结果…</span></button>';
+  fillRecentThumbs($('#recentMenu'));
 }
 function toggleRecent(open) {
   const m = $('#recentMenu');

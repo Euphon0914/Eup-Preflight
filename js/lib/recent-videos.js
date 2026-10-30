@@ -3,7 +3,7 @@
 //
 // 导入的视频复制一份到浏览器给本站的私有磁盘空间（OPFS 的 recent 目录），不会上传；
 // 从“处理历史”载入的结果本来就在 OPFS 里，只记位置，不再复制。
-// 列表（文件名、大小、时间、在哪个目录）存在 localStorage；文件本身在 OPFS。
+// 列表（文件名、大小、时间、在哪个目录、缩略图）存在 localStorage；文件本身在 OPFS。
 // 最多保留 MAX_COUNT 个、总大小不超过 MAX_BYTES，超出时删掉最久没用的。
 // ============================================================
 
@@ -86,6 +86,63 @@ export async function openRecent(id) {
   r.usedAt = Date.now();
   writeList(list);
   return new File([f], r.name, { type: r.type || f.type, lastModified: r.lastModified });
+}
+
+// ---------- 缩略图：列表里一眼认出是哪个视频 ----------
+// 第一次显示时从 OPFS 里的副本取视频 10% 处的一帧（最多第 3 秒），缩成长边 160px 的 JPEG（几 KB），存进列表；
+// 浏览器解不了的格式（部分 HEVC / MKV）记 thumbFail，以后不再重试，界面上显示占位图标。
+// 一次只取一个，免得同时开好几个解码器。
+const THUMB_SIDE = 160;
+let thumbQueue = Promise.resolve();
+const thumbJobs = new Map();
+
+function grabThumb(file) {
+  return new Promise((resolve) => {
+    const v = document.createElement('video');
+    const url = URL.createObjectURL(file);
+    let done = false;
+    const finish = (res) => { if (done) return; done = true; clearTimeout(timer); v.removeAttribute('src'); v.load(); URL.revokeObjectURL(url); resolve(res); };
+    const timer = setTimeout(() => finish(null), 8000);
+    v.muted = true;
+    v.preload = 'auto';
+    v.addEventListener('error', () => finish(null));
+    v.addEventListener('loadedmetadata', () => { v.currentTime = Math.min(3, (v.duration || 0) * 0.1); });
+    v.addEventListener('seeked', () => {
+      if (!v.videoWidth) { finish(null); return; }
+      const k = THUMB_SIDE / Math.max(v.videoWidth, v.videoHeight);
+      const c = document.createElement('canvas');
+      c.width = Math.round(v.videoWidth * k);
+      c.height = Math.round(v.videoHeight * k);
+      c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+      finish(c.toDataURL('image/jpeg', 0.72));
+    }, { once: true });
+    v.src = url;
+  });
+}
+
+/**
+ * 某个视频的缩略图（data URL）；还没有时取一帧并存起来。取不到返回 null。
+ * 不会改“上次使用”的时间。
+ */
+export function recentThumb(id) {
+  const r = readList().find((x) => x.id === id);
+  if (!r) return Promise.resolve(null);
+  if (r.thumb) return Promise.resolve(r.thumb);
+  if (r.thumbFail) return Promise.resolve(null);
+  if (thumbJobs.has(id)) return thumbJobs.get(id);
+  const job = thumbQueue = thumbQueue.then(async () => {
+    let thumb = null;
+    try {
+      const dir = await (await navigator.storage.getDirectory()).getDirectoryHandle(r.opfs.dir);
+      thumb = await grabThumb(await (await dir.getFileHandle(r.opfs.name)).getFile());
+    } catch { /* 文件没了：当作取不到 */ }
+    const list = readList(), x = list.find((y) => y.id === id);
+    if (x) { if (thumb) x.thumb = thumb; else x.thumbFail = true; writeList(list); }
+    thumbJobs.delete(id);
+    return thumb;
+  });
+  thumbJobs.set(id, job);
+  return job;
 }
 
 /** 删除一条；文件在 recent 目录里才删文件（处理历史里的文件由处理历史管理） */

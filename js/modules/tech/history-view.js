@@ -5,7 +5,7 @@
 // 都存在本机浏览器
 // ============================================================
 import { state, currentPlatform, currentRules, metricsOf } from '../../core/store.js';
-import { $, esc, badge, fmtMB, fmtSec, fmtTime, stampName, showError } from '../../core/ui.js';
+import { $, esc, badge, fmtMB, fmtSec, fmtTime, stampName, showError, recentThumbHtml, fillRecentThumbs } from '../../core/ui.js';
 import { evaluate, summarize } from '../../lib/rules-engine.js';
 import { saveOutput, listOutputs, deleteOutput, storageUsage } from '../../lib/history.js';
 import { readOPFSFile, removeOPFSFile, cleanOPFSDir } from '../../lib/webcodecs.js';
@@ -52,12 +52,14 @@ export function renderRecent() {
   const isCur = (r) => cur && cur.name === r.name && cur.size === r.size && cur.lastModified === r.lastModified;
   $('#recentList').innerHTML = list.length
     ? list.map((r) => `<div class="hist-item recent-item ${isCur(r) ? 'current' : ''}">
+        ${recentThumbHtml(r)}
         <div class="r-main"><span class="r-name" title="${esc(r.name)}">${esc(r.name)}</span>
           <span class="hint">${sizeText(r.size)} · 上次使用 ${fmtTime(r.usedAt)}${r.opfs.dir === 'outputs' ? ' · 处理结果' : ''}</span></div>
         ${isCur(r) ? '<span class="tag">当前</span>' : ''}
         <div class="actions"><button class="btn sm" data-ract="load" data-id="${r.id}" ${isCur(r) || state.busy ? 'disabled' : ''}>载入</button><button class="btn ghost sm" data-ract="delete" data-id="${r.id}">删除</button></div>
       </div>`).join('')
     : '<p class="hint">还没有。导入的视频会自动出现在这里（复制一份到本机浏览器存储，不会上传）。</p>';
+  fillRecentThumbs($('#recentList'));
 }
 
 /** 最近导入的视频：载入 / 删除 */
