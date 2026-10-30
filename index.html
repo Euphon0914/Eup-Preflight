@@ -289,29 +289,33 @@
         </div>
       </section>
 
-      <!-- 数据与隐私：三行大字随滚动逐行点亮，下面是三个 0 和细线网格里的四条细节（js/core/hero-more.js） -->
+      <!-- 数据与隐私：四行大字，每行右边一段说明；滚到哪一行，那一行变实、下面扫过一道荧光绿高光，说明淡入（js/core/hero-more.js）。
+           最后一块玻璃面板里三个 0（参考 Prime Security 的大字节奏，配色和材质跟整站一致） -->
       <section class="hm-sec hm-priv" aria-labelledby="hmPrivTitle">
         <header class="hm-head"><span class="mono-tag">PRIVACY</span><h2 id="hmPrivTitle">视频不离开你的电脑</h2>
           <p>这个网页没有服务器、不需要登录，所有处理都在你的浏览器里完成。</p></header>
-        <div class="priv-lines">
-          <p>不上传。</p>
-          <p>不联网。</p>
-          <p>不追踪。</p>
+        <div class="priv-rows">
+          <div class="priv-row">
+            <p class="priv-word"><span>不上传。</span></p>
+            <div class="priv-detail"><span class="mono-tag">LOCAL</span><p>读取参数、识别文字、转码修复都在浏览器里完成，视频和图片不会发送到任何服务器。</p></div>
+          </div>
+          <div class="priv-row">
+            <p class="priv-word"><span>不联网。</span></p>
+            <div class="priv-detail"><span class="mono-tag">OFFLINE</span><p>ffmpeg、文字识别模型等组件都随网页放在本地，打开后不会再请求任何外部网站。</p></div>
+          </div>
+          <div class="priv-row">
+            <p class="priv-word"><span>不追踪。</span></p>
+            <div class="priv-detail"><span class="mono-tag">NO TRACKING</span><p>没有统计、广告或追踪代码，也不用注册登录；深浅色、语言这些设置只记在你的浏览器里。</p></div>
+          </div>
+          <div class="priv-row">
+            <p class="priv-word"><span>随时删。</span></p>
+            <div class="priv-detail"><span class="mono-tag">YOUR CONTROL</span><p>最近导入的 5 个视频（合计不超过 3 GB）和处理结果只存在这个浏览器里，在「技术体检 › 历史」随时删除；清除网站数据会全部删掉，电脑上的原文件不受影响。</p></div>
+          </div>
         </div>
-        <div class="priv-stats">
+        <div class="priv-stats glass">
           <div><b class="num">0<small>B</small></b><span>上传到服务器的数据</span></div>
           <div><b class="num">0</b><span>外部网络请求</span></div>
           <div><b class="num">0</b><span>统计、广告和追踪代码</span></div>
-        </div>
-        <div class="hl-grid">
-          <article class="hl-cell"><header><span class="mono-tag">[01]</span><span class="mono-tag">LOCAL</span></header>
-            <h3>本机处理，不上传</h3><p>读取参数、识别文字、转码修复都在浏览器里完成，视频和图片不会发送到任何服务器。</p></article>
-          <article class="hl-cell"><header><span class="mono-tag">[02]</span><span class="mono-tag">OFFLINE</span></header>
-            <h3>不联网，没有统计</h3><p>ffmpeg、文字识别模型等组件都随网页放在本地，打开后不会请求外部网站；没有统计、广告或追踪代码。</p></article>
-          <article class="hl-cell"><header><span class="mono-tag">[03]</span><span class="mono-tag">STORAGE</span></header>
-            <h3>存在哪里</h3><p>最近导入的 5 个视频（合计不超过 3 GB）和处理结果存在这个浏览器的本地存储里，下次打开不用重新选文件；深浅色、语言等设置也只记在本机。</p></article>
-          <article class="hl-cell"><header><span class="mono-tag">[04]</span><span class="mono-tag">DELETE</span></header>
-            <h3>随时可以删掉</h3><p>在「技术体检 › 历史」里逐条删除，或关掉“自动载入”；清除浏览器的网站数据会全部删除。删除只影响浏览器里的副本，不影响电脑上的原文件。</p></article>
         </div>
       </section>
 
@@ -663,7 +667,7 @@
     </div>
     <!-- 作者联系方式，一行一项；上传到 GitHub 后把“即将开源”换成 <a href="仓库地址" target="_blank" rel="noopener">仓库地址</a> -->
     <ul class="sign-contact">
-      <li><span class="mono-tag">EMAIL</span><a href="mailto:41621722@qq.com" translate="no">41621722@qq.com</a></li>
+      <li><span class="mono-tag">EMAIL</span><a href="mailto:euphon0601@gmail.com" translate="no">euphon0601@gmail.com</a></li>
       <li><span class="mono-tag">PHONE</span><a href="tel:+8618972423878" translate="no">189 7242 3878</a></li>
       <li><span class="mono-tag">GITHUB</span><span>即将开源</span></li>
     </ul>

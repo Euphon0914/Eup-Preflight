@@ -231,27 +231,34 @@
 .fv-item:last-child { border-bottom: 0; }
 .fv-item b { flex: 1; font-size: 14.5px; font-weight: 500; }
 
-/* ---------- 数据与隐私：三行大字随滚动逐行点亮 + 三个 0 + 细线网格（参考 Prime Security / Heron） ---------- */
-.priv-lines { margin: 28px 0 44px; }
-.priv-lines p {
-  margin: 0; font: 800 clamp(52px, 9vw, 124px)/1.02 "SF Pro Display", var(--font); letter-spacing: -.055em;
-  color: var(--line-strong); transition: color .6s var(--ease);
+/* ---------- 数据与隐私：四行大字 + 说明，滚到的那一行变实、扫过荧光绿高光；三个 0 放在玻璃面板里 ---------- */
+.priv-rows { margin: 18px 0 28px; }
+.priv-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: center; padding: 18px 0; border-top: 1px solid var(--line); }
+.priv-row:last-child { border-bottom: 1px solid var(--line); }
+.priv-word { margin: 0; font: 700 clamp(40px, 6vw, 80px)/1.08 "SF Pro Display", var(--font); letter-spacing: -.045em; color: var(--line-strong); transition: color .5s var(--ease); }
+/* 荧光笔：字下方一道品牌色宽线，点亮时从左往右画出来 */
+.priv-word span {
+  padding: 0 .04em; border-radius: .08em;
+  background: linear-gradient(var(--brand), var(--brand)) 0 86% / 0% .3em no-repeat;
+  transition: background-size .8s var(--ease) .1s;
 }
-.priv-lines p.lit { color: var(--text); }
-.priv-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line-strong); margin-bottom: 40px; }
-.priv-stats > div { display: flex; align-items: flex-start; gap: 14px; padding: 18px 18px 6px 0; }
-.priv-stats b { font-size: clamp(64px, 7.5vw, 104px); line-height: .9; font-weight: 400; letter-spacing: -.06em; }
-.priv-stats b small { margin-left: 4px; font-size: .38em; letter-spacing: 0; }
-.priv-stats span { max-width: 11em; padding-top: 8px; font-size: 13px; line-height: 1.45; color: var(--muted); }
-.hl-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line-strong); border-left: 1px solid var(--line-strong); }
-.hl-cell { display: flex; flex-direction: column; gap: 8px; padding-bottom: 22px; border-right: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong);
-  background: color-mix(in srgb, var(--bg) 78%, transparent); } /* 够不透明，背景柔光透过来也不影响读字 */
-.hl-cell header { display: flex; justify-content: space-between; padding: 10px 14px; margin-bottom: 10px; border-bottom: 1px dashed var(--line-strong); }
-.hl-cell h3, .hl-cell p { padding: 0 16px; }
-.hl-cell h3 { font-size: 15px; }
-.hl-cell p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
+.priv-row.lit .priv-word { color: var(--text); }
+.priv-row.lit .priv-word span { background-size: 100% .3em; }
+/* 深色模式：白字压在荧光绿上看不清，改成字下方一道细线 */
+:root[data-theme="dark"] .priv-word span { padding-bottom: .1em; background-position: 0 100%; }
+:root[data-theme="dark"] .priv-row.lit .priv-word span { background-size: 100% .09em; }
+.priv-detail { display: flex; flex-direction: column; gap: 6px; opacity: .35; transform: translateY(6px); transition: opacity .5s var(--ease), transform .5s var(--ease); }
+.priv-row.lit .priv-detail { opacity: 1; transform: none; }
+.priv-detail .mono-tag { display: inline-flex; align-items: center; gap: 7px; color: var(--brand-ink); }
+.priv-detail .mono-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
+.priv-detail p { margin: 0; max-width: 42ch; font-size: 14px; line-height: 1.7; color: var(--muted); }
+.priv-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 22px 26px; border-radius: 24px; }
+.priv-stats > div { position: relative; z-index: 1; display: flex; align-items: center; gap: 14px; }
+.priv-stats b { font-size: clamp(48px, 5.5vw, 72px); line-height: 1; font-weight: 500; letter-spacing: -.06em; color: var(--brand-ink); }
+.priv-stats b small { margin-left: 3px; font-size: .36em; letter-spacing: 0; }
+.priv-stats span { max-width: 11em; font-size: 13px; line-height: 1.45; color: var(--muted); }
 @media (prefers-reduced-motion: reduce) {
-  .feat-panel, .feat-nav button, .priv-lines p { transition: none; }
+  .feat-panel, .feat-nav button, .priv-word, .priv-word span, .priv-detail { transition: none; }
   .feat-panel.on .fv-sub { animation: none; }
 }
 
@@ -266,7 +273,8 @@
   .hero-readout li[data-stage]:not([data-stage="3"])::after { height: calc(100% + 12px - 18px); }
   .hero-readout .rd-count b { font-size: 26px; }
   .hw-nav { border-radius: 0 0 24px 24px; }
-  .hm-grid, .hm-grid.cols-3, .hl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hm-grid, .hm-grid.cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .priv-row { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .feat-scroll { grid-template-columns: minmax(0, 1fr); gap: 0; }
   /* 怎么用：改竖排，左边一条竖线串起三个节点（Linea 那样） */
   .how-steps { grid-template-columns: minmax(0, 1fr); gap: 30px; }
@@ -289,7 +297,7 @@
   .hero-readout .mono-tag { font-size: 11px; }
   .hero-caps { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .cap-stat b { font-size: 36px; }
-  .hm-grid, .hm-grid.cols-3, .hl-grid, .priv-stats { grid-template-columns: minmax(0, 1fr); }
+  .hm-grid, .hm-grid.cols-3, .priv-stats { grid-template-columns: minmax(0, 1fr); }
   .hm-grid, .hm-grid.cols-3 { gap: 8px; }
   .feat-vis { height: 230px; }
   .fv-occ { gap: 14px; padding: 0 14px; }

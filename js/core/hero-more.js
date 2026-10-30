@@ -1,8 +1,8 @@
 // ============================================================
 // hero-more.js —— 首屏下方的滚动效果
 //   · 功能介绍：左边大字目录固定不动，右边四块随滚动经过；经过屏幕中间的那一块和目录对应项点亮，点目录滚到那一块
-//   · 数据与隐私：“不上传。不联网。不追踪。”三行大字随滚动逐行点亮
-// 系统开了“减少动态效果”时：目录照常切换（不平滑滚动），三行大字直接全亮。
+//   · 数据与隐私：“不上传。不联网。不追踪。随时删。”四行大字随滚动逐行点亮（变实、扫过荧光绿高光、右边说明淡入）
+// 系统开了“减少动态效果”时：目录照常切换（不平滑滚动），四行大字直接全亮。
 // ============================================================
 import { $ } from './ui.js';
 import { reducedMotion } from './motion.js';
@@ -28,15 +28,13 @@ function mountFeatures() {
 }
 
 function mountPrivacyLines() {
-  const box = $('.priv-lines');
+  const box = $('.priv-rows');
   const lines = [...box.children];
   const update = () => {
     if (!box.offsetParent) return; // 首屏没显示
     if (reducedMotion()) { lines.forEach((l) => l.classList.add('lit')); return; }
-    // 进度：这一块顶部到达屏幕 80% 高度时为 0，再往上滚过（自身高度 + 30% 屏高）时为 1；每行在各自那一段的一半点亮
-    const r = box.getBoundingClientRect();
-    const p = (innerHeight * 0.8 - r.top) / (r.height + innerHeight * 0.3);
-    lines.forEach((l, i) => l.classList.toggle('lit', p > (i + 0.5) / lines.length));
+    // 每一行的中线滚到屏幕 70% 高度以上就点亮（滚过去之后保持点亮，往回滚到下面再变暗）
+    lines.forEach((l) => { const r = l.getBoundingClientRect(); l.classList.toggle('lit', r.top + r.height / 2 < innerHeight * 0.7); });
   };
   addEventListener('scroll', update, { passive: true });
   addEventListener('resize', update);
