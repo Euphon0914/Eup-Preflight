@@ -36,8 +36,6 @@
   position: relative; width: min(290px, calc(68vh * var(--sa))); aspect-ratio: var(--sa);
   background: #000; border-radius: 22px; border: 6px solid #2c3038; overflow: hidden;
 }
-#occPhoneWrap.vf:not(:empty) { padding: 14px; --vf-inset: 0; }
-#occPhoneWrap.vf:empty::after { display: none; }
 .occ-area { position: absolute; overflow: hidden; }
 .occ-video { position: absolute; }
 .occ-video video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; display: block; cursor: pointer; }
@@ -157,7 +155,6 @@
 .crop-card-head b { font-size: 13.5px; }
 .crop-view { position: relative; width: 100%; overflow: hidden; border-radius: 10px; background: #111113; cursor: grab; touch-action: none; }
 .crop-view:active { cursor: grabbing; }
-.crop-view.vf { --vf-inset: 5px; --vf-color: rgba(255, 255, 255, .6); }
 .crop-view img { position: absolute; max-width: none; pointer-events: none; user-select: none; }
 .crop-view .cz { position: absolute; display: grid; place-items: center; pointer-events: none; border-radius: 6px;
   background: rgba(18, 18, 20, .5); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }

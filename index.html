@@ -132,7 +132,7 @@
           <li data-stage="3"><i></i><span class="mono-tag">03</span>标出被挡住的字幕</li>
           <li class="rd-count"><span class="mono-tag">ISSUES</span><b class="num" id="heroIssues">0</b></li>
         </ol>
-        <div class="hero-phone vf" id="heroPhone">
+        <div class="hero-phone" id="heroPhone">
           <div class="hp-screen">
             <!-- 线稿层：平台界面各区域的虚线框，扫描线扫过之前只看得到这一层 -->
             <div class="hp-wire">
@@ -217,8 +217,8 @@
 
       <!-- 已选视频：预览 + 关键参数 -->
       <div id="mediaCard" class="media glass" hidden>
-        <div class="player vf">
-          <span class="mono-tag vf-tag" id="vfTag" aria-hidden="true"></span>
+        <div class="player">
+          <span class="mono-tag player-tag" id="playerTag" aria-hidden="true"></span>
           <video id="previewVideo" controls playsinline preload="metadata"></video>
           <div class="scan" aria-hidden="true"></div>
           <div id="previewNote" class="player-note" hidden>浏览器无法直接播放这个格式（如 MKV / HEVC），不影响体检和处理。</div>
@@ -374,7 +374,7 @@
 
           <div class="occ-main">
             <div class="occ-stage">
-              <div id="occPhoneWrap" class="vf"></div>
+              <div id="occPhoneWrap"></div>
               <div class="occ-controls">
                 <button class="btn sm" id="occPlay">播放</button>
                 <button class="btn sm" id="occMark" title="手动框出识别不到的重要文字">框选文字</button>

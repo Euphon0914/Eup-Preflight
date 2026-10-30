@@ -53,10 +53,9 @@ body.dragging .drag-glow { opacity: 1; }
 /* ---------- 左：视频卡片 ---------- */
 .media { overflow: hidden; }
 .player { background: #000; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; }
-/* 取景器：角标画在画面里面，左上角一行等宽读数 */
-.player.vf { --vf-inset: 8px; --vf-color: rgba(255, 255, 255, .7); }
-.vf-tag { position: absolute; left: 22px; top: 11px; z-index: 3; pointer-events: none; color: rgba(255, 255, 255, .78); font-size: 10px; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
-.vf-tag:empty { display: none; }
+/* 预览左上角一行等宽读数：比例 · 分辨率 · 帧率 */
+.player-tag { position: absolute; left: 14px; top: 10px; z-index: 3; pointer-events: none; color: rgba(255, 255, 255, .78); font-size: 10px; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
+.player-tag:empty { display: none; }
 .player video { display: block; width: 100%; height: 210px; object-fit: contain; background: #000; }
 /* 分析 / 处理中：品牌色扫描线在视频上来回扫，上下带一圈淡光 */
 .scan { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--brand); box-shadow: 0 0 12px var(--brand), 0 0 34px var(--brand-glow);

@@ -114,7 +114,7 @@ function renderLeft() {
   $('#fileName').textContent = (showFixed ? f : o).file.name;
   $('#fileName').title = (showFixed ? f : o).file.name;
   const i = o.info; // 收起时的一行摘要
-  $('#vfTag').textContent = i.width ? [i.aspectRatio, `${i.width}×${i.height}`, i.frameRate != null ? `${i.frameRate}FPS` : ''].filter(Boolean).join(' · ') : ''; // 预览左上角的取景器读数
+  $('#playerTag').textContent = i.width ? [i.aspectRatio, `${i.width}×${i.height}`, i.frameRate != null ? `${i.frameRate}FPS` : ''].filter(Boolean).join(' · ') : ''; // 预览左上角的读数
   $('#paramBrief').textContent = [i.width ? `${i.width}×${i.height}` : '', i.frameRate != null ? `${i.frameRate} 帧` : '',
     fmtClock(i.durationSec), `${i.fileSizeMB} MB`].filter(Boolean).join(' · ');
   setHTML($('#paramList'), PARAM_ROWS.map(([k, code, main, sub]) => {

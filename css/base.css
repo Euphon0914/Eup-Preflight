@@ -130,23 +130,6 @@ a { color: var(--text); text-underline-offset: 3px; }
 .mono-tag { font: 500 11px/1.4 var(--mono); letter-spacing: .06em; color: var(--subtle); font-style: normal; }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
-/* ---------- 取景器角标：四角各一个细 + ，表示“这块区域正在被检查” ----------
-   用法：元素加 .vf（需要能做定位容器；::after 没被占用）。--vf-inset 是角标外框相对元素的内缩（负数 = 画在元素外面），
-   + 的中心在外框四角往里 5px 处；--vf-color 是线的颜色 */
-.vf { position: relative; }
-.vf::after {
-  --c: var(--vf-color, var(--subtle));
-  content: ""; position: absolute; inset: var(--vf-inset, -10px); pointer-events: none; z-index: 3;
-  background:
-    linear-gradient(var(--c), var(--c)) left 0 top 5px / 11px 1px no-repeat,
-    linear-gradient(var(--c), var(--c)) left 5px top 0 / 1px 11px no-repeat,
-    linear-gradient(var(--c), var(--c)) right 0 top 5px / 11px 1px no-repeat,
-    linear-gradient(var(--c), var(--c)) right 5px top 0 / 1px 11px no-repeat,
-    linear-gradient(var(--c), var(--c)) left 0 bottom 5px / 11px 1px no-repeat,
-    linear-gradient(var(--c), var(--c)) left 5px bottom 0 / 1px 11px no-repeat,
-    linear-gradient(var(--c), var(--c)) right 0 bottom 5px / 11px 1px no-repeat,
-    linear-gradient(var(--c), var(--c)) right 5px bottom 0 / 1px 11px no-repeat;
-}
 ::selection { background: rgba(120, 120, 128, .3); }
 
 /* ---------- 液态玻璃：大块容器用 .glass ---------- */

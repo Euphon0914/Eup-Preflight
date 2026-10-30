@@ -293,7 +293,7 @@ function renderCrops() {
   $('#coverCrops').innerHTML = results().map(({ r, crop, zones, issues }) => `
     <div class="crop-card ${issues.length ? 'bad' : ''}" data-rid="${esc(r.id)}">
       <div class="crop-card-head"><b>${esc(r.name)}</b><span class="tag">${esc(r.ratio.join(':'))}</span><span class="hint">${esc(r.desc || '')}</span></div>
-      <div class="crop-view vf" data-rid="${esc(r.id)}" style="aspect-ratio:${r.ratio[0]}/${r.ratio[1]}">
+      <div class="crop-view" data-rid="${esc(r.id)}" style="aspect-ratio:${r.ratio[0]}/${r.ratio[1]}">
         <img src="${esc(C.src.url || '')}" alt="" style="${imgStyle(crop)}">
         ${zones.map((z) => `<div class="cz" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%"><span>${esc(z.name)}</span></div>`).join('')}
       </div>
