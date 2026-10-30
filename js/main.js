@@ -11,6 +11,7 @@ import { state, notify } from './core/store.js';
 import { loadConfig } from './core/config.js';
 import { mountShell } from './core/shell.js';
 import { mountCompatNotice } from './core/compat.js';
+import { mountGlassLight } from './core/glass-light.js';
 import { loadVideo } from './core/media.js';
 import { showError } from './core/ui.js';
 import { canUseMT } from './lib/ffmpeg-tools.js';
@@ -30,6 +31,7 @@ import * as summary from './modules/summary/index.js';
 
   mountShell();
   mountCompatNotice(); // 不支持或没测试过的浏览器：顶部提示改用 Chrome / Edge
+  mountGlassLight();   // 玻璃上的鼠标反光
   tech.mount();
   occlusion.mount();
   cover.mount();

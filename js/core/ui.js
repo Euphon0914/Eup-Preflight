@@ -10,7 +10,8 @@ export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&a
 
 // ---------- 状态标签 ----------
 export const STATUS_TEXT = { pass: '通过', warn: '警告', fail: '不通过', info: '提示', na: '不适用', pending: '分析中' };
-export const badge = (s) => `<span class="badge ${s}">${STATUS_TEXT[s]}</span>`;
+// “通过”带对勾：和品牌色柠檬绿区分开，不只靠颜色
+export const badge = (s) => `<span class="badge ${s}">${s === 'pass' ? '✓ ' : ''}${STATUS_TEXT[s]}</span>`;
 
 // ---------- 格式化 ----------
 export const pad = (n) => String(n).padStart(2, '0');

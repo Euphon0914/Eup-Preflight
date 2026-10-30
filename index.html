@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Crect%20width%3D%2224%22%20height%3D%2224%22%20rx%3D%226.5%22%20fill%3D%22%231d1d1f%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M10%205H6.5A1.5%201.5%200%200%200%205%206.5v11A1.5%201.5%200%200%200%206.5%2019H10%22%2F%3E%3Cpath%20d%3D%22M15.5%205h2A1.5%201.5%200%200%201%2019%206.5v2%22%2F%3E%3Cpath%20d%3D%22M19%2015.5v2a1.5%201.5%200%200%201-1.5%201.5h-2%22%2F%3E%3Cpath%20d%3D%22M5%2012h3.4l2.3%202.2%204.6-4.7%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Crect%20width%3D%2224%22%20height%3D%2224%22%20rx%3D%226.5%22%20fill%3D%22%23C8F03C%22%2F%3E%3C%2Fsvg%3E">
   <title>Eup Preflight</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/shell.css">
@@ -14,9 +14,7 @@
   <!-- ===== 顶栏：产品名 / 平台切换 / 高级 ===== -->
   <header class="topbar glass">
     <div class="brand">
-      <span class="logo" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="20" height="20"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10"/><path d="M15.5 5h2A1.5 1.5 0 0 1 19 6.5v2"/><path d="M19 15.5v2a1.5 1.5 0 0 1-1.5 1.5h-2"/><path d="M5 12h3.4l2.3 2.2 4.6-4.7"/></g></svg>
-      </span>
+      <span class="logo" aria-hidden="true"></span>
       <div>
         <div class="brand-name">Preflight <span class="brand-tag" title="Eup 的个人作品">Eup</span></div>
         <div class="brand-sub">Preflight for 抖音 / TikTok · 技术、遮挡、封面一站检查 · 本机处理，不上传</div>
@@ -144,7 +142,7 @@
 
     </aside>
 
-    <section class="right glass">
+    <section class="right glass lit">
       <!-- 当前步骤的大标题（shell.js 按步骤填写） -->
       <header class="panel-title"><div><h1 id="panelTitle">技术体检</h1><p id="panelSub"></p></div></header>
 
@@ -387,7 +385,7 @@
   <!-- ===== 署名 ===== -->
   <!-- ===== 一键修复弹窗：选修复项 → 处理进度 → 完成（下载 / 对比） ===== -->
   <dialog id="fixDialog" class="dlg" aria-labelledby="fixDlgTitle">
-    <div class="dlg-box glass">
+    <div class="dlg-box glass lit">
       <header class="dlg-head">
         <div><h2 id="fixDlgTitle">一键修复</h2><p class="hint" id="fixDlgSub">勾选的项目合并成一次处理，输出 MP4；视频只在本机处理，不会上传。</p></div>
         <button class="dlg-x" id="fixDlgClose" aria-label="关闭">×</button>
@@ -417,7 +415,7 @@
   </dialog>
 
   <footer class="sign" data-version="1.0">
-    <span class="sign-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10"/><path d="M15.5 5h2A1.5 1.5 0 0 1 19 6.5v2"/><path d="M19 15.5v2a1.5 1.5 0 0 1-1.5 1.5h-2"/><path d="M5 12h3.4l2.3 2.2 4.6-4.7"/></g></svg></span>
+    <span class="sign-mark" aria-hidden="true"></span>
     <span><b>Eup</b> Preflight v1.0</span><span class="sign-dot">·</span><span>made by Eup</span><span class="sign-dot">·</span><a href="licenses.html" target="_blank" rel="noopener">开源组件与许可</a>
   </footer>
 

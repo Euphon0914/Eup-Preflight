@@ -39,7 +39,7 @@
 }
 .drop:hover::after, .drop.over::after { border-color: var(--text); }
 .drop.over { transform: scale(1.01); }
-.drop-icon { width: 60px; height: 60px; border-radius: 20px; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; box-shadow: 0 8px 22px rgba(0, 0, 0, .18); }
+.drop-icon { width: 60px; height: 60px; border-radius: 20px; background: var(--brand); color: var(--on-brand); display: grid; place-items: center; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 8px 22px var(--brand-glow); }
 .drop-main { font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
 
 /* ---------- 左：视频卡片 ---------- */
@@ -80,7 +80,7 @@
 .steps button:active { transform: scale(.985); }
 .steps button.on { background: var(--glass-strong); box-shadow: 0 4px 14px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .55); }
 .step-ico { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: var(--fill); color: var(--muted); flex: none; transition: background .2s, color .2s; }
-.steps button.on .step-ico { background: var(--accent); color: var(--on-accent); }
+.steps button.on .step-ico { background: var(--brand); color: var(--on-brand); }
 .step-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .step-txt b { font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
 .step-txt small { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -89,11 +89,11 @@
 .count:empty:not(.dot) { display: none; }
 .count.warn { background: var(--warn-bg); color: var(--warn); }
 .count.fail { background: var(--fail-bg); color: var(--fail); }
-.count.dot { min-width: 8px; width: 8px; height: 8px; padding: 0; background: var(--accent); }
+.count.dot { min-width: 8px; width: 8px; height: 8px; padding: 0; background: var(--brand); }
 
 /* ---------- 右：大标题 ---------- */
 .panel-title { display: flex; align-items: flex-end; gap: 12px; margin-bottom: 16px; }
-.panel-title h1 { margin: 0; font-size: 28px; line-height: 1.15; font-weight: 700; letter-spacing: -.03em; }
+.panel-title h1 { margin: 0; font-size: 32px; line-height: 1.15; font-weight: 700; letter-spacing: -.03em; font-family: "SF Pro Display", var(--font); }
 .panel-title p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
 .empty { text-align: center; padding: 56px 16px; color: var(--muted); }
@@ -105,7 +105,7 @@
 .task-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px; }
 .task-row #taskLabel { flex: 1; }
 .bar { height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
-.bar > div { height: 100%; width: 0; background: var(--accent); border-radius: 3px; transition: width .25s; }
+.bar > div { height: 100%; width: 0; background: var(--brand); border-radius: 3px; transition: width .25s; box-shadow: 0 0 10px var(--brand-glow); }
 .error { background: var(--fail-bg); color: var(--fail); border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; white-space: pre-wrap; font-size: 12.5px; max-height: 180px; overflow: auto; }
 
 /* ---------- 窄屏：上下堆叠，步骤变成横向滚动的胶囊 ---------- */
