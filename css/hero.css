@@ -50,7 +50,7 @@
 /* 右侧按钮列：头像、点赞、评论、收藏、分享、音乐唱片 */
 .hp-side { position: absolute; right: 3%; bottom: 13%; width: 4.6em; display: flex; flex-direction: column; align-items: center; gap: 1.1em; }
 .hp-avatar { position: relative; width: 3.8em; height: 3.8em; border-radius: 50%; border: 2px solid #fff; background: linear-gradient(135deg, #9a9aa2, #55555c); margin-bottom: .5em; }
-.hp-avatar i { position: absolute; left: 50%; bottom: -.75em; width: 1.5em; height: 1.5em; margin-left: -.75em; border-radius: 50%; background: #fe2c55; color: #fff;
+.hp-avatar i { position: absolute; left: 50%; bottom: -.75em; width: 1.5em; height: 1.5em; margin-left: -.75em; border-radius: 50%; background: #fff; color: #111;
   font: 700 1.2em/1.25em var(--font); font-style: normal; text-align: center; }
 .hp-act { display: flex; flex-direction: column; align-items: center; gap: .2em; }
 .hp-act svg { width: 2.9em; height: 2.9em; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .4)); }
@@ -74,7 +74,9 @@
   position: absolute; left: 10%; right: 10%; bottom: 13%; padding: .35em .5em; border-radius: .5em; text-align: center;
   font-size: 1.2em; font-weight: 600; color: #fff; background: rgba(0, 0, 0, .55);
 }
-.hp-alert { position: absolute; left: 8%; right: 8%; bottom: calc(13% - .45em); height: 3.3em; border-radius: .8em; border: 2px solid var(--warn); }
+.hp-alert { position: absolute; left: 8%; right: 8%; bottom: calc(13% - .45em); height: 3.3em; border-radius: .8em;
+  box-shadow: inset 0 0 0 2px #fff, 0 0 0 1px rgba(0, 0, 0, .45);
+  background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, .32) 0 4px, rgba(255, 255, 255, .06) 4px 9px); } /* 和画面遮挡里“被挡住”的框一样 */
 /* 扫描线 + 上方拖尾（往下扫时拖尾在后面） */
 .hp-scan { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--brand); box-shadow: 0 0 12px var(--brand); }
 .hp-scan::before { content: ""; position: absolute; left: 0; right: 0; bottom: 2px; height: 60px; background: linear-gradient(transparent, var(--brand-glow)); }

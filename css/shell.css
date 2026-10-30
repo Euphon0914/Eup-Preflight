@@ -115,7 +115,7 @@ body.dragging .drag-glow { opacity: 1; }
 .count { font-size: 11px; font-weight: 600; min-width: 20px; padding: 0 6px; border-radius: 999px; background: var(--fill); color: var(--muted); text-align: center; line-height: 20px; }
 .count:empty:not(.dot) { display: none; }
 .count.warn { background: var(--warn-bg); color: var(--warn); }
-.count.fail { background: var(--fail-bg); color: var(--fail); }
+.count.fail { background: var(--fail); color: var(--on-fail); }
 .count.dot { min-width: 8px; width: 8px; height: 8px; padding: 0; background: var(--brand); }
 
 /* ---------- 右：大标题 ---------- */
@@ -145,8 +145,8 @@ body.dragging .drag-glow { opacity: 1; }
 .stages li.done .st-ico { background: var(--brand); }
 .stages li.done .st-ico svg { display: block; }
 .stages li.on .st-ico { border: 2px solid var(--line-strong); border-top-color: var(--brand-ink); animation: st-spin .8s linear infinite; }
-.stages li.err .st-ico { background: var(--fail); }
-.stages li.err .st-ico::after { content: "\00D7"; color: #fff; font-size: 13px; font-weight: 700; line-height: 1; }
+.stages li.err .st-ico { background: var(--fail); color: var(--on-fail); }
+.stages li.err .st-ico::after { content: "\00D7"; color: inherit; font-size: 13px; font-weight: 700; line-height: 1; }
 @keyframes st-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
   .stages li.on .st-ico { animation: none; border-top-color: var(--line-strong); }

@@ -4,7 +4,8 @@
    设计方向：Apple 液态玻璃（Liquid Glass），黑白灰 + 霓虹柠檬品牌色。
      · 界面本身只用黑、白、灰；次要强调色 = 纯黑（深色模式下纯白）
      · 品牌色霓虹柠檬只表示“行动”和“进行中”：主按钮、选中步骤、进度条和扫描线、焦点框、logo
-     · 状态标记（通过 / 警告 / 不通过）用冷色系：青 / 蓝 / 紫，靠色相区分，再加文字标签和对勾；只用在小面积的标记上
+     · 整个应用只有荧光绿一种颜色。状态标记也只用荧光绿和黑白灰：通过 = 荧光绿，警告 = 灰，不通过 = 实心黑（深色模式下实心白），
+       越严重越“重”；再加上 × / ! / ✓ 图标和文字，不只靠颜色区分
      · 大块容器是半透明“玻璃”：背景模糊 + 细的高光描边；内部小卡片只用半透明底，不再叠加模糊（省性能）
    ============================================================ */
 
@@ -22,10 +23,11 @@
   --accent: #1d1d1f;                        /* 黑白灰：强调色就是黑 */
   --accent-weak: rgba(0, 0, 0, .06);
   --on-accent: #ffffff;
-  /* 状态色：全部用冷色系，靠色相拉开距离（青 → 蓝 → 紫，越往紫越严重），再加上文字标签和对勾，不只靠颜色 */
-  --pass: #08696a; --pass-bg: rgba(8, 105, 106, .12);   /* 通过：青 */
-  --warn: #1d55c4; --warn-bg: rgba(29, 85, 196, .11);    /* 警告：蓝 */
-  --fail: #6b33d1; --fail-bg: rgba(107, 51, 209, .11);   /* 不通过：紫 */
+  /* 状态色：只用荧光绿和黑白灰（见文件开头）。--x 是文字 / 线条 / 实心块的颜色，--x-bg 是浅底，--on-fail 是实心“不通过”上的字 */
+  --pass: #3d5600; --pass-bg: rgba(200, 240, 60, .45);   /* 通过：深橄榄字 + 荧光绿浅底 */
+  --warn: #5a5a5f; --warn-bg: rgba(0, 0, 0, .08);        /* 警告：灰 */
+  --fail: #1d1d1f; --fail-bg: rgba(0, 0, 0, .07);        /* 不通过：黑（徽章、图标用实心黑底白字） */
+  --on-fail: #ffffff;
   --info: #3c3c43; --info-bg: rgba(0, 0, 0, .06);
   --na: #8e8e93;   --na-bg: rgba(0, 0, 0, .05);
   --radius: 18px;
@@ -70,9 +72,10 @@
     --accent: #f5f5f7;
     --accent-weak: rgba(255, 255, 255, .10);
     --on-accent: #0a0a0b;
-    --pass: #45d4c8; --pass-bg: rgba(69, 212, 200, .14);
-    --warn: #7aa7ff; --warn-bg: rgba(122, 167, 255, .16);
-    --fail: #b794ff; --fail-bg: rgba(183, 148, 255, .16);
+    --pass: #C8F03C; --pass-bg: rgba(200, 240, 60, .16);
+    --warn: #b5b5ba; --warn-bg: rgba(255, 255, 255, .12);
+    --fail: #f5f5f7; --fail-bg: rgba(255, 255, 255, .1);
+    --on-fail: #111113;
     --info: #d1d1d6; --info-bg: rgba(255, 255, 255, .08);
     --na: #8e8e93;   --na-bg: rgba(255, 255, 255, .06);
     --glass: rgba(38, 38, 42, .46);
@@ -207,7 +210,7 @@ input[type=range] { accent-color: var(--accent); }
 .badge { display: inline-block; padding: 0 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; line-height: 20px; white-space: nowrap; }
 .badge.pass { color: var(--pass); background: var(--pass-bg); }
 .badge.warn { color: var(--warn); background: var(--warn-bg); }
-.badge.fail { color: var(--fail); background: var(--fail-bg); }
+.badge.fail { color: var(--on-fail); background: var(--fail); } /* 不通过：实心，最重 */
 .badge.info { color: var(--info); background: var(--info-bg); }
 .badge.na, .badge.pending { color: var(--na); background: var(--na-bg); }
 .tag { font-size: 11.5px; color: var(--muted); border: 1px solid var(--line-strong); padding: 0 8px; border-radius: 999px; }

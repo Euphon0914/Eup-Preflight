@@ -14,8 +14,8 @@
 /* ---------- 画面遮挡检查：遮挡区域预览 ---------- */
 .zone-preview { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 20px; align-items: start; }
 .phone { position: relative; width: 180px; background: #1d2026; border-radius: 18px; border: 6px solid #2c3038; overflow: hidden; }
-.zone { position: absolute; background: rgba(239, 68, 68, .28); border: 1px solid rgba(239, 68, 68, .75); display: grid; place-items: center; overflow: hidden; }
-.zone-area { position: absolute; border: 1.5px dashed #22c55e; }
+.zone { position: absolute; border-radius: 4px; background: rgba(255, 255, 255, .14); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55); display: grid; place-items: center; overflow: hidden; }
+.zone-area { position: absolute; border: 1.5px dashed rgba(255, 255, 255, .7); border-radius: 4px; }
 .zone span { font-size: 10px; line-height: 1.2; color: #fff; text-align: center; padding: 2px; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
 .zone-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .zone-list li { display: flex; flex-direction: column; gap: 1px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; }
@@ -42,19 +42,19 @@
 .occ-boxes, .occ-zl { position: absolute; inset: 0; pointer-events: none; }
 /* ---------- 画面上的框（画面遮挡、封面适配共用一套样式） ----------
    和玻璃风格保持一致：圆角、细实线、玻璃小胶囊标签；不用彩色虚线和直角色块。
-   白色 = 系统给出的（识别到的文字、界面区域、裁切范围）；柠檬色 = 自己标的；状态色（紫）= 有问题 */
+   白色细框 = 系统给出的（识别到的文字、界面区域、裁切范围）；柠檬色 = 自己标的；白色粗框 + 斜纹 = 有问题（被挡住）
+   （叠在视频画面上，不能用“不通过”的黑色，深色画面上会看不见） */
+:root { --hatch: repeating-linear-gradient(-45deg, rgba(255, 255, 255, .32) 0 4px, rgba(255, 255, 255, .06) 4px 9px); }
 /* 识别到的文字：半透明白底，像荧光笔涂过 */
 .ob { position: absolute; border-radius: 4px; background: rgba(255, 255, 255, .2); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55); }
 .ob span { position: absolute; left: 0; bottom: calc(100% + 3px); font-size: 10px; line-height: 17px; padding: 0 7px; border-radius: 999px; white-space: nowrap;
   color: #fff; background: rgba(18, 18, 20, .58); border: 1px solid rgba(255, 255, 255, .18); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
-.ob.bad { background: color-mix(in srgb, var(--fail) 26%, transparent); box-shadow: inset 0 0 0 1.5px var(--fail), 0 0 14px color-mix(in srgb, var(--fail) 45%, transparent); }
-.ob.bad span { background: var(--fail); border-color: transparent; }
+.ob.bad, .ob.manual.bad, .oz.hit { background: var(--hatch); box-shadow: inset 0 0 0 2px #fff, 0 0 0 1px rgba(0, 0, 0, .45); }
+.ob.bad span, .ob.manual.bad span, .oz.hit span { background: #fff; color: #111; border-color: transparent; font-weight: 600; }
 /* 平台界面区域：磨砂的浅色块 */
 .oz { position: absolute; border-radius: 6px; background: rgba(255, 255, 255, .08); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3); }
 .oz span { position: absolute; right: 3px; top: 3px; font-size: 9.5px; line-height: 15px; padding: 0 6px; border-radius: 999px; color: rgba(255, 255, 255, .9);
   background: rgba(18, 18, 20, .55); max-width: calc(100% - 6px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.oz.hit { background: color-mix(in srgb, var(--fail) 16%, transparent); box-shadow: inset 0 0 0 1.5px var(--fail); }
-.oz.hit span { background: var(--fail); color: #fff; }
 .occ-zl.mock .oz { background: rgba(10, 10, 12, .55); border: 0; }    /* 仅预览：像真实界面一样压暗 */
 .occ-zl.mock .oz span { left: 50%; right: auto; top: 50%; transform: translate(-50%, -50%); background: none; font-size: 10.5px; }
 .occ-controls { display: flex; align-items: center; gap: 10px; }
@@ -77,7 +77,7 @@
 .occ-timeline { margin-top: 18px; }
 .tl-track { position: relative; height: 26px; border-radius: 6px; background: var(--fill); cursor: pointer; }
 .tl-track .m { position: absolute; top: 5px; width: 6px; height: 16px; margin-left: -3px; border-radius: 2px; border: 0; padding: 0; cursor: pointer; }
-.m.occ { background: var(--fail); }
+.m.occ { background: var(--fail); }   /* 时间轴：被挡住 = 实心黑（白） */
 .m.crop { background: var(--warn); }
 .tl-track .m.on { outline: 2px solid var(--accent); outline-offset: 1px; }
 .tl-head { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--text); border-radius: 1px; pointer-events: none; }
@@ -165,7 +165,7 @@
 .mb .hd[data-h=sw] { left: 0; top: 100%; cursor: nesw-resize; }
 .mb-del { position: absolute; right: -10px; top: -10px; width: 20px; height: 20px; border-radius: 50%; color: #fff; font: 600 13px/20px sans-serif; text-align: center; cursor: pointer; z-index: 3;
   background: rgba(18, 18, 20, .75); box-shadow: 0 0 0 1px rgba(255, 255, 255, .25), 0 2px 6px rgba(0, 0, 0, .35); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
-.mb-del:hover { background: var(--fail); }
+.mb-del:hover { background: #fff; color: #111; }
 .occ-manual { position: absolute; inset: 0; pointer-events: none; }
 .cover-manual { position: absolute; inset: 0; pointer-events: none; }
 .cover-manual.on { pointer-events: auto; cursor: crosshair; }
@@ -173,8 +173,7 @@
 .occ-manual.on { pointer-events: auto; cursor: crosshair; background: rgba(0, 0, 0, .12); }
 .ob.manual { background: rgba(200, 240, 60, .14); box-shadow: inset 0 0 0 1.5px var(--brand); }
 .ob.manual span { background: var(--brand); color: var(--on-brand); border-color: transparent; }
-.ob.manual.bad { background: color-mix(in srgb, var(--fail) 26%, transparent); box-shadow: inset 0 0 0 1.5px var(--fail), 0 0 14px color-mix(in srgb, var(--fail) 45%, transparent); }
-.ob.manual.bad span { background: var(--fail); color: #fff; }
+
 .man-list:empty { display: none; }
 .man-list { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; }
 .man-head { display: flex; flex-direction: column; gap: 1px; }

@@ -150,7 +150,7 @@ export function bindFrameSlider() {
 
 const frameImg = (url, cap) => `<figure><img src="${url || ''}" alt="${cap}" ${url ? '' : 'hidden'}>${url ? '' : '<div class="hint">截帧失败</div>'}<figcaption>${cap}</figcaption></figure>`;
 
-/** 响度刻度尺：-30 ~ 0 LUFS，绿色区间为平台建议范围，两个标记分别是处理前 / 后 */
+/** 响度刻度尺：-30 ~ 0 LUFS，荧光绿区间为平台建议范围，两个标记分别是处理前 / 后 */
 function renderLoudBar(o, f) {
   if (o.loud?.audioSilent && f.loud?.audioSilent) return '<p class="hint">音轨全程静音，没有响度可比较。</p>';
   if (!o.loud && !f.loud) return '<p class="hint">没有音轨或未完成声音分析。</p>';
@@ -166,7 +166,7 @@ function renderLoudBar(o, f) {
       ${marker(o, 'before', '处理前')}${marker(f, 'after', '处理后')}
     </div>
     <div class="lticks">${ticks}</div>
-    <p class="hint">整体响度（LUFS，越靠右越响）；绿色是${currentPlatform().name}建议范围 ${lo} ～ ${hi}。
+    <p class="hint">整体响度（LUFS，越靠右越响）；荧光绿是${currentPlatform().name}建议范围 ${lo} ～ ${hi}。
       真峰值：${o.loud?.truePeakDBTP ?? '—'} → ${f.loud?.truePeakDBTP ?? '—'} dBTP。</p>`;
 }
 

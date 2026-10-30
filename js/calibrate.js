@@ -265,7 +265,7 @@ function renderDraftBar() {
 function renderModeHint() {
   document.querySelectorAll('#modeSeg button').forEach((b) => b.classList.toggle('on', b.dataset.mode === S.mode));
   $('#modeHint').textContent = S.mode === 'area'
-    ? '拖动绿色虚线框，调整视频实际显示的范围'
+    ? '拖动荧光绿虚线框，调整视频实际显示的范围'
     : '拖动空白处新建；拖框移动，拖角或边调整大小；Delete 删除';
 }
 
