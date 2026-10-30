@@ -237,7 +237,7 @@ body.on-hero .brand-sub { display: none; } /* 首屏有大标题，顶栏副标�
 .app-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
 .bar-left, .bar-right { display: flex; align-items: center; gap: 4px; min-width: 0; }
 .bar-left { gap: 10px; }
-.bar-right { justify-content: flex-end; }
+.bar-right { grid-column: -2 / -1; justify-content: flex-end; } /* 固定在最后一列：首屏隐藏中间的平台切换时也不会挪到中间 */
 .bar-center { display: flex; align-items: center; gap: 10px; }
 .bar-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
 .bar-div { width: 1px; height: 18px; margin: 0 6px; background: var(--line-strong); }
@@ -245,6 +245,8 @@ body.on-hero .brand-sub { display: none; } /* 首屏有大标题，顶栏副标�
 .bar-btn { display: inline-flex; align-items: center; gap: 6px; }
 .bar-btn svg { flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .lang-btn { font: 600 12px/1 var(--mono); letter-spacing: .02em; }
+/* 首屏：只留品牌、语言和深浅色；首页按钮（已经在首页了）和平台切换、最近、高级（检查视频时才用）进入工作台再出现 */
+body.on-hero #homeNav, body.on-hero .bar-center, body.on-hero .bar-right .menu-wrap, body.on-hero #advBtn, body.on-hero .bar-div, body.on-hero #advPanel { display: none; }
 /* 深浅色切换：只有图标的方形按钮；浅色时显示月亮，深色时显示太阳 */
 .icon-btn { width: 34px; padding: 0; display: inline-grid; place-items: center; }
 .icon-btn svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
