@@ -414,4 +414,8 @@ export default {
   "没有统计、广告或追踪代码，也不用注册登录；深浅色、语言这些设置只记在你的浏览器里。": "No analytics, ads, or tracking code, and no account to sign up for; settings like theme and language stay in your browser.",
   "随时删。": "Delete anytime.",
   "最近导入的 5 个视频（合计不超过 3 GB）和处理结果只存在这个浏览器里，在「技术体检 › 历史」随时删除；清除网站数据会全部删掉，电脑上的原文件不受影响。": "The last 5 imported videos (up to 3 GB in total) and processed results live only in this browser — delete them anytime in “Tech check › History”. Clearing the site's data removes everything; the original files on your computer aren't touched.",
+  "发布到": "Posting to",
+  "中": "中",
+  "Switch to Chinese（切换到中文）": "Switch to Chinese（切换到中文）",
+  "切换到英文（Switch to English）": "切换到英文（Switch to English）",
 };

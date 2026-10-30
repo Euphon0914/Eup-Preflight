@@ -21,12 +21,14 @@ function applyTheme(dark) {
   b.setAttribute('aria-label', b.title);
 }
 
-function renderLangSeg() {
-  document.querySelectorAll('#langSeg button').forEach((b) => {
-    const on = b.dataset.lang === getLang();
-    b.classList.toggle('on', on);
-    b.setAttribute('aria-pressed', String(on));
-  });
+/** 语言按钮显示“要切换到的语言”：中文时显示 EN，英文时显示“中”（按钮标了 translate="no"，提示文字在这里直接写好两种语言） */
+function renderLangBtn() {
+  const b = $('#langBtn');
+  const en = getLang() === 'en';
+  b.textContent = en ? '中' : 'EN';
+  b.title = en ? 'Switch to Chinese（切换到中文）' : '切换到英文（Switch to English）';
+  b.setAttribute('aria-label', b.title);
+  b.lang = en ? 'zh-CN' : 'en';
 }
 
 export function mountPrefs() {
@@ -36,19 +38,18 @@ export function mountPrefs() {
   } finally {
     document.documentElement.classList.remove('i18n-pending');
   }
-  renderLangSeg();
+  renderLangBtn();
 
   $('#themeBtn').addEventListener('click', () => {
     const dark = !isDark();
     applyTheme(dark);
     write('theme', dark ? 'dark' : 'light');
   });
-  $('#langSeg').addEventListener('click', (e) => {
-    const l = e.target.closest('button[data-lang]')?.dataset.lang;
-    if (!l || l === getLang()) return;
+  $('#langBtn').addEventListener('click', () => {
+    const l = getLang() === 'en' ? 'zh' : 'en';
     setLang(l);
     write('lang', l);
-    renderLangSeg();
+    renderLangBtn();
     notify('lang'); // 各模块重新渲染（代码里用 t() 生成的文字跟着换）
   });
 }

@@ -199,7 +199,14 @@ body.dragging .drag-glow { opacity: 1; }
   .brand-sub { display: none; }
   .panel-title h1 { font-size: 23px; }
 }
+@media (max-width: 760px) {
+  /* 顶栏两行：品牌 + 工具一行，平台切换单独一行居中 */
+  .app-bar { grid-template-columns: minmax(0, 1fr) auto; row-gap: 8px; }
+  .bar-center { grid-column: 1 / -1; grid-row: 2; justify-content: center; }
+}
 @media (max-width: 560px) {
   .topbar { flex-wrap: wrap; }
   .top-actions { flex-wrap: wrap; }
+  .bar-btn .bar-txt { display: none; } /* 只留图标（按钮有 aria-label / title） */
+  .bar-btn { padding-left: 9px; padding-right: 9px; }
 }
