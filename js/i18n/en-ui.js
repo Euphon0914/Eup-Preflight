@@ -3,7 +3,6 @@
 // 补漏翻：python3 scripts/i18n-extract.py，或在英文模式下看 window.__i18nMisses。说明见 js/core/i18n.js
 export default {
   "回到首页": "Back to home",
-  "Eup 的个人作品": "A personal project by Eup",
   "Preflight for 抖音 / TikTok · 技术、遮挡、封面一站检查 · 本机处理，不上传": "Preflight for Douyin / TikTok · Tech, occlusion, and cover checks in one place · Runs locally, nothing uploaded",
   "目标平台": "Target platform",
   "最近": "Recent",
