@@ -6,7 +6,8 @@ import { state, subscribe, notify, goto, autoChecksEnabled, setAutoChecks } from
 import { $, esc, fmtClock, fmtRate, showError, renderTimings, setHTML } from './ui.js';
 import { loadVideo, loadTestVideo } from './media.js';
 import { listRecent, openRecent } from '../lib/recent-videos.js';
-import { animate, stagger, SPRING } from './motion.js';
+import { animate, stagger, SPRING, DUR, EASE } from './motion.js';
+import { attachSegSlider } from './seg-slider.js';
 import { terminateFFmpeg } from '../lib/ffmpeg-tools.js';
 
 // ---------- 步骤导航（一级标签）+ 右侧大标题 ----------
@@ -16,6 +17,8 @@ const TITLES = {
   cover: ['封面适配', '选一帧或上传封面图，按平台的各个封面比例裁切预览并导出'],
   summary: ['总报告', '所有检查结果汇总在一起，按轻重排好，每条附原因和修改建议'],
 };
+let shownTab = null; // 上一次显示的步骤（切换步骤时右侧内容淡入）
+
 function renderTabs() {
   document.querySelectorAll('#mainTabs button[data-tab]').forEach((b) => {
     const on = b.dataset.tab === state.tab;
@@ -26,6 +29,11 @@ function renderTabs() {
   const [t, sub] = TITLES[state.tab] || ['', ''];
   $('#panelTitle').textContent = t;
   $('#panelSub').textContent = sub;
+  if (shownTab && shownTab !== state.tab) {
+    const panel = document.querySelector(`[data-panel="${state.tab}"]`);
+    [document.querySelector('.panel-title'), panel].forEach((el) => animate(el, { opacity: [0, 1], y: [8, 0] }, { duration: DUR.base, ease: EASE }));
+  }
+  shownTab = state.tab;
 }
 
 // ---------- 顶栏：“最近”菜单（最近导入的视频，点一下直接载入） ----------
@@ -241,6 +249,10 @@ function bindEvents() {
 /** 挂载外壳：绑定事件，并在状态变化时刷新左栏、标签、平台按钮 */
 export function mountShell() {
   bindEvents();
+  // 选中块滑动：步骤导航、平台、技术体检的二级标签、预览原片 / 处理后、遮挡和封面里的分段控件
+  attachSegSlider($('#mainTabs'), 'button[data-tab]');
+  attachSegSlider($('#techTabs'), 'button[data-subtab]');
+  ['#platformSeg', '#previewSeg', '#occSrcSeg', '#coverSrcSeg', '#coverEditSeg'].forEach((s) => attachSegSlider($(s), 'button'));
   renderPlatforms();
   renderTimings();
   subscribe((reason) => {

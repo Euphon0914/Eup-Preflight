@@ -150,7 +150,7 @@ a { color: var(--text); text-underline-offset: 3px; }
   font: inherit; font-size: 13px; font-weight: 500; color: var(--text); background: var(--surface);
   border: 1px solid var(--line); border-radius: 999px;
   padding: 6px 15px; cursor: pointer; white-space: nowrap;
-  transition: background .2s, transform .12s, box-shadow .2s;
+  transition: background .2s, transform var(--dur-fast) cubic-bezier(.34, 1.56, .64, 1), box-shadow .2s; /* 松开时轻微回弹 */
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5);
 }
 .btn:hover { background: var(--glass-strong); }
@@ -173,6 +173,21 @@ a.btn { display: inline-block; text-decoration: none; } /* 链接做成按钮样
 .seg button.on { background: var(--glass-strong); color: var(--text); font-weight: 600; box-shadow: 0 2px 8px rgba(0, 0, 0, .1), inset 0 1px 0 rgba(255, 255, 255, .6); }
 .seg button:disabled { opacity: .4; cursor: not-allowed; }
 .seg-sm button { font-size: 12px; padding: 2px 12px; }
+
+/* 选中块（js/core/seg-slider.js）：分段控件、步骤导航、二级标签切换时，选中背景滑到新选项上 */
+.has-thumb { position: relative; }
+.has-thumb.has-thumb > button { position: relative; z-index: 1; }
+.has-thumb.has-thumb > button.on { background: transparent; box-shadow: none; }
+/* 选择器写两遍提高优先级：shell.css 的 .left > .glass > * 会把玻璃块的子元素都设成 relative */
+.has-thumb.has-thumb > .seg-thumb {
+  position: absolute; z-index: 0; pointer-events: none; border-radius: 999px; transition: opacity var(--dur-fast);
+  background: var(--glass-strong); box-shadow: 0 2px 8px rgba(0, 0, 0, .1), inset 0 1px 0 rgba(255, 255, 255, .6);
+}
+.steps .seg-thumb { border-radius: 16px; box-shadow: 0 4px 14px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .55); }
+.subtabs .seg-thumb { background: var(--surface); box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
+@media (prefers-color-scheme: dark) {
+  .seg-thumb { box-shadow: 0 2px 8px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .1); }
+}
 
 select, input[type=number], input[type=text], textarea {
   font: inherit; font-size: 13px; color: var(--text); background: var(--surface);
