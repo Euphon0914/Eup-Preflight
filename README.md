@@ -28,7 +28,10 @@ python3 serve.py 3000
 
 ## 使用
 
-界面是 Apple 液态玻璃风格（黑白灰，跟随系统浅色 / 深色）：
+界面是 Apple 液态玻璃风格：黑白灰 + 霓虹柠檬品牌色（`#C8F03C`，只用在主按钮、选中步骤、进度条和扫描线等“行动 / 进行中”的地方；通过 / 警告 / 不通过仍是绿 / 橙 / 红），跟随系统浅色 / 深色，演示推荐深色模式：
+
+- **首屏**：没有载入视频时显示——大标题、大拖放区、手机框里循环播放的检查演示、三项能力卡片，背景是缓慢流动的柔光（Canvas，只在首屏运行）。导入视频后拖放区“飞”进工作台。点顶栏的 logo 可以随时回到首屏，再点“继续检查”回到当前视频。打开页面时如果会自动载入上次的视频，就直接进入工作台、不显示首屏（演示前可在「技术体检 › 历史」里关掉自动载入）。
+- **动效**：分析中视频上有扫描线、进度显示为逐步打勾的阶段清单；结论出来时图标一笔画出、数字滚动、问题依次出现；一键修复完成后解决了的问题翻转成“通过”、下载按钮亮一下；对比页的截帧可以拖动分隔线对比处理前后。系统开了“减少动态效果”时只保留很短的淡入。
 
 - **左侧栏**：上面是四个检查步骤（技术体检 / 画面遮挡 / 封面适配 / 总报告，带问题数），下面是视频卡片（预览 + 关键参数）。拖入一次视频（或点“选择视频”，没有素材可以“生成一段测试视频”），所有步骤共用这个视频和读到的参数，不会重复加载。
 - **右侧**：当前步骤的内容，顶部是大标题和一句说明。
@@ -161,6 +164,7 @@ css/base.css                 通用样式：颜色（含深色模式）、液态
 css/shell.css                外壳布局：工作台、左侧栏（步骤导航、视频卡片）、右侧大标题、进度条、错误提示
 css/tech.css                 技术体检：体检 / 修复弹窗 / 对比 / 历史
 css/modules.css              二级标签、画面遮挡检查、总报告
+css/hero.css                 首屏：大标题、拖放区、手机框演示、能力卡片
 css/calibrate.css            校准页
 js/main.js                   入口：读配置 → 挂载外壳和各模块
 js/core/store.js             共享状态 + 事件通知（视频、参数、平台、标签页）
@@ -168,7 +172,12 @@ js/core/config.js            读取并检查 config/platforms.json
 js/core/media.js             拖入视频、读参数、分析响度（全站只做一次）
 js/core/shell.js             顶栏（平台、最近、高级）、步骤导航和大标题、视频卡片（预览 + 关键参数）、拖放、取消
 js/core/compat.js            浏览器兼容提示（缺少需要的能力或没测试过的浏览器）
-js/core/ui.js                通用界面工具：格式化、状态标签、进度条、错误提示、耗时表
+js/core/ui.js                通用界面工具：格式化、状态标签、结论图标、进度条和阶段清单、错误提示、耗时表
+js/core/motion.js            动效统一入口（Motion 封装）：参数、只播一次、数字滚动、依次出现、描边、飞入；减少动态效果 / 动画库缺失时直接显示最终状态
+js/core/hero.js              首屏：显示规则、手机框演示循环、回到首屏 / 继续检查、飞入工作台
+js/core/seg-slider.js        分段控件和步骤导航的选中块滑动
+js/core/glass-light.js       玻璃上的鼠标反光（只在桌面端）
+js/lib/hero-canvas.js        首屏背景柔光（Canvas，限 30 帧、1.5 倍分辨率，离开首屏即停）
 js/core/box-editor.js        画框、拖动、拖角缩放（手动框选文字用）
 js/lib/probe.js              mediainfo.js 读参数 → 统一指标
 js/lib/rules-engine.js       技术规格判定（通过 / 警告 / 不通过 / 提示 / 不适用）
@@ -228,6 +237,7 @@ THIRD_PARTY_NOTICES.md       第三方组件的版本、许可证和原文（ffm
 | @ffmpeg/core | 0.12.10 | 单线程核心 |
 | @ffmpeg/core-mt | 0.12.10 | 多线程核心（可选） |
 | mediabunny | 1.61.3 | WebCodecs 测速页的解封装 / 封装 |
+| motion | 14.2.0 | 界面动效（UMD 单文件 `vendor/motion/motion.js`） |
 | tesseract.js | 7.0.0 | 文字识别（画面遮挡检查） |
 | tesseract.js-core | 7.0.0 | 文字识别 wasm（只用 LSTM 版） |
 | @tesseract.js-data/chi_sim、eng | 1.0.0（4.0.0_best_int） | 中文、英文语言数据 |
@@ -240,6 +250,7 @@ THIRD_PARTY_NOTICES.md       第三方组件的版本、许可证和原文（ffm
 
 | 放到 | 下载地址 |
 |---|---|
+| `vendor/motion/motion.js` | https://cdn.jsdelivr.net/npm/motion@14.2.0/dist/motion.js ；npmmirror 不能单独下载，取整包 https://registry.npmmirror.com/motion/-/motion-14.2.0.tgz 里的 `package/dist/motion.js` |
 | `vendor/tesseract/tesseract.esm.min.js` | https://registry.npmmirror.com/tesseract.js/7.0.0/files/dist/tesseract.esm.min.js |
 | `vendor/tesseract/worker.min.js` | https://registry.npmmirror.com/tesseract.js/7.0.0/files/dist/worker.min.js |
 | `vendor/tesseract-core/tesseract-core-lstm.wasm.js` | https://registry.npmmirror.com/tesseract.js-core/7.0.0/files/tesseract-core-lstm.wasm.js |
@@ -250,6 +261,8 @@ THIRD_PARTY_NOTICES.md       第三方组件的版本、许可证和原文（ffm
 
 ## 已知限制
 
+- **界面动效依赖 `vendor/motion/`**：缺这个文件时页面照常可用，只是没有动画（控制台有一条提示）。浏览器窗口不可见时动画会暂停，回到窗口后继续；数字和图标到时间会直接显示最终值。
+- **logo 是占位色块**：正式 logo 确定后替换 `css/base.css` 的 `.logo` / `.sign-mark` 和四个页面的 favicon。
 - **TikTok**：技术规格的官方部分来自开发者文档（App 内上传可能略有不同，时长权限因账号而异）；“上传前瘦身”参数、码率等仍是经验值；界面遮挡区域和封面角标暂时参照抖音的数值。
 - **校准页**：一次只能对一张截图校准；不同手机屏幕比例不同（如 9:19.5 和 9:16），区域按百分比保存，换比例差别较大的手机时建议分别核对。浏览器不能直接写项目文件，需要手动替换下载的 platforms.json。
 - **总报告针对原视频**：用「一键修复」生成处理后的版本后，总报告顶部会提示处理后版本还剩几项问题，但列表仍是原视频的结果。
