@@ -10,3 +10,7 @@ dist/
 # macOS
 .DS_Store
 .superpowers/
+
+# 个人资料：参赛材料、设计参考截图（不放进公开仓库）
+参赛材料/
+参考截图/
