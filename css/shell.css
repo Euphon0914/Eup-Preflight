@@ -95,8 +95,17 @@ body.dragging .drag-glow { opacity: 1; }
 .steps button:active { transform: scale(.985); }
 .steps button.on { background: var(--glass-strong); box-shadow: 0 4px 14px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .55); }
 .step-ico { position: relative; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: var(--fill); color: var(--muted); flex: none; transition: background .2s, color .2s; }
-/* 后台检查中（画面遮挡、封面在后台跑）：图标外一圈转动的品牌色细环 */
-.steps button.busy .step-ico::after { content: ""; position: absolute; inset: -4px; border-radius: 14px; border: 2px solid transparent; border-top-color: var(--brand-ink); border-right-color: var(--brand-ink); animation: st-spin .9s linear infinite; }
+/* 后台检查中（画面遮挡、封面在后台跑）：一段品牌色亮光沿着图标外的圆角框边缘绕行。
+   做法：一圈 2px 的细边（遮罩挖空中间），背景是带拖尾的锥形渐变，只转渐变的角度，框本身不动 */
+@property --ring-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.steps button.busy .step-ico::after {
+  content: ""; position: absolute; inset: -4px; border-radius: 14px; padding: 2px;
+  background: conic-gradient(from var(--ring-angle), transparent 0 55%, color-mix(in srgb, var(--brand-ink) 35%, transparent) 75%, var(--brand-ink) 97%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: ring-run 1.2s linear infinite;
+}
+@keyframes ring-run { to { --ring-angle: 360deg; } }
 .steps button.on .step-ico { background: var(--brand); color: var(--on-brand); }
 .step-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .step-txt b { font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
@@ -141,7 +150,7 @@ body.dragging .drag-glow { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   .stages li.on .st-ico { animation: none; border-top-color: var(--line-strong); }
   .media.scanning .scan { display: none; }
-  .steps button.busy .step-ico::after { animation: none; }
+  .steps button.busy .step-ico::after { animation: none; background: var(--brand-ink); opacity: .5; } /* 不转：整圈淡淡亮着 */
 }
 
 .error { background: var(--fail-bg); color: var(--fail); border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; white-space: pre-wrap; font-size: 12.5px; max-height: 180px; overflow: auto; }
