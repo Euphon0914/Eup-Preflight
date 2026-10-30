@@ -246,8 +246,10 @@ function renderEditor() {
   ed.style.setProperty('--ca', C.src.W / C.src.H);
   if (C.src.url && $('#coverImg').getAttribute('src') !== C.src.url) $('#coverImg').src = C.src.url;
   const list = results();
-  // 裁切范围：白色细框，比例标签按顺序放在不同的角上（data-corner），鼠标移到下方对应的预览卡片上时高亮（.on）
-  let html = list.map(({ r, i, crop }) => `<div class="cv-crop" data-rid="${esc(r.id)}" data-corner="${i % 4}" style="${pctRect(crop)}"><span>${esc(r.ratio.join(':'))}</span></div>`).join('');
+  // 裁切范围：先铺所有比例的暗色遮罩（叠出明暗层次），再画框线；框线和标签按顺序变淡（data-tone），
+  // 标签放在不同的角上（data-corner），鼠标移到下方对应的预览卡片上时高亮（.on）
+  let html = list.map(({ crop }) => `<div class="cv-mask" style="${pctRect(crop)}"></div>`).join('');
+  html += list.map(({ r, i, crop }) => `<div class="cv-crop" data-rid="${esc(r.id)}" data-corner="${i % 4}" data-tone="${i}" style="${pctRect(crop)}"><span>${esc(r.ratio.join(':'))}</span></div>`).join('');
   html += (C.ocr === 'done' ? C.texts : []).map((t) => `<div class="cv-text" style="${pctRect(t)}"></div>`).join('');
   // 调整主体时，手动框只显示不能编辑（编辑在 #coverManual 图层里）
   if (C.editMode !== 'text') html += C.manual.map((b, i) => `<div class="mb static" style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%"><span>标记 ${i + 1}</span></div>`).join('');
@@ -264,7 +266,7 @@ function renderManual() {
   document.querySelectorAll('#coverEditSeg button').forEach((b) => b.classList.toggle('on', b.dataset.mode === C.editMode));
   $('#coverEditHint').innerHTML = C.editMode === 'text'
     ? '在原图上拖动，框出<b>识别不到的重要文字</b>（花字、竖排字、半透明字等）；选中后可拖动、拖角调整，点 × 删除。'
-    : '白色圆角框是<b>主体</b>（最重要的部分），拖动、拖角调整；细线框是各比例的裁切范围（鼠标移到下方的预览卡片上，对应的框会高亮），半透明白块是识别到的文字，柠檬色框是手动标记的文字。';
+    : '四角取景框是<b>主体</b>（最重要的部分），拖动、拖四个角调整；画面越亮的地方，被越多封面比例保留，变暗的地方会被部分比例裁掉（鼠标移到下方的预览卡片上，对应的框会高亮）；半透明白块是识别到的文字，荧光绿框是手动标记的文字。';
 }
 
 /** 右：结论和问题列表 */
@@ -273,7 +275,7 @@ function renderSide() {
   const list = results();
   const issues = mergedIssues(list);
   const n = issues.length;
-  const ocrNote = C.ocr === 'running' || C.ocr === 'idle' ? '正在识别封面上的标题文字…' : C.ocr === 'error' ? '标题文字识别失败，只检查了主体和清晰度。' : (C.texts.length ? `识别到 ${C.texts.length} 处标题文字（半透明白块）。` : '封面上没有识别到文字。') + (C.manual.length ? ` 另有 ${C.manual.length} 处手动标记（柠檬色框）。` : C.texts.length ? '' : '如果有重要文字没认出来，可以切到「标记文字」手动框出。');
+  const ocrNote = C.ocr === 'running' || C.ocr === 'idle' ? '正在识别封面上的标题文字…' : C.ocr === 'error' ? '标题文字识别失败，只检查了主体和清晰度。' : (C.texts.length ? `识别到 ${C.texts.length} 处标题文字（半透明白块）。` : '封面上没有识别到文字。') + (C.manual.length ? ` 另有 ${C.manual.length} 处手动标记（荧光绿框）。` : C.texts.length ? '' : '如果有重要文字没认出来，可以切到「标记文字」手动框出。');
   $('#coverVerdict').innerHTML = `<div class="verdict-title">${verdictIcon(n ? 'warn' : 'pass')}${n
     ? `发现 ${n} 处需要注意`
     : `${list.length} 个比例都没问题`}</div><div class="hint">${esc(ocrNote)} 按 ${esc(pname())} 的 ${list.map(({ r }) => r.ratio.join(':')).join('、')} 检查。</div>`;

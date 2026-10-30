@@ -106,31 +106,42 @@
 .cover-editor img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
 .cover-layer { position: absolute; inset: 0; }
 .cover-editor-hint { max-width: 320px; margin: 0; }
-.cv-crop { position: absolute; border-radius: 8px; pointer-events: none; transition: box-shadow var(--dur-fast) var(--ease);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .7), 0 0 0 1px rgba(0, 0, 0, .25); }
-/* 比例标签：深色玻璃小胶囊，按顺序放在不同的角上，几个比例的框重叠时标签不会叠在一起 */
-.cv-crop span { position: absolute; font-size: 10px; line-height: 17px; padding: 0 7px; border-radius: 999px; white-space: nowrap; color: #fff;
-  background: rgba(18, 18, 20, .58); border: 1px solid rgba(255, 255, 255, .18); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+/* 裁切比例：用明暗区分。每个比例的框外面盖一层半透明暗色（.cv-mask），几层叠起来就有了层次——
+   所有比例都保留的地方最亮，只有部分比例保留的地方半暗，所有比例都会裁掉的地方最暗。
+   框线本身也按明度分档：第一个比例最亮，后面的依次变淡（data-tone） */
+.cv-mask { position: absolute; border-radius: 8px; pointer-events: none; box-shadow: 0 0 0 200vmax rgba(0, 0, 0, .3); }
+.cv-crop { position: absolute; border-radius: 8px; pointer-events: none; transition: box-shadow var(--dur-fast) var(--ease); --line: rgba(255, 255, 255, .95);
+  box-shadow: inset 0 0 0 1px var(--line); }
+.cv-crop[data-tone="1"] { --line: rgba(255, 255, 255, .55); }
+.cv-crop[data-tone="2"], .cv-crop[data-tone="3"] { --line: rgba(255, 255, 255, .35); }
+/* 比例标签：明度跟框线一致——最亮的是白底黑字，其余是深色玻璃；按顺序放在不同的角上，重叠时不会叠在一起 */
+.cv-crop span { position: absolute; font-size: 10px; font-weight: 600; line-height: 17px; padding: 0 7px; border-radius: 999px; white-space: nowrap;
+  color: #fff; background: rgba(18, 18, 20, .58); box-shadow: inset 0 0 0 1px var(--line); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   transition: background var(--dur-fast), color var(--dur-fast); }
+.cv-crop[data-tone="0"] span { color: #111; background: rgba(255, 255, 255, .92); box-shadow: none; }
 .cv-crop[data-corner="0"] span { left: 5px; top: 5px; }
 .cv-crop[data-corner="1"] span { right: 5px; top: 5px; }
 .cv-crop[data-corner="2"] span { left: 5px; bottom: 5px; }
 .cv-crop[data-corner="3"] span { right: 5px; bottom: 5px; }
 /* 鼠标移到下方的预览卡片上：对应的裁切框加粗高亮 */
-.cv-crop.on { box-shadow: inset 0 0 0 2px #fff, 0 0 0 1px rgba(0, 0, 0, .3), 0 0 22px rgba(255, 255, 255, .35); }
-.cv-crop.on span { background: #fff; color: #111; border-color: transparent; }
+.cv-crop.on { --line: #fff; box-shadow: inset 0 0 0 2px #fff, 0 0 22px rgba(255, 255, 255, .35); }
+.cv-crop.on span { background: #fff; color: #111; }
 .cv-text { position: absolute; border-radius: 4px; background: rgba(255, 255, 255, .2); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55); pointer-events: none; }
-/* 主体：白色圆角框 + 白色圆点手柄（像系统相册的裁切框） */
-.cv-subject { position: absolute; border-radius: 10px; cursor: move; background: rgba(255, 255, 255, .06);
-  box-shadow: inset 0 0 0 2px #fff, 0 0 0 1px rgba(0, 0, 0, .3), 0 6px 24px rgba(0, 0, 0, .3); }
-/* “主体”标签放在框里面的左上角：放外面会和裁切框的比例标签挤在一起 */
-.cv-subject > span { position: absolute; left: 6px; top: 6px; font-size: 10.5px; font-weight: 600; line-height: 18px; padding: 0 8px; border-radius: 999px;
-  color: #111; background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); pointer-events: none; }
-.cv-subject .hd { position: absolute; width: 12px; height: 12px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 1px 4px rgba(0, 0, 0, .45); }
-.cv-subject .hd[data-h=nw] { left: 0; top: 0; cursor: nwse-resize; }
-.cv-subject .hd[data-h=ne] { left: 100%; top: 0; cursor: nesw-resize; }
-.cv-subject .hd[data-h=se] { left: 100%; top: 100%; cursor: nwse-resize; }
-.cv-subject .hd[data-h=sw] { left: 0; top: 100%; cursor: nesw-resize; }
+/* 主体：相机取景框——四个白色粗角标（就是拖拽手柄）+ 很淡的细边 + 中心十字准星；“主体”标签在框下方居中 */
+.cv-subject { position: absolute; cursor: move; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .4); }
+.cv-subject::after { content: ""; position: absolute; left: 50%; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; pointer-events: none; opacity: .9;
+  background: linear-gradient(#fff, #fff) center / 1.5px 100% no-repeat, linear-gradient(#fff, #fff) center / 100% 1.5px no-repeat;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, .6)); }
+.cv-subject > span { position: absolute; left: 50%; top: calc(100% + 7px); transform: translateX(-50%); font-size: 10.5px; font-weight: 600; line-height: 18px;
+  padding: 0 9px; border-radius: 999px; white-space: nowrap; color: #111; background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, .35); pointer-events: none; }
+.cv-subject .hd { position: absolute; width: 18px; height: 18px; border: 0 solid #fff; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .55));
+  transition: border-color var(--dur-fast); }
+.cv-subject .hd::before { content: ""; position: absolute; inset: -8px; } /* 角标细，扩大可拖的范围 */
+.cv-subject .hd[data-h=nw] { left: -3px; top: -3px; border-width: 3px 0 0 3px; border-top-left-radius: 9px; cursor: nwse-resize; }
+.cv-subject .hd[data-h=ne] { right: -3px; top: -3px; border-width: 3px 3px 0 0; border-top-right-radius: 9px; cursor: nesw-resize; }
+.cv-subject .hd[data-h=se] { right: -3px; bottom: -3px; border-width: 0 3px 3px 0; border-bottom-right-radius: 9px; cursor: nwse-resize; }
+.cv-subject .hd[data-h=sw] { left: -3px; bottom: -3px; border-width: 0 0 3px 3px; border-bottom-left-radius: 9px; cursor: nesw-resize; }
+.cv-subject:hover .hd, .cv-subject:active .hd { border-color: var(--brand); } /* 拿起来调整时角标变成荧光绿 */
 .cover-side { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 .crops-head { display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; margin: 22px 0 10px; }
 .crops-head .sec-title { margin: 0; }
