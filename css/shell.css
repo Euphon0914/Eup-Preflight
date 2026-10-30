@@ -53,6 +53,10 @@ body.dragging .drag-glow { opacity: 1; }
 /* ---------- 左：视频卡片 ---------- */
 .media { overflow: hidden; }
 .player { background: #000; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; }
+/* 取景器：角标画在画面里面，左上角一行等宽读数 */
+.player.vf { --vf-inset: 8px; --vf-color: rgba(255, 255, 255, .7); }
+.vf-tag { position: absolute; left: 22px; top: 11px; z-index: 3; pointer-events: none; color: rgba(255, 255, 255, .78); font-size: 10px; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
+.vf-tag:empty { display: none; }
 .player video { display: block; width: 100%; height: 210px; object-fit: contain; background: #000; }
 /* 分析 / 处理中：品牌色扫描线在视频上来回扫，上下带一圈淡光 */
 .scan { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--brand); box-shadow: 0 0 12px var(--brand), 0 0 34px var(--brand-glow);
@@ -75,8 +79,10 @@ body.dragging .drag-glow { opacity: 1; }
 .params-fold:not([open]) > summary { padding-bottom: 14px; }
 .params { margin: 0; padding: 0 12px 14px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 .params .pcell { background: var(--fill); border-radius: 12px; padding: 7px 10px; min-width: 0; }
-.params dt { margin: 0; color: var(--muted); font-size: 11px; }
-.params dd { margin: 1px 0 0; font-size: 12.5px; font-weight: 500; overflow-wrap: anywhere; line-height: 1.35; }
+.params dt { margin: 0; color: var(--muted); font-size: 11px; display: flex; justify-content: space-between; gap: 6px; }
+.params dt .mono-tag { font-size: 9.5px; line-height: 16px; }
+/* 参数值用等宽数字，像仪器读数；中文部分自动用普通字体 */
+.params dd { margin: 1px 0 0; font: 500 12px/1.35 var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -.02em; overflow-wrap: anywhere; }
 .params .old { color: var(--subtle); text-decoration: line-through; margin-right: 4px; font-weight: 400; }
 .params .new { color: var(--text); font-weight: 700; display: inline-block; }
 /* 修复完成：旧值的删除线从无到有画出来 */
@@ -85,7 +91,25 @@ body.dragging .drag-glow { opacity: 1; }
 .params .sub { display: block; color: var(--subtle); font-size: 11px; font-weight: 400; }
 
 /* ---------- 左：步骤导航（原来的一级标签） ---------- */
-.steps { padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+.steps { padding: 8px 8px 8px 30px; display: flex; flex-direction: column; gap: 2px; }
+/* 进度线：每个步骤左边一个节点，节点之间用细线连起来。
+   步骤可以随便点着切换，不要求按顺序做完，所以“完成”看的是这一步有没有出结果（.done，summary/index.js 标记）：
+   完成 = 荧光绿实心 + 对勾，当前 = 荧光绿圈，没做 = 灰圈；相邻两步都完成时，中间的线也亮起来 */
+.steps button::before {
+  content: ""; position: absolute; left: -22px; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--line-strong); transition: background var(--dur-base), box-shadow var(--dur-base);
+}
+.steps button:not(:last-child)::after {
+  content: ""; position: absolute; left: -15.5px; top: calc(50% + 10px); width: 1px; height: calc(100% + 2px - 20px);
+  background: var(--line-strong); transition: background var(--dur-base);
+}
+.steps button.on::before { box-shadow: inset 0 0 0 2px var(--brand-ink); }
+.steps button.done::before {
+  box-shadow: none;
+  background: var(--brand) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M4 7.2l2 2 4-4.4' fill='none' stroke='%231A2600' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat;
+}
+.steps button.done.on::before { box-shadow: 0 0 0 2px var(--glass-strong), 0 0 0 3.5px var(--brand-ink); }
+.steps button.done:has(+ button.done)::after { background: var(--brand-ink); }
 .steps button {
   position: relative; z-index: 1;
   display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
@@ -110,6 +134,8 @@ body.dragging .drag-glow { opacity: 1; }
 .steps button.on .step-ico { background: var(--brand); color: var(--on-brand); }
 .step-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .step-txt b { font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
+.step-no { margin-right: 6px; font-size: 10.5px; vertical-align: 1px; }
+.steps button.on .step-no { color: var(--brand-ink); }
 .step-txt small { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .count { font-size: 11px; font-weight: 600; min-width: 20px; padding: 0 6px; border-radius: 999px; background: var(--fill); color: var(--muted); text-align: center; line-height: 20px; }
@@ -120,6 +146,7 @@ body.dragging .drag-glow { opacity: 1; }
 
 /* ---------- 右：大标题 ---------- */
 .panel-title { display: flex; align-items: flex-end; gap: 12px; margin-bottom: 16px; }
+.panel-no { display: block; margin-bottom: 2px; }
 .panel-title h1 { margin: 0; font-size: 32px; line-height: 1.15; font-weight: 700; letter-spacing: -.03em; font-family: "SF Pro Display", var(--font); }
 .panel-title p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
@@ -166,7 +193,8 @@ body.dragging .drag-glow { opacity: 1; }
   .player video { height: 220px; }
   @keyframes scan { from { transform: translateY(0); } to { transform: translateY(218px); } }
   .right { padding: 16px 16px 20px; }
-  .steps { flex-direction: row; overflow-x: auto; order: 1; } /* 排在视频和参数下面，紧挨着下方的检查结果 */
+  .steps { flex-direction: row; overflow-x: auto; order: 1; padding: 8px; } /* 排在视频和参数下面，紧挨着下方的检查结果 */
+  .steps button::before, .steps button::after { display: none; } /* 横排胶囊：不画进度线 */
   .steps button { flex: 0 0 auto; width: auto; padding: 6px 12px 6px 6px; }
   .step-txt small { display: none; }
   .brand-sub { display: none; }

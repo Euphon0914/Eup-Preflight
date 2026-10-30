@@ -89,6 +89,8 @@
       <div class="hero-copy">
         <p class="hero-kicker">抖音 / TikTok 发片前检查 · 本机处理，不上传</p>
         <h1 class="hero-title">发片之前，<br>先 <mark>Preflight</mark> 一遍</h1>
+        <!-- 痛点：进入首屏时逐字点亮（hero.js 把文字拆成单字，读屏软件读 .sr-only 里的整句） -->
+        <p class="hero-lede" id="heroLede"><span class="sr-only">字幕被按钮挡住、封面标题被裁掉、声音被平台压低——发出去才发现，就晚了。</span></p>
         <button class="btn hero-continue" id="heroContinue" type="button" hidden>继续检查 <b id="heroContinueName"></b> →</button>
         <div id="heroDrop" class="drop hero-drop glass lit" tabindex="0">
           <div class="drop-icon" aria-hidden="true">
@@ -102,8 +104,25 @@
       </div>
       <!-- 手机框演示：扫描 → 界面区域浮现 → 字幕被挡住的位置闪烁 → 打勾，循环播放 -->
       <div class="hero-demo" aria-hidden="true">
-        <div class="hero-phone" id="heroPhone">
+        <!-- 演示进度：01 线稿 → 02 扫描 → 03 结果，和左栏步骤导航同一种节点 + 连线 -->
+        <ol class="hero-readout" id="heroReadout">
+          <li data-stage="1"><i></i><span class="mono-tag">01</span>平台界面线稿</li>
+          <li data-stage="2"><i></i><span class="mono-tag">02</span>逐帧扫描画面</li>
+          <li data-stage="3"><i></i><span class="mono-tag">03</span>标出被挡住的字幕</li>
+          <li class="rd-count"><span class="mono-tag">ISSUES</span><b class="num" id="heroIssues">0</b></li>
+        </ol>
+        <div class="hero-phone vf" id="heroPhone">
           <div class="hp-screen">
+            <!-- 线稿层：平台界面各区域的虚线框，扫描线扫过之前只看得到这一层 -->
+            <div class="hp-wire">
+              <div class="hw hw-top"><span>TABS</span></div>
+              <div class="hw hw-side"><span>ACTIONS</span></div>
+              <div class="hw hw-caption"><span>CAPTION</span></div>
+              <div class="hw hw-sub"><span>SUBTITLE</span></div>
+              <div class="hw hw-nav"><span>NAV</span></div>
+            </div>
+            <!-- 实际画面层：扫描线扫到哪里，就显示到哪里（clip-path 跟着扫描线往下展开） -->
+            <div class="hp-real">
             <!-- 仿短视频播放页：顶部标签、右侧按钮列、底部文案、导航栏（图标是通用线条画法，不是平台的标志） -->
             <div class="hp-top"><span>关注</span><span class="on">推荐</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg></div>
             <div class="hp-zone hp-side">
@@ -120,18 +139,20 @@
               <div class="hp-music"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17V6l10-2v11"/><circle cx="6.5" cy="17" r="2.5"/><circle cx="16.5" cy="15" r="2.5"/></svg><i style="width: 58%"></i></div>
             </div>
             <div class="hp-sub">这句字幕会被挡住吗？</div>
-            <div class="hp-alert"></div>
             <div class="hp-nav"><span class="on">首页</span><span>朋友</span><span class="hp-plus">+</span><span>消息</span><span>我</span></div>
+            </div>
+            <div class="hp-alert"></div>
             <div class="hp-scan"></div>
             <svg class="hp-check" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22"/><polyline points="14 25 21 32 34 17"/></svg>
           </div>
         </div>
       </div>
     </div>
+    <!-- 能力卡片：编号 + 大数字（数字从配置和修复项里算，hero.js 填写并滚动）；离开首屏时三张卡片飞进左栏的三个步骤 -->
     <div class="hero-caps">
-      <div class="hero-cap glass"><span class="step-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13a8 8 0 1 1 16 0"/><path d="M12 13l4-4"/><path d="M8 19h8"/></svg></span><div><b>技术体检</b><small>规格不对一键修复</small></div></div>
-      <div class="hero-cap glass"><span class="step-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M6 16.5h12"/><path d="M9 13h6"/></svg></span><div><b>画面遮挡</b><small>字幕会不会被按钮挡</small></div></div>
-      <div class="hero-cap glass"><span class="step-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M3.5 15l4.5-4 4 3.5 3-2.5 5 4"/><circle cx="15.5" cy="9.5" r="1.3"/></svg></span><div><b>封面适配</b><small>各比例裁切预览</small></div></div>
+      <div class="hero-cap glass"><span class="mono-tag">01 / 技术体检</span><div class="cap-stat"><b class="num" id="statFixes">13</b><small>项规格问题<br>可以一键修复</small></div></div>
+      <div class="hero-cap glass"><span class="mono-tag">02 / 画面遮挡</span><div class="cap-stat"><b class="num" id="statPlatforms">2</b><small>个平台的播放页布局<br>检查字幕会不会被挡</small></div></div>
+      <div class="hero-cap glass"><span class="mono-tag">03 / 封面适配</span><div class="cap-stat"><b class="num" id="statRatios">3</b><small>种封面比例<br>同时裁切预览</small></div></div>
     </div>
   </section>
 
@@ -142,22 +163,22 @@
       <nav class="steps glass" id="mainTabs" role="tablist" aria-label="检查步骤">
         <button role="tab" data-tab="tech" class="on">
           <span class="step-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13a8 8 0 1 1 16 0"/><path d="M12 13l4-4"/><path d="M8 19h8"/></svg></span>
-          <span class="step-txt"><b>技术体检</b><small>格式、清晰度、声音，一键修复</small></span>
+          <span class="step-txt"><b><i class="mono-tag step-no">01</i>技术体检</b><small>格式、清晰度、声音，一键修复</small></span>
           <span class="count" id="countTech"></span>
         </button>
         <button role="tab" data-tab="occlusion">
           <span class="step-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M6 16.5h12"/><path d="M9 13h6"/></svg></span>
-          <span class="step-txt"><b>画面遮挡</b><small>字幕会不会被按钮和文案挡住</small></span>
+          <span class="step-txt"><b><i class="mono-tag step-no">02</i>画面遮挡</b><small>字幕会不会被按钮和文案挡住</small></span>
           <span class="count" id="countOcc"></span>
         </button>
         <button role="tab" data-tab="cover">
           <span class="step-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M3.5 15l4.5-4 4 3.5 3-2.5 5 4"/><circle cx="15.5" cy="9.5" r="1.3"/></svg></span>
-          <span class="step-txt"><b>封面适配</b><small>各比例裁切、标题会不会被裁掉</small></span>
+          <span class="step-txt"><b><i class="mono-tag step-no">03</i>封面适配</b><small>各比例裁切、标题会不会被裁掉</small></span>
           <span class="count" id="countCover"></span>
         </button>
         <button role="tab" data-tab="summary">
           <span class="step-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg></span>
-          <span class="step-txt"><b>总报告</b><small>所有问题按轻重排好，附建议</small></span>
+          <span class="step-txt"><b><i class="mono-tag step-no">04</i>总报告</b><small>所有问题按轻重排好，附建议</small></span>
           <span class="count" id="countSummary"></span>
         </button>
       </nav>
@@ -175,7 +196,8 @@
 
       <!-- 已选视频：预览 + 关键参数 -->
       <div id="mediaCard" class="media glass" hidden>
-        <div class="player">
+        <div class="player vf">
+          <span class="mono-tag vf-tag" id="vfTag" aria-hidden="true"></span>
           <video id="previewVideo" controls playsinline preload="metadata"></video>
           <div class="scan" aria-hidden="true"></div>
           <div id="previewNote" class="player-note" hidden>浏览器无法直接播放这个格式（如 MKV / HEVC），不影响体检和处理。</div>
@@ -200,7 +222,7 @@
 
     <section class="right glass lit">
       <!-- 当前步骤的大标题（shell.js 按步骤填写） -->
-      <header class="panel-title"><div><h1 id="panelTitle">技术体检</h1><p id="panelSub"></p></div></header>
+      <header class="panel-title"><div><span class="mono-tag panel-no" id="panelNo">01 / 04</span><h1 id="panelTitle">技术体检</h1><p id="panelSub"></p></div></header>
 
       <!-- 进度 / 错误（所有标签页共用） -->
       <div id="task" class="task" hidden>
@@ -331,7 +353,7 @@
 
           <div class="occ-main">
             <div class="occ-stage">
-              <div id="occPhoneWrap"></div>
+              <div id="occPhoneWrap" class="vf"></div>
               <div class="occ-controls">
                 <button class="btn sm" id="occPlay">播放</button>
                 <button class="btn sm" id="occMark" title="手动框出识别不到的重要文字">框选文字</button>

@@ -21,6 +21,11 @@
   background: var(--brand); color: var(--on-brand); padding: 0 .16em; border-radius: .16em;
   box-shadow: 0 10px 34px var(--brand-glow);
 }
+/* 痛点一句：进入首屏时从灰到黑逐字点亮（每个字的 --i 是序号，用来错开 transition-delay） */
+.hero-lede { margin: -12px 0 24px; max-width: 36em; text-wrap: balance; font-size: 17px; line-height: 1.6; font-weight: 500; letter-spacing: -.01em; }
+.hero-lede > span[aria-hidden] > span { color: var(--line-strong); transition: color .35s var(--ease); }
+.hero-lede.lit > span[aria-hidden] > span { color: var(--text); transition-delay: calc(var(--i) * 38ms); }
+@media (prefers-reduced-motion: reduce) { .hero-lede > span[aria-hidden] > span { transition: none; } }
 .hero-continue { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 14px; max-width: 100%; }
 .hero-continue b { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
 .hero-drop { min-height: 250px; max-width: 520px; }
@@ -28,18 +33,52 @@
 .hero-busy { margin: 0; }
 .hero-busy b { color: var(--text); font-weight: 600; }
 
-/* ---------- 手机框演示 ---------- */
-.hero-demo { display: flex; justify-content: center; }
+/* ---------- 手机框演示 ----------
+   三段：01 只有平台界面的虚线线稿 → 02 扫描线往下扫，扫过的地方显示实际画面 → 03 被挡住的字幕出现斜纹框，问题数跳到 1，最后打勾。
+   左边的演示进度和左栏步骤导航是同一种“节点 + 连线”：完成 = 荧光绿实心，进行中 = 荧光绿圈 */
+.hero-demo { display: flex; justify-content: center; align-items: center; gap: 30px; }
+.hero-phone.vf { --vf-inset: -16px; }
+.hero-readout { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; font-size: 13px; color: var(--muted); }
+.hero-readout li { position: relative; display: flex; align-items: center; gap: 8px; transition: color var(--dur-base) var(--ease); }
+.hero-readout li > i { width: 12px; height: 12px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1.5px var(--line-strong); transition: background var(--dur-base), box-shadow var(--dur-base); }
+.hero-readout li[data-stage]:not([data-stage="3"])::after { /* 节点之间的连线 */
+  content: ""; position: absolute; left: 5.5px; top: calc(50% + 9px); width: 1px; height: calc(100% + 14px - 18px); background: var(--line-strong); transition: background var(--dur-base);
+}
+.hero-readout li.on { color: var(--text); font-weight: 500; }
+.hero-readout li.on > i { box-shadow: inset 0 0 0 2px var(--brand-ink); }
+.hero-readout li.done { color: var(--text); }
+.hero-readout li.done > i { background: var(--brand); box-shadow: none; }
+.hero-readout li.done::after { background: var(--brand-ink); }
+.hero-readout .rd-count { margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--line); align-items: baseline; gap: 10px; }
+.hero-readout .rd-count b { font-size: 34px; line-height: 1; font-weight: 600; color: var(--text); }
 .hero-phone {
   width: 240px; aspect-ratio: 9 / 19.5; padding: 9px; border-radius: 40px; background: #0b0b0c;
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .14), 0 30px 80px rgba(0, 0, 0, .28), 0 2px 6px rgba(0, 0, 0, .2);
 }
 .hp-screen {
   position: relative; width: 100%; height: 100%; border-radius: 32px; overflow: hidden;
+  /* 线稿底：深色 + 细网格，像图纸 */
+  background:
+    linear-gradient(rgba(255, 255, 255, .05) 1px, transparent 1px) 0 0 / 100% 18px,
+    linear-gradient(90deg, rgba(255, 255, 255, .05) 1px, transparent 1px) 0 0 / 18px 100%,
+    #0f1012;
+}
+.hp-real {
+  position: absolute; inset: 0;
   background:
     radial-gradient(70% 45% at 50% 38%, rgba(255, 255, 255, .16), transparent 70%),
     linear-gradient(170deg, #3a3a40 0%, #1d1d22 55%, #121215 100%);
 }
+/* 线稿：各界面区域的虚线框 + 等宽英文标注 */
+.hw { position: absolute; border: 1px dashed rgba(255, 255, 255, .42); border-radius: .7em; }
+.hw span { position: absolute; left: .5em; top: .35em; font: 500 .8em/1 var(--mono); letter-spacing: .08em; color: rgba(255, 255, 255, .55); }
+.hw-top { left: 24%; right: 24%; top: 3%; height: 5%; }
+.hw-side { right: 3%; bottom: 13%; width: 4.6em; height: 58%; }
+.hw-side span { writing-mode: vertical-rl; }
+.hw-caption { left: 4%; right: 26%; bottom: 9%; height: 6.4em; }
+.hw-sub { left: 10%; right: 10%; bottom: calc(13% - .2em); height: 2.6em; border-color: rgba(200, 240, 60, .7); }
+.hw-sub span { color: rgba(200, 240, 60, .85); }
+.hw-nav { left: 0; right: 0; bottom: 0; height: 7%; border-radius: 0 0 32px 32px; }
 /* 仿短视频播放页。尺寸都用 em，跟着手机框的字号（.hero-phone 的 font-size）一起缩放 */
 .hero-phone { font-size: 10px; }
 .hp-screen { color: #fff; }
@@ -84,13 +123,13 @@
 .hp-check circle { fill: var(--brand); }
 .hp-check polyline { fill: none; stroke: var(--on-brand); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
 
-/* ---------- 能力卡片 ---------- */
+/* ---------- 能力卡片：等宽编号 + 大数字 ---------- */
 .hero-caps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 28px; }
-.hero-cap { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 20px; }
+.hero-cap { display: flex; flex-direction: column; gap: 8px; padding: 14px 18px 16px; border-radius: 20px; }
 .hero-cap > * { position: relative; z-index: 1; }
-.hero-cap .step-ico { width: 38px; height: 38px; border-radius: 12px; background: var(--fill); color: var(--text); display: grid; place-items: center; flex: none; }
-.hero-cap b { display: block; font-size: 14.5px; font-weight: 600; letter-spacing: -.01em; }
-.hero-cap small { display: block; font-size: 12px; color: var(--muted); }
+.cap-stat { display: flex; align-items: flex-end; gap: 12px; }
+.cap-stat b { font-size: clamp(40px, 4.4vw, 56px); line-height: .9; font-weight: 500; letter-spacing: -.05em; }
+.cap-stat small { font-size: 12.5px; line-height: 1.4; color: var(--muted); padding-bottom: 2px; }
 
 /* ---------- 窄屏：上下堆叠 ---------- */
 @media (max-width: 900px) {
@@ -98,10 +137,18 @@
   .hero-main { grid-template-columns: minmax(0, 1fr); gap: 24px; min-height: 0; }
   .hero-drop { max-width: none; min-height: 200px; }
   .hero-phone { width: 160px; border-radius: 30px; padding: 7px; font-size: 6.6px; }
+  .hero-demo { gap: 20px; }
+  .hero-readout { font-size: 12px; gap: 12px; }
+  .hero-readout li[data-stage]:not([data-stage="3"])::after { height: calc(100% + 12px - 18px); }
+  .hero-readout .rd-count b { font-size: 26px; }
+  .hw-nav { border-radius: 0 0 24px 24px; }
   .hp-screen { border-radius: 24px; }
   .hp-check { width: 52px; height: 52px; margin: -26px 0 0 -26px; }
 }
 @media (prefers-reduced-motion: reduce) { .hp-disc { animation: none; } }
 @media (max-width: 560px) {
+  .hero-readout li { font-size: 0; gap: 6px; } /* 太窄：只留编号和节点 */
+  .hero-readout .mono-tag { font-size: 11px; }
   .hero-caps { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .cap-stat b { font-size: 36px; }
 }

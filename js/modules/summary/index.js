@@ -34,14 +34,23 @@ function itemCard(it) {
 
 const vnum = (n) => `<b class="vnum num" data-n="${n}">${n}</b>`;
 
+/** 左栏进度线：出了结果的步骤标成完成（不要求按顺序做）；总报告在所有模块都出结果后才算完成 */
+function markStepsDone(perModule) {
+  const step = (tab) => document.querySelector(`#mainTabs button[data-tab="${tab}"]`);
+  const done = (items) => !!items && !items.some((x) => x.status === 'pending');
+  perModule.forEach(({ m, items }) => step(m.id)?.classList.toggle('done', done(items)));
+  step(id)?.classList.toggle('done', perModule.length > 0 && perModule.every(({ items }) => done(items)));
+}
+
 function render() {
   const has = !!state.original?.info && !!state.config;
   $('#summaryEmpty').hidden = has;
   $('#summaryBody').hidden = !has;
-  if (!has) { $('#countSummary').textContent = ''; return; }
+  if (!has) { $('#countSummary').textContent = ''; markStepsDone(sources.map((m) => ({ m, items: null }))); return; }
 
   const pname = currentPlatform()?.name || '';
   const perModule = sources.map((m) => ({ m, items: m.getReportItems() }));
+  markStepsDone(perModule);
   const items = perModule.flatMap(({ items }) => items || []).sort((a, b) => (ORDER[a.status] ?? 9) - (ORDER[b.status] ?? 9));
   const n = (s) => items.filter((x) => x.status === s).length;
   const fail = n('fail'), warn = n('warn'), pass = n('pass');

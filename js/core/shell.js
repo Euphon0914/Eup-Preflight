@@ -27,6 +27,8 @@ function renderTabs() {
   });
   document.querySelectorAll('[data-panel]').forEach((p) => { p.hidden = p.dataset.panel !== state.tab; });
   const [t, sub] = TITLES[state.tab] || ['', ''];
+  const tabs = Object.keys(TITLES), no = (n) => String(n).padStart(2, '0');
+  $('#panelNo').textContent = `${no(tabs.indexOf(state.tab) + 1)} / ${no(tabs.length)}`;
   $('#panelTitle').textContent = t;
   $('#panelSub').textContent = sub;
   if (shownTab && shownTab !== state.tab) {
@@ -68,16 +70,16 @@ function renderPlatforms() {
 }
 
 // ---------- 左栏：预览 + 关键参数 ----------
-/** 参数列表的每一行：[名称, 主值(info, loud, slot), 小字说明(info, loud, slot)] —— 只放判断“能不能传”最关键的几项 */
+/** 参数列表的每一行：[名称, 等宽代号, 主值(info, loud, slot), 小字说明(info, loud, slot)] —— 只放判断“能不能传”最关键的几项 */
 const PARAM_ROWS = [
-  ['画面尺寸', (i) => (i.width ? `${i.width}×${i.height}` : '—'), (i) => (i.aspectRatio ? `${i.aspectRatio} · ${i.orientation}` : '')],
-  ['流畅度', (i) => (i.frameRate != null ? `每秒 ${i.frameRate} 帧` : '—'), (i) => (i.hasVideo ? (i.isVFR ? '帧率不稳定' : '帧率稳定') : '')],
-  ['视频', (i) => (i.hasVideo ? `${i.videoCodec} · ${fmtRate(i.videoBitrateKbps)}` : '无画面'), () => ''],
-  ['色彩', (i) => (i.hasVideo ? (i.isHDR ? `HDR · ${i.hdrFormat}` : '普通（SDR）') : '—'), (i) => (i.hasVideo && i.bitDepth ? `${i.bitDepth} bit` : '')],
-  ['时长', (i) => fmtClock(i.durationSec), () => ''],
-  ['大小', (i) => `${i.fileSizeMB} MB`, (i) => i.container],
-  ['声音', (i) => (i.hasAudio ? `${i.audioCodec} · ${i.channels} 声道` : '没有声音'), (i) => (i.sampleRate ? `${i.sampleRate / 1000} kHz` : '')],
-  ['音量', (i, l, s) => (!i.hasAudio ? '—' : s.loudPending ? '分析中…' : l?.audioSilent ? '全程无声' : l ? `${l.loudnessLUFS} LUFS` : '分析失败'),
+  ['画面尺寸', 'RES', (i) => (i.width ? `${i.width}×${i.height}` : '—'), (i) => (i.aspectRatio ? `${i.aspectRatio} · ${i.orientation}` : '')],
+  ['流畅度', 'FPS', (i) => (i.frameRate != null ? `每秒 ${i.frameRate} 帧` : '—'), (i) => (i.hasVideo ? (i.isVFR ? '帧率不稳定' : '帧率稳定') : '')],
+  ['视频', 'VIDEO', (i) => (i.hasVideo ? `${i.videoCodec} · ${fmtRate(i.videoBitrateKbps)}` : '无画面'), () => ''],
+  ['色彩', 'COLOR', (i) => (i.hasVideo ? (i.isHDR ? `HDR · ${i.hdrFormat}` : '普通（SDR）') : '—'), (i) => (i.hasVideo && i.bitDepth ? `${i.bitDepth} bit` : '')],
+  ['时长', 'DUR', (i) => fmtClock(i.durationSec), () => ''],
+  ['大小', 'SIZE', (i) => `${i.fileSizeMB} MB`, (i) => i.container],
+  ['声音', 'AUDIO', (i) => (i.hasAudio ? `${i.audioCodec} · ${i.channels} 声道` : '没有声音'), (i) => (i.sampleRate ? `${i.sampleRate / 1000} kHz` : '')],
+  ['音量', 'LUFS', (i, l, s) => (!i.hasAudio ? '—' : s.loudPending ? '分析中…' : l?.audioSilent ? '全程无声' : l ? `${l.loudnessLUFS} LUFS` : '分析失败'),
     (i, l) => (l && !l.audioSilent ? `峰值 ${l.truePeakDBTP} dBTP` : '')],
 ];
 
@@ -112,9 +114,10 @@ function renderLeft() {
   $('#fileName').textContent = (showFixed ? f : o).file.name;
   $('#fileName').title = (showFixed ? f : o).file.name;
   const i = o.info; // 收起时的一行摘要
+  $('#vfTag').textContent = i.width ? [i.aspectRatio, `${i.width}×${i.height}`, i.frameRate != null ? `${i.frameRate}FPS` : ''].filter(Boolean).join(' · ') : ''; // 预览左上角的取景器读数
   $('#paramBrief').textContent = [i.width ? `${i.width}×${i.height}` : '', i.frameRate != null ? `${i.frameRate} 帧` : '',
     fmtClock(i.durationSec), `${i.fileSizeMB} MB`].filter(Boolean).join(' · ');
-  setHTML($('#paramList'), PARAM_ROWS.map(([k, main, sub]) => {
+  setHTML($('#paramList'), PARAM_ROWS.map(([k, code, main, sub]) => {
     const a = main(o.info, o.loud, o);
     let as = sub(o.info, o.loud, o);
     let val = esc(a);
@@ -123,7 +126,7 @@ function renderLeft() {
       if (b !== a) val = `<span class="old">${esc(a)}</span><span class="new">${esc(b)}</span>`;
       if (bs !== as) as = as && bs ? `${as} → ${bs}` : bs || as; // 小字说明也显示变化
     }
-    return `<div class="pcell"><dt>${k}</dt><dd>${val}${as ? `<span class="sub">${esc(as)}</span>` : ''}</dd></div>`;
+    return `<div class="pcell"><dt>${k}<i class="mono-tag">${code}</i></dt><dd>${val}${as ? `<span class="sub">${esc(as)}</span>` : ''}</dd></div>`;
   }).join(''));
   // 修复完成后第一次显示新参数：旧值划掉、新值依次出现
   if (f?.info && f.url !== lastFixedUrl) {
