@@ -38,7 +38,14 @@
   content: ""; position: absolute; inset: 10px; border-radius: 18px; border: 1.5px dashed var(--line-strong); pointer-events: none; transition: border-color .2s;
 }
 .drop:hover::after, .drop.over::after { border-color: var(--text); }
-.drop.over { transform: scale(1.01); }
+.drop.over { transform: scale(1.02); }
+
+/* 拖着文件进入页面：四周亮起品牌色光边 */
+.drag-glow {
+  position: fixed; inset: 0; z-index: 50; pointer-events: none; opacity: 0; transition: opacity var(--dur-fast) var(--ease);
+  box-shadow: inset 0 0 0 3px var(--brand), inset 0 0 70px var(--brand-glow);
+}
+body.dragging .drag-glow { opacity: 1; }
 .drop-icon { width: 60px; height: 60px; border-radius: 20px; background: var(--brand); color: var(--on-brand); display: grid; place-items: center; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 8px 22px var(--brand-glow); }
 .drop-main { font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
 
@@ -46,6 +53,11 @@
 .media { overflow: hidden; }
 .player { background: #000; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; }
 .player video { display: block; width: 100%; height: 210px; object-fit: contain; background: #000; }
+/* 分析 / 处理中：品牌色扫描线在视频上来回扫，上下带一圈淡光 */
+.scan { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--brand); box-shadow: 0 0 12px var(--brand), 0 0 34px var(--brand-glow);
+  opacity: 0; pointer-events: none; transition: opacity var(--dur-base); }
+.media.scanning .scan { opacity: 1; animation: scan 2.4s ease-in-out infinite alternate; }
+@keyframes scan { from { transform: translateY(0); } to { transform: translateY(208px); } }
 .player-note { position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; text-align: center; color: #c9ccd2; font-size: 12.5px; }
 .media .seg { margin: 12px 16px 0; }
 .file-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px 2px; }
@@ -79,7 +91,9 @@
 .steps button:hover { background: var(--fill); }
 .steps button:active { transform: scale(.985); }
 .steps button.on { background: var(--glass-strong); box-shadow: 0 4px 14px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .55); }
-.step-ico { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: var(--fill); color: var(--muted); flex: none; transition: background .2s, color .2s; }
+.step-ico { position: relative; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: var(--fill); color: var(--muted); flex: none; transition: background .2s, color .2s; }
+/* 后台检查中（画面遮挡、封面在后台跑）：图标外一圈转动的品牌色细环 */
+.steps button.busy .step-ico::after { content: ""; position: absolute; inset: -4px; border-radius: 14px; border: 2px solid transparent; border-top-color: var(--brand-ink); border-right-color: var(--brand-ink); animation: st-spin .9s linear infinite; }
 .steps button.on .step-ico { background: var(--brand); color: var(--on-brand); }
 .step-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .step-txt b { font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
@@ -119,7 +133,11 @@
 .stages li.err .st-ico { background: var(--fail); }
 .stages li.err .st-ico::after { content: "\00D7"; color: #fff; font-size: 13px; font-weight: 700; line-height: 1; }
 @keyframes st-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .stages li.on .st-ico { animation: none; border-top-color: var(--line-strong); } }
+@media (prefers-reduced-motion: reduce) {
+  .stages li.on .st-ico { animation: none; border-top-color: var(--line-strong); }
+  .media.scanning .scan { display: none; }
+  .steps button.busy .step-ico::after { animation: none; }
+}
 
 .error { background: var(--fail-bg); color: var(--fail); border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; white-space: pre-wrap; font-size: 12.5px; max-height: 180px; overflow: auto; }
 
@@ -131,6 +149,7 @@
   .left { position: static; max-height: none; overflow: visible; }
   .drop { min-height: 200px; }
   .player video { height: 220px; }
+  @keyframes scan { from { transform: translateY(0); } to { transform: translateY(218px); } }
   .right { padding: 16px 16px 20px; }
   .steps { flex-direction: row; overflow-x: auto; order: 1; } /* 排在视频和参数下面，紧挨着下方的检查结果 */
   .steps button { flex: 0 0 auto; width: auto; padding: 6px 12px 6px 6px; }

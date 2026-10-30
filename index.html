@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="css/hero.css">
 </head>
 <body>
+  <div class="drag-glow" aria-hidden="true"></div>
   <!-- ===== 顶栏：产品名 / 平台切换 / 高级 ===== -->
   <header class="topbar glass">
     <button class="brand" id="homeBtn" type="button" aria-label="回到首页" title="回到首页">
@@ -161,6 +162,7 @@
       <div id="mediaCard" class="media glass" hidden>
         <div class="player">
           <video id="previewVideo" controls playsinline preload="metadata"></video>
+          <div class="scan" aria-hidden="true"></div>
           <div id="previewNote" class="player-note" hidden>浏览器无法直接播放这个格式（如 MKV / HEVC），不影响体检和处理。</div>
         </div>
         <div class="seg seg-sm" id="previewSeg" hidden>

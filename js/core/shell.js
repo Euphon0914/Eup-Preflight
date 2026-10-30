@@ -6,6 +6,7 @@ import { state, subscribe, notify, goto, autoChecksEnabled, setAutoChecks } from
 import { $, esc, fmtClock, fmtRate, showError, renderTimings } from './ui.js';
 import { loadVideo, loadTestVideo } from './media.js';
 import { listRecent, openRecent } from '../lib/recent-videos.js';
+import { animate, SPRING } from './motion.js';
 import { terminateFFmpeg } from '../lib/ffmpeg-tools.js';
 
 // ---------- 步骤导航（一级标签）+ 右侧大标题 ----------
@@ -77,6 +78,7 @@ function renderLeft() {
   $('#drop').hidden = has;
   $('#mediaCard').hidden = !has;
   $('#testBtn').disabled = state.busy;
+  $('#mediaCard').classList.toggle('scanning', state.busy); // 分析 / 处理中：视频上一条扫描线来回扫
   if (!has) return;
 
   // 预览：原片 / 处理后（有处理结果时才出现切换按钮）
@@ -131,8 +133,15 @@ function bindEvents() {
   $('#testBtn').addEventListener('click', (e) => { e.stopPropagation(); loadTestVideo(); });
   // 整个页面都可以拖放
   const drops = [drop, $('#heroDrop')]; // 工作台左栏和首屏的拖放区
-  ['dragenter', 'dragover'].forEach((ev) => document.addEventListener(ev, (e) => { e.preventDefault(); drops.forEach((d) => d.classList.add('over')); }));
-  ['dragleave', 'drop'].forEach((ev) => document.addEventListener(ev, (e) => { e.preventDefault(); if (ev === 'drop' || e.target === document.documentElement) drops.forEach((d) => d.classList.remove('over')); }));
+  // 拖着文件进入页面：四周亮起品牌色光边、拖放区微微放大；松手时拖放区回弹一下
+  const dragOff = () => { document.body.classList.remove('dragging'); drops.forEach((d) => d.classList.remove('over')); };
+  ['dragenter', 'dragover'].forEach((ev) => document.addEventListener(ev, (e) => { e.preventDefault(); document.body.classList.add('dragging'); drops.forEach((d) => d.classList.add('over')); }));
+  document.addEventListener('dragleave', (e) => { e.preventDefault(); if (!e.relatedTarget) dragOff(); }); // 离开窗口时 relatedTarget 为空
+  document.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dragOff();
+    drops.forEach((d) => { if (d.offsetParent) animate(d, { scale: [0.97, 1] }, SPRING.snappy); });
+  });
   document.addEventListener('drop', (e) => {
     const f = e.dataTransfer?.files?.[0];
     if (!f) return;

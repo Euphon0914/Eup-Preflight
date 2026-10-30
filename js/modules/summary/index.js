@@ -4,7 +4,8 @@
 // 排序：不通过 → 警告 → 提示 → 通过（通过的折叠起来）。
 // ============================================================
 import { state, subscribe, currentPlatform, currentRules, metricsOf } from '../../core/store.js';
-import { $, esc, badge } from '../../core/ui.js';
+import { $, esc, badge, verdictIcon, setHTML } from '../../core/ui.js';
+import { reveal, animate, drawStroke, countUp, stagger } from '../../core/motion.js';
 import { evaluate, summarize } from '../../lib/rules-engine.js';
 
 export const id = 'summary';
@@ -31,6 +32,8 @@ function itemCard(it) {
   </div>`;
 }
 
+const vnum = (n) => `<b class="vnum num" data-n="${n}">${n}</b>`;
+
 function render() {
   const has = !!state.original?.info && !!state.config;
   $('#summaryEmpty').hidden = has;
@@ -50,7 +53,6 @@ function render() {
     warn: `可以发布到${pname}，有 ${warn} 项建议先处理`,
     pass: `已检查的项目都没问题，可以发布到${pname}`,
   }[verdict];
-  const icon = { pass: '✓', warn: '!', fail: '×' }[verdict];
   // 各模块状态：已检查几项问题 / 尚未检查
   const chips = perModule.map(({ m, items }) => {
     if (!items) return `<span class="mod-chip todo">${esc(m.title)}：尚未检查</span>`;
@@ -66,18 +68,28 @@ function render() {
     fixedNote = `<div class="fixed-note">已用「一键修复」生成处理后的版本：技术体检${left ? `还剩 ${left} 项需要处理` : '的问题都已解决'}。
       <button class="btn ghost sm" data-goto="tech:compare">查看对比</button></div>`;
   }
-  $('#summaryHead').innerHTML = `
-    <div class="verdict-title"><span class="verdict-icon ${verdict}">${icon}</span>${titleText}</div>
-    <div class="verdict-meta">${badge('fail')} ${fail} ${badge('warn')} ${warn} ${badge('pass')} ${pass}
+  setHTML($('#summaryHead'), `
+    <div class="verdict-title">${verdictIcon(verdict)}${titleText}</div>
+    <div class="verdict-meta">${badge('fail')} ${vnum(fail)} ${badge('warn')} ${vnum(warn)} ${badge('pass')} ${vnum(pass)}
       <span class="hint">以下是原视频的检查结果</span></div>
-    <div class="mod-chips">${chips}</div>${fixedNote}`;
+    <div class="mod-chips">${chips}</div>${fixedNote}`);
 
   // 问题按严重程度分组列出
-  $('#summaryList').innerHTML = GROUPS.map(([s, name, desc]) => {
+  setHTML($('#summaryList'), GROUPS.map(([s, name, desc]) => {
     const xs = items.filter((x) => x.status === s);
     if (!xs.length) return '';
     return `<section class="sum-group"><h3 class="sec-title">${name} <span class="hint">${desc}</span></h3>${xs.map(itemCard).join('')}</section>`;
-  }).join('') || '<p class="hint">没有需要处理的问题。</p>';
+  }).join('') || '<p class="hint">没有需要处理的问题。</p>');
+
+  // 揭晓：和技术体检同一套，时长减半；任一模块的结果变了（数量变化）才重播
+  const o = state.original;
+  const key = `${o.file.name}|${o.file.size}|${state.platform}|${verdict}|${perModule.map((x) => (x.items ? x.items.length : '-')).join(',')}`;
+  reveal($('#summaryHead'), key, () => {
+    animate($('#summaryHead'), { opacity: [0, 1], scale: [0.97, 1] }, { duration: 0.2 });
+    drawStroke($('#summaryHead .verdict-icon svg'));
+    $('#summaryHead').querySelectorAll('.vnum').forEach((el) => countUp(el, Number(el.dataset.n), { duration: 0.4 }));
+    stagger($('#summaryList').querySelectorAll('.sum-item'), { gap: 0.02 });
+  });
 
   const passed = items.filter((x) => x.status === 'pass');
   $('#summaryPassGroup').hidden = !passed.length;

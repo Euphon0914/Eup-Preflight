@@ -45,7 +45,21 @@ export function animate(el, keyframes, options = {}) {
     if (opacity === undefined) return Promise.resolve();
     return window.Motion.animate(el, { opacity }, { duration: 0.15 }).finished.catch(() => {});
   }
-  return window.Motion.animate(el, keyframes, { duration: DUR.base, ease: EASE, ...options }).finished.catch(() => {});
+  const ctl = window.Motion.animate(el, keyframes, { duration: DUR.base, ease: EASE, ...options });
+  const hasTransform = Object.keys(keyframes).some((k) => TRANSFORM_KEYS.has(k));
+  let finished = false;
+  // 变换类动画的终点都是“原位”：结束后去掉行内 transform，免得盖住 CSS 里的悬停 / 按下 / 拖入效果。
+  // Motion 结束时会在微任务里再写一次 transform: none，所以放到下一个宏任务再清
+  const clearTransform = () => { if (hasTransform) setTimeout(() => { el.style.transform = ''; }, 0); };
+  const done = ctl.finished.catch(() => {}).then(() => { finished = true; clearTransform(); });
+  // 兜底：窗口不可见时动画帧会暂停，元素可能停在半透明 / 偏移的位置；到时间还没结束就直接跳到终点
+  const total = (options.delay || 0) + (options.duration ?? (options.type === 'spring' ? 1.2 : DUR.base));
+  setTimeout(() => {
+    if (finished) return;
+    ctl.complete?.();
+    clearTransform();
+  }, total * 1000 + 400);
+  return done;
 }
 
 /**
@@ -68,6 +82,8 @@ export function countUp(el, to, { duration = DUR.emph + 0.2 } = {}) {
   if (!hasMotion() || reducedMotion() || from === to) { el.textContent = String(to); return; }
   el.textContent = String(from);
   window.Motion.animate(from, to, { duration, ease: EASE, onUpdate: (v) => { el.textContent = String(Math.round(v)); } });
+  // 兜底：窗口不可见时动画帧会暂停，到时间后直接写最终值，免得数字停在半路
+  setTimeout(() => { if (el.dataset.countFrom === String(to)) el.textContent = String(to); }, duration * 1000 + 300);
 }
 
 /** 一组元素依次淡入上移（相邻间隔 gap 秒） */
@@ -84,6 +100,7 @@ export function drawStroke(svg) {
     p.style.strokeDasharray = String(len);
     if (!hasMotion() || reducedMotion()) { p.style.strokeDashoffset = '0'; return; }
     window.Motion.animate(p, { strokeDashoffset: [len, 0] }, { duration: DUR.emph, ease: EASE });
+    setTimeout(() => { p.style.strokeDashoffset = '0'; }, DUR.emph * 1000 + 300); // 兜底：同 countUp
   });
 }
 

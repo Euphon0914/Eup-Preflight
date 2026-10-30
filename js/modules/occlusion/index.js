@@ -8,7 +8,7 @@
 // 全部在本机进行，视频不会上传。
 // ============================================================
 import { state, subscribe, notify, currentPlatform, autoChecksEnabled } from '../../core/store.js';
-import { $, esc, fmtClock, addTiming } from '../../core/ui.js';
+import { $, esc, fmtClock, addTiming, verdictIcon, setStepBusy } from '../../core/ui.js';
 import { FULL_AREA, videoRectOnScreen } from '../../lib/overlay-geometry.js';
 import { openVideo, sampleTimes, sampleFrames } from '../../lib/frame-sampler.js';
 import { sampleFramesWebCodecs } from '../../lib/webcodecs.js';
@@ -334,7 +334,7 @@ function renderResults() {
     $('#occVerdict').innerHTML = S.running ? '' : `<p class="hint">点「开始检查」识别画面里的字幕和文字；识别不到的（花字、竖排字等）可以点左下「框选文字」手动框出来。左边是视频在${esc(pname())}上的样子，虚线框是界面会盖住的区域。</p>`;
   } else {
     const n = a.events.length;
-    $('#occVerdict').innerHTML = `<div class="verdict-title"><span class="verdict-icon ${n ? 'warn' : 'pass'}">${n ? '!' : '✓'}</span>${n
+    $('#occVerdict').innerHTML = `<div class="verdict-title">${verdictIcon(n ? 'warn' : 'pass')}${n
       ? `发现 ${n} 处可能被挡住或裁掉的地方`
       : '字幕和文字都没有被挡住'}</div>
       <div class="hint">${r ? `检查了 ${r.frames.length} 帧${r.src === 'fixed' ? '（处理后的视频）' : ''}` : '只检查了手动标记的文字，点「开始检查」自动识别其余字幕'}${S.manual.length && r ? `，含 ${S.manual.length} 处手动标记` : ''} · 挡住 ≥ ${Math.round(S.th * 100)}% 算问题 · 点下面的条目或时间轴查看画面</div>`;
@@ -411,6 +411,7 @@ async function run() {
   if (!slot?.url) return;
   const interval = S.interval;
   S.running = true;
+  setStepBusy('occlusion', true);
   S.cancel = false;
   // 取消信号：终止识别线程后，排队中的识别任务不会再返回，所有等待都要和它“赛跑”
   const canceled = new Promise((_, reject) => { S.abort = () => reject(new Error('已取消')); });
@@ -491,6 +492,7 @@ async function run() {
   } finally {
     if (src) src.video.removeAttribute('src');
     S.running = false;
+    setStepBusy('occlusion', false);
     S.abort = null;
     $('#occProgress').hidden = true;
     if (S.result) {

@@ -7,12 +7,13 @@
 import { state, subscribe, notify } from './store.js';
 import { $ } from './ui.js';
 import { loadTestVideo } from './media.js';
-import { animate, stagger, drawStroke, hasMotion, reducedMotion, SPRING } from './motion.js';
+import { animate, stagger, drawStroke, flyFrom, hasMotion, reducedMotion, SPRING, DUR } from './motion.js';
 import * as heroCanvas from '../lib/hero-canvas.js';
 
 let shown = false;   // 首屏当前是否显示
 let shows = 0;       // 本次页面加载以来首屏出现了几次（验证“自动载入不闪”用）
 let loopToken = 0;   // 演示循环的编号：停止时加一，旧循环看到编号变了就退出
+let flyNext = false; // 下一次离开首屏时播放“飞入工作台”（载入了新视频）；点“继续检查”只淡入
 
 export const heroShowCount = () => shows;
 
@@ -81,11 +82,33 @@ export function hideHero() {
   heroCanvas.stop();
 }
 
+/**
+ * 首屏 → 工作台：拖放区缩小飞到左栏（视频卡片或左栏拖放区），三张能力卡片收拢到左栏的步骤导航，右侧面板从下往上浮现。
+ * from 是离开首屏前量好的位置；这时工作台已经显示，直接量目标位置。
+ */
+function flyIn(from) {
+  const visible = (el) => el && !el.hidden && el.offsetParent;
+  const target = [$('#mediaCard'), $('#drop')].find(visible);
+  if (target) flyFrom(from.drop, target);
+  const steps = [...document.querySelectorAll('#mainTabs button[data-tab]')];
+  from.caps.forEach((r, i) => { if (steps[i]) flyFrom(r, steps[i]); });
+  animate(document.querySelector('.right'), { opacity: [0, 1], y: [24, 0] }, { ...SPRING.soft, delay: 0.08 });
+}
+
 /** 按当前状态决定显示首屏还是工作台 */
 export function syncHero() {
   const want = !state.heroSuppressed && (state.view === 'hero' || (!state.original && !state.busy));
+  const leaving = shown && !want;
+  const from = leaving && flyNext
+    ? { drop: $('#heroDrop').getBoundingClientRect(), caps: [...document.querySelectorAll('.hero-cap')].map((c) => c.getBoundingClientRect()) }
+    : null;
   if (want) showHero(); else hideHero();
-  document.querySelector('.workspace').hidden = want || (state.heroSuppressed && !state.original);
+  const ws = document.querySelector('.workspace');
+  ws.hidden = want || (state.heroSuppressed && !state.original);
+  if (!leaving) return;
+  flyNext = false;
+  if (from) flyIn(from);
+  else animate(ws, { opacity: [0, 1] }, { duration: DUR.base });
 }
 
 export function mountHero() {
@@ -93,11 +116,11 @@ export function mountHero() {
   const toWorkspace = () => { state.view = 'workspace'; notify('update'); };
   drop.addEventListener('click', (e) => { if (!e.target.closest('#heroTest')) input.click(); });
   drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
-  $('#heroTest').addEventListener('click', (e) => { e.stopPropagation(); state.view = 'workspace'; loadTestVideo(); });
+  $('#heroTest').addEventListener('click', (e) => { e.stopPropagation(); state.view = 'workspace'; flyNext = true; loadTestVideo(); });
   $('#heroContinue').addEventListener('click', toWorkspace);
   $('#homeBtn').addEventListener('click', () => { state.view = 'hero'; notify('update'); });
   subscribe((reason) => {
-    if (reason === 'before-new-file') state.view = 'workspace'; // 载入了新视频：回到工作台
+    if (reason === 'before-new-file') { state.view = 'workspace'; flyNext = true; } // 载入了新视频：飞入工作台
     syncHero();
   });
   syncHero();

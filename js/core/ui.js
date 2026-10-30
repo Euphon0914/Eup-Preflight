@@ -4,15 +4,39 @@
 import { state, notify } from './store.js';
 import { canUseMT } from '../lib/ffmpeg-tools.js';
 import { hasWebCodecs } from '../lib/webcodecs.js';
-import { drawStroke, stagger } from './motion.js';
+import { animate, drawStroke, stagger } from './motion.js';
 
 export const $ = (s) => document.querySelector(s);
+/** 内容变了才写 innerHTML：状态通知很频繁，原样重写会打断正在播放的动画（数字滚动、列表依次出现） */
+export function setHTML(el, html) {
+  if (el.__html === html) return;
+  el.innerHTML = html;
+  el.__html = html;
+}
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // ---------- 状态标签 ----------
 export const STATUS_TEXT = { pass: '通过', warn: '警告', fail: '不通过', info: '提示', na: '不适用', pending: '分析中' };
 // “通过”带对勾：和品牌色柠檬绿区分开，不只靠颜色
 export const badge = (s) => `<span class="badge ${s}">${s === 'pass' ? '✓ ' : ''}${STATUS_TEXT[s]}</span>`;
+
+// ---------- 结论图标（对勾 / 感叹号 / 叉，SVG 线条，揭晓时一笔画出） ----------
+const VERDICT_PATHS = {
+  pass: '<polyline points="6 12.5 10 16.5 18 8"/>',
+  warn: '<path d="M12 6.5v7"/><path d="M12 17.5v.01"/>',
+  fail: '<path d="M7.5 7.5l9 9"/><path d="M16.5 7.5l-9 9"/>',
+};
+export const verdictIcon = (kind) =>
+  `<span class="verdict-icon ${kind}"><svg viewBox="0 0 24 24" aria-hidden="true">${VERDICT_PATHS[kind] || VERDICT_PATHS.warn}</svg></span>`;
+
+// ---------- 左栏步骤：后台检查中（画面遮挡、封面在后台跑时图标外转圈，完成后角标弹一下） ----------
+export function setStepBusy(tab, on) {
+  const b = document.querySelector(`#mainTabs button[data-tab="${tab}"]`);
+  if (!b) return;
+  const was = b.classList.contains('busy');
+  b.classList.toggle('busy', on);
+  if (was && !on) animate(b.querySelector('.count'), { scale: [0.6, 1.15, 1] }, { duration: 0.45 });
+}
 
 // ---------- 格式化 ----------
 export const pad = (n) => String(n).padStart(2, '0');

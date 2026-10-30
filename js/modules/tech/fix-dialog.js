@@ -5,7 +5,7 @@
 //   处理好的视频在「体检」和「对比」顶部常驻一条结果条，随时可以下载。
 // ============================================================
 import { state, goto, currentPlatform, currentRules, metricsOf } from '../../core/store.js';
-import { $, esc, fmtMB, stampName, clearError } from '../../core/ui.js';
+import { $, esc, fmtMB, stampName, clearError, verdictIcon } from '../../core/ui.js';
 import { evaluate } from '../../lib/rules-engine.js';
 import { doProcess, selectedFixes, updateFixButton } from './fixes.js';
 
@@ -48,7 +48,7 @@ function renderDone() {
   const d = delta();
   $('#fixDone').innerHTML = `
     <div class="done-head">
-      <span class="verdict-icon ${d?.regressed ? 'warn' : 'pass'}">${d?.regressed ? '!' : '✓'}</span>
+      ${verdictIcon(d?.regressed ? 'warn' : 'pass')}
       <div>
         <div class="done-title">${f.kind === 'vertical' ? '竖屏版已生成' : '视频已修复好'}</div>
         <div class="hint">按${esc(currentPlatform().name)}规则：${deltaText(d)} · ${fmtMB(o.file.size)} → ${fmtMB(f.file.size)}</div>

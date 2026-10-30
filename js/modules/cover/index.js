@@ -8,7 +8,7 @@
 // 比例、导出尺寸、角标位置都在 config/platforms.json 的 cover 里。图片只在本机处理，不会上传。
 // ============================================================
 import { state, subscribe, notify, currentPlatform, autoChecksEnabled } from '../../core/store.js';
-import { $, esc, fmtClock } from '../../core/ui.js';
+import { $, esc, fmtClock, verdictIcon, setStepBusy } from '../../core/ui.js';
 import { openVideo, grabFrame } from '../../lib/frame-sampler.js';
 import { intersect } from '../../lib/overlay-geometry.js';
 import { ensureOCR, recognizeText } from '../../lib/detectors.js';
@@ -144,6 +144,7 @@ async function grabAt(t) {
   C.wantT = t;
   if (C.grabbing) return;
   C.grabbing = true;
+  setStepBusy('cover', true);
   try {
     const o = state.original;
     if (!o?.file) return;
@@ -167,6 +168,7 @@ async function grabAt(t) {
     $('#coverVerdict').innerHTML = `<p class="occ-frame-msg bad">取不到视频画面：${esc(e.message || e)}</p>`;
   } finally {
     C.grabbing = false;
+    setStepBusy('cover', !!C.src && C.ocr === 'idle'); // 取好帧后半秒会接着识别标题文字，转圈不停
   }
 }
 
@@ -207,6 +209,7 @@ async function runOCR() {
   const token = ++ocrToken;
   const src = C.src;
   C.ocr = 'running';
+  setStepBusy('cover', true);
   renderSide();
   try {
     const scale = Math.min(1, OCR_SIDE / Math.max(src.W, src.H));
@@ -227,6 +230,7 @@ async function runOCR() {
     C.texts = [];
     C.ocr = 'error';
   }
+  setStepBusy('cover', false);
   renderAll();
   notify('cover');
 }
@@ -270,7 +274,7 @@ function renderSide() {
   const issues = mergedIssues(list);
   const n = issues.length;
   const ocrNote = C.ocr === 'running' || C.ocr === 'idle' ? '正在识别封面上的标题文字…' : C.ocr === 'error' ? '标题文字识别失败，只检查了主体和清晰度。' : (C.texts.length ? `识别到 ${C.texts.length} 处标题文字（黄框）。` : '封面上没有识别到文字。') + (C.manual.length ? ` 另有 ${C.manual.length} 处手动标记（橙框）。` : C.texts.length ? '' : '如果有重要文字没认出来，可以切到「标记文字」手动框出。');
-  $('#coverVerdict').innerHTML = `<div class="verdict-title"><span class="verdict-icon ${n ? 'warn' : 'pass'}">${n ? '!' : '✓'}</span>${n
+  $('#coverVerdict').innerHTML = `<div class="verdict-title">${verdictIcon(n ? 'warn' : 'pass')}${n
     ? `发现 ${n} 处需要注意`
     : `${list.length} 个比例都没问题`}</div><div class="hint">${esc(ocrNote)} 按 ${esc(pname())} 的 ${list.map(({ r }) => r.ratio.join(':')).join('、')} 检查。</div>`;
   $('#coverIssues').innerHTML = issues.map((it) => `<li>

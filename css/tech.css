@@ -7,6 +7,8 @@
 .verdict { padding: 4px 0 14px; }
 .verdict-title { font-size: 20px; font-weight: 700; line-height: 1.35; display: flex; align-items: center; gap: 10px; letter-spacing: -.02em; }
 .verdict-icon { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex: none; font-size: 15px; font-weight: 700; }
+.verdict-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.vnum { font-size: 17px; font-weight: 700; letter-spacing: -.02em; margin-right: 4px; }
 .verdict-icon.pass { background: var(--pass-bg); color: var(--pass); }
 .verdict-icon.warn { background: var(--warn-bg); color: var(--warn); }
 .verdict-icon.fail { background: var(--fail-bg); color: var(--fail); }
