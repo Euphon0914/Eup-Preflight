@@ -41,12 +41,12 @@
 .occ-video video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; display: block; cursor: pointer; }
 .occ-boxes, .occ-zl { position: absolute; inset: 0; pointer-events: none; }
 .ob { position: absolute; border: 1.5px dashed rgba(74, 222, 128, .95); border-radius: 2px; }
-.ob.bad { border: 2px solid #ef4444; background: rgba(239, 68, 68, .18); }
+.ob.bad { border: 2px solid var(--fail); background: color-mix(in srgb, var(--fail) 18%, transparent); }
 .ob span { position: absolute; left: -1px; bottom: 100%; font-size: 10px; line-height: 14px; padding: 0 3px; color: #fff; background: rgba(21, 128, 61, .9); white-space: nowrap; border-radius: 2px 2px 0 0; }
-.ob.bad span { background: #dc2626; }
+.ob.bad span { background: var(--fail); }
 .oz { position: absolute; border: 1px dashed rgba(255, 255, 255, .55); background: rgba(255, 255, 255, .06); }
 .oz span { position: absolute; right: 2px; top: 2px; font-size: 9.5px; line-height: 13px; color: rgba(255, 255, 255, .85); background: rgba(0, 0, 0, .45); padding: 0 3px; border-radius: 2px; max-width: calc(100% - 4px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.oz.hit { border: 1.5px solid #f87171; background: rgba(239, 68, 68, .14); }
+.oz.hit { border: 1.5px solid var(--fail); background: color-mix(in srgb, var(--fail) 14%, transparent); }
 .oz.hit span { background: #dc2626; color: #fff; }
 .occ-zl.mock .oz { background: rgba(10, 10, 12, .55); border: 0; }    /* 仅预览：像真实界面一样压暗 */
 .occ-zl.mock .oz span { left: 50%; right: auto; top: 50%; transform: translate(-50%, -50%); background: none; font-size: 10.5px; }
@@ -145,8 +145,8 @@
 .occ-manual.on { pointer-events: auto; cursor: crosshair; background: rgba(0, 0, 0, .12); }
 .ob.manual { border-color: rgba(245, 158, 11, .95); }
 .ob.manual span { background: #d97706; }
-.ob.manual.bad { border-color: #ef4444; }
-.ob.manual.bad span { background: #dc2626; }
+.ob.manual.bad { border-color: var(--fail); }
+.ob.manual.bad span { background: var(--fail); }
 .man-list:empty { display: none; }
 .man-list { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; }
 .man-head { display: flex; flex-direction: column; gap: 1px; }

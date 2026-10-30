@@ -19,7 +19,8 @@ import { attachBoxEditor, boxHtml } from '../../core/box-editor.js';
 export const id = 'cover';
 export const title = '封面适配';
 
-const COLORS = ['#3b82f6', '#a855f7', '#ec4899', '#06b6d4'];  // 各比例裁切框的颜色（避开绿 / 橙 / 红，免得和“通过 / 警告 / 不通过”混淆）
+// 各比例裁切框的颜色：避开状态色（青 / 蓝 / 紫）、主体框（蓝）、识别文字框（黄）、手动标记（橙）
+const COLORS = ['#e0458f', '#e5484d', '#a39e93', '#a26b3a'];
 const OCR_SIDE = 1280;        // 识别文字时把封面缩小到长边 1280
 
 const C = {
