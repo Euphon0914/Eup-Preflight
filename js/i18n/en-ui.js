@@ -416,4 +416,5 @@ export default {
   "上传到服务器的数据": "data uploaded to a server",
   "外部网络请求": "requests to outside sites",
   "统计、广告和追踪代码": "lines of analytics, ad, or tracking code",
+  "一键修复（5 项）": "One-click fix (5)",
 };

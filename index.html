@@ -182,16 +182,39 @@
 
     <!-- 首屏下方（往下滚动查看）：怎么用、功能说明、使用前须知、数据与隐私（作者联系方式在页脚） -->
     <div class="hero-more">
-      <section class="hm-sec" aria-labelledby="hmHowTitle">
+      <!-- 怎么用：横向时间线（大号编号 + 一条细线串起三步），每步配一小块真实界面（参考 Linea Prompt / Heron AI）；窄屏改成竖排 -->
+      <section class="hm-sec hm-how" aria-labelledby="hmHowTitle">
         <header class="hm-head"><span class="mono-tag">HOW IT WORKS</span><h2 id="hmHowTitle">三步用起来</h2></header>
-        <div class="hm-grid cols-3">
-          <article class="hm-card glass"><span class="mono-tag">01</span><h3>拖入视频</h3>
-            <p>把视频拖到上面的框里，或点“选择视频”。手边没有素材，可以先生成一段测试视频试试。</p></article>
-          <article class="hm-card glass"><span class="mono-tag">02</span><h3>看检查结果</h3>
-            <p>导入后自动开始技术体检，5 分钟以内的视频还会在后台跑完画面遮挡和封面检查。左栏切换步骤，“总报告”汇总所有问题。</p></article>
-          <article class="hm-card glass"><span class="mono-tag">03</span><h3>修复并下载</h3>
-            <p>规格有问题就点“一键修复”，处理完直接下载 MP4，还能和原片对比；封面可以一次导出所有比例。</p></article>
-        </div>
+        <ol class="how-steps">
+          <li class="how-step">
+            <div class="how-head"><b class="num">01</b><span class="how-rail" aria-hidden="true"><i></i></span></div>
+            <h3>拖入视频</h3>
+            <p>把视频拖到上面的框里，或点“选择视频”。手边没有素材，可以先生成一段测试视频试试。</p>
+            <div class="how-ui" aria-hidden="true">
+              <span class="how-drop"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 15V4m0 0-4 4m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>把视频拖到这里</span>
+              <span class="btn primary sm">选择视频</span>
+            </div>
+          </li>
+          <li class="how-step">
+            <div class="how-head"><b class="num">02</b><span class="how-rail" aria-hidden="true"><i></i></span></div>
+            <h3>看检查结果</h3>
+            <p>导入后自动开始技术体检，5 分钟以内的视频还会在后台跑完画面遮挡和封面检查。左栏切换步骤，“总报告”汇总所有问题。</p>
+            <div class="how-ui" aria-hidden="true">
+              <span class="badge fail">不通过</span><b class="num">0</b>
+              <span class="badge warn">警告</span><b class="num">4</b>
+              <span class="badge pass">✓ 通过</span><b class="num">14</b>
+            </div>
+          </li>
+          <li class="how-step">
+            <div class="how-head"><b class="num">03</b><span class="how-rail" aria-hidden="true"><i></i></span></div>
+            <h3>修复并下载</h3>
+            <p>规格有问题就点“一键修复”，处理完直接下载 MP4，还能和原片对比；封面可以一次导出所有比例。</p>
+            <div class="how-ui" aria-hidden="true">
+              <span class="btn primary sm">一键修复（5 项）</span>
+              <span class="how-file"><b class="num">→</b>下载 MP4</span>
+            </div>
+          </li>
+        </ol>
       </section>
 
       <!-- 功能介绍：左边大字目录固定不动，右边四块随滚动经过；滚到哪一块，目录就点亮哪一项（js/core/hero-more.js） -->
