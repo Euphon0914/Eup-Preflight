@@ -187,6 +187,8 @@
 
       <!-- 进度 / 错误（所有标签页共用） -->
       <div id="task" class="task" hidden>
+        <!-- 阶段清单：每完成一步打一个勾（ui.js 的 beginStages / stage） -->
+        <ol id="taskStages" class="stages"></ol>
         <div class="task-row">
           <span id="taskLabel">处理中…</span>
           <span id="taskPct" class="num"></span>

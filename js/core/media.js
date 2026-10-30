@@ -2,14 +2,15 @@
 // media.js —— 拖入视频、读取参数、分析响度（全站只做一次，所有模块共用结果）
 // ============================================================
 import { state, notify } from './store.js';
-import { showTask, hideTask, showError, clearError, setBusy, timed, addTiming, currentMode } from './ui.js';
+import { showTask, hideTask, showError, clearError, setBusy, timed, addTiming, currentMode, beginStages, stage } from './ui.js';
 import { probeFile } from '../lib/probe.js';
-import { loadFFmpeg, analyzeLoudness, probeFpsFallback, terminateFFmpeg, makeTestVideo } from '../lib/ffmpeg-tools.js';
+import { loadFFmpeg, ffmpegLoaded, analyzeLoudness, probeFpsFallback, terminateFFmpeg, makeTestVideo } from '../lib/ffmpeg-tools.js';
 import { rememberVideo } from '../lib/recent-videos.js';
 
 /** 确保 ffmpeg 已加载；首次加载会记录耗时 */
 export async function ensureFFmpeg() {
   const mode = currentMode();
+  if (!ffmpegLoaded(mode)) stage('加载 ffmpeg 核心');
   showTask(`加载 ffmpeg 核心（${mode === 'mt' ? '多线程' : '单线程'}，约 32MB，首次较慢）…`);
   const t0 = performance.now();
   const loaded = await loadFFmpeg(mode);
@@ -23,7 +24,10 @@ export async function ensureFFmpeg() {
  * 原视频由 loadVideo 调用；技术体检处理完的视频也用它复检。
  */
 export async function analyzeSlot(slot, label) {
+  // 阶段清单只给原视频显示（处理后的复检由一键修复自己的阶段清单负责）
+  const st = (name) => { if (label === '原视频') stage(name); };
   // 1) 读取参数（mediainfo.js）
+  st('读取参数');
   showTask(`${label}：读取视频参数…`);
   const { info } = await timed('读取参数', slot.file.name, null, () => probeFile(slot.file), 'mediainfo.js');
   slot.info = info;
@@ -34,6 +38,7 @@ export async function analyzeSlot(slot, label) {
   if (info.hasVideo && info.frameRate == null) {
     try {
       await ensureFFmpeg();
+      st('补充探测帧率');
       showTask(`${label}：补充探测帧率…`);
       info.frameRate = await timed('补充探测帧率', slot.file.name, null, () => probeFpsFallback(slot.file), 'ffmpeg -i 文件头');
       info.frameRateEstimated = true;
@@ -46,6 +51,7 @@ export async function analyzeSlot(slot, label) {
   if (info.hasAudio) {
     try {
       await ensureFFmpeg();
+      st('分析声音');
       showTask(`${label}：分析声音…`, 0);
       slot.loud = await timed('响度分析', slot.file.name, info.durationSec,
         () => analyzeLoudness(slot.file, info.durationSec, (p) => showTask(`${label}：分析声音…`, p)),
@@ -91,6 +97,7 @@ export async function loadVideo(file, { remember = true, ref = null, restored = 
   state.tab = 'tech';
   state.techTab = 'report';
   setBusy(true);
+  beginStages();
   try {
     await analyzeSlot(state.original, '原视频');
     notify('analyzed');

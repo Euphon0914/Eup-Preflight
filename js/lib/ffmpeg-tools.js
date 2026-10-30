@@ -38,6 +38,9 @@ export async function loadFFmpeg(mode = 'st') {
   return true;
 }
 
+/** 某个核心是否已经加载好（加载好了就不用在进度里显示“加载 ffmpeg 核心”） */
+export const ffmpegLoaded = (mode = 'st') => !!ffmpeg && loadedMode === (mode === 'mt' && !canUseMT() ? 'st' : mode);
+
 /** 强制终止当前任务（取消按钮用），下次调用会重新加载 */
 export function terminateFFmpeg() {
   if (ffmpeg) ffmpeg.terminate();

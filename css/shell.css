@@ -106,6 +106,21 @@
 .task-row #taskLabel { flex: 1; }
 .bar { height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
 .bar > div { height: 100%; width: 0; background: var(--brand); border-radius: 3px; transition: width .25s; box-shadow: 0 0 10px var(--brand-glow); }
+/* 阶段清单：当前步骤转圈、完成打勾、出错标叉 */
+.stages { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.stages:empty { display: none; }
+.stages li { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.stages li.on { color: var(--text); font-weight: 500; }
+.st-ico { width: 16px; height: 16px; border-radius: 50%; flex: none; display: grid; place-items: center; position: relative; }
+.st-ico svg { width: 12px; height: 12px; fill: none; stroke: var(--on-brand); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: none; }
+.stages li.done .st-ico { background: var(--brand); }
+.stages li.done .st-ico svg { display: block; }
+.stages li.on .st-ico { border: 2px solid var(--line-strong); border-top-color: var(--brand-ink); animation: st-spin .8s linear infinite; }
+.stages li.err .st-ico { background: var(--fail); }
+.stages li.err .st-ico::after { content: "\00D7"; color: #fff; font-size: 13px; font-weight: 700; line-height: 1; }
+@keyframes st-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .stages li.on .st-ico { animation: none; border-top-color: var(--line-strong); } }
+
 .error { background: var(--fail-bg); color: var(--fail); border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; white-space: pre-wrap; font-size: 12.5px; max-height: 180px; overflow: auto; }
 
 /* ---------- 窄屏：上下堆叠，步骤变成横向滚动的胶囊 ---------- */

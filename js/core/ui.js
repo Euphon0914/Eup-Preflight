@@ -4,6 +4,7 @@
 import { state, notify } from './store.js';
 import { canUseMT } from '../lib/ffmpeg-tools.js';
 import { hasWebCodecs } from '../lib/webcodecs.js';
+import { drawStroke, stagger } from './motion.js';
 
 export const $ = (s) => document.querySelector(s);
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -38,7 +39,46 @@ export function showTask(label, pct = null) {
   $('#taskBar').style.width = pct === null ? '100%' : `${pct * 100}%`;
   $('#taskBar').style.opacity = pct === null ? '.35' : '1';
 }
-export const hideTask = () => { $('#task').hidden = true; };
+export function hideTask() {
+  $('#task').hidden = true;
+  $('#taskStages').innerHTML = '';
+  stagesOn = false;
+}
+
+// ---------- 阶段清单（进度条上方，每完成一步打一个勾） ----------
+// 用法：任务开始时 beginStages()，每进入一步调 stage('步骤名')；没调 beginStages 时 stage 什么也不做，
+// 所以底层函数（例如加载 ffmpeg）可以放心调用。走不到的步骤不调用，清单里就不会出现。
+let stagesOn = false;
+const STAGE_ICON = '<span class="st-ico"><svg viewBox="0 0 16 16" aria-hidden="true"><polyline points="4 8.5 7 11.5 12.5 5"/></svg></span>';
+
+export function beginStages() {
+  stagesOn = true;
+  $('#taskStages').innerHTML = '';
+}
+
+export function stage(name) {
+  if (!stagesOn) return;
+  const list = $('#taskStages');
+  const cur = list.querySelector('li.on');
+  if (cur?.dataset.name === name) return;
+  if (cur) { cur.className = 'done'; drawStroke(cur.querySelector('svg')); }
+  let li = [...list.children].find((x) => x.dataset.name === name);
+  if (!li) {
+    li = document.createElement('li');
+    li.dataset.name = name;
+    li.innerHTML = `${STAGE_ICON}<span>${esc(name)}</span>`;
+    list.append(li);
+    stagger([li], { y: 4 });
+  }
+  li.className = 'on';
+}
+
+/** 当前步骤出错：标红叉，之后的 stage() 不再生效（清单保留，直到下次 hideTask） */
+export function failStage() {
+  const cur = $('#taskStages li.on');
+  if (cur) cur.className = 'err';
+  stagesOn = false;
+}
 export function showError(msg) { $('#errorBox').hidden = false; $('#errorBox').textContent = msg; }
 export const clearError = () => { $('#errorBox').hidden = true; };
 
