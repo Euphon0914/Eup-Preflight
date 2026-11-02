@@ -111,6 +111,8 @@
     </div>
   </section>
 
+  <div id="cursorGlow" aria-hidden="true"></div><!-- 工作台背景里跟着鼠标的柔光（js/core/cursor-glow.js） -->
+
   <!-- ===== 首屏：没有载入视频时显示（js/core/hero.js）；点顶栏的名字或「首页」也能回到这里 ===== -->
   <section id="hero" class="hero" hidden>
     <canvas id="heroCanvas" aria-hidden="true"></canvas>
@@ -121,7 +123,7 @@
         <!-- 痛点：进入首屏时逐字点亮（hero.js 把文字拆成单字，读屏软件读 .sr-only 里的整句） -->
         <p class="hero-lede" id="heroLede"><span class="sr-only">字幕被按钮挡住、封面标题被裁掉、声音被平台压低——发出去才发现，就晚了。</span></p>
         <button class="btn hero-continue" id="heroContinue" type="button" hidden>继续检查 <b translate="no" id="heroContinueName"></b> →</button>
-        <div id="heroDrop" class="drop hero-drop glass lit" tabindex="0">
+        <div id="heroDrop" class="drop hero-drop glass" tabindex="0">
           <div class="drop-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="28" height="28"><path d="M12 15V4m0 0-4 4m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
@@ -390,7 +392,7 @@
 
     </aside>
 
-    <section class="right glass lit">
+    <section class="right glass">
       <!-- 当前步骤的大标题（shell.js 按步骤填写） -->
       <header class="panel-title"><div><span class="mono-tag panel-no" id="panelNo">01 / 04</span><h1 id="panelTitle">技术体检</h1><p id="panelSub"></p></div></header>
 
@@ -635,7 +637,7 @@
   <!-- ===== 署名 ===== -->
   <!-- ===== 一键修复弹窗：选修复项 → 处理进度 → 完成（下载 / 对比） ===== -->
   <dialog id="fixDialog" class="dlg" aria-labelledby="fixDlgTitle">
-    <div class="dlg-box glass lit">
+    <div class="dlg-box glass">
       <header class="dlg-head">
         <div><h2 id="fixDlgTitle">一键修复</h2><p class="hint" id="fixDlgSub">勾选的项目合并成一次处理，输出 MP4；视频只在本机处理，不会上传。</p></div>
         <button class="dlg-x" id="fixDlgClose" aria-label="关闭">×</button>

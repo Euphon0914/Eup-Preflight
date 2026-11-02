@@ -13,7 +13,7 @@ import { mountShell } from './core/shell.js';
 import { mountHero } from './core/hero.js';
 import { mountPrefs } from './core/prefs.js';
 import { mountCompatNotice } from './core/compat.js';
-import { mountGlassLight } from './core/glass-light.js';
+import { mountCursorGlow } from './core/cursor-glow.js';
 import { loadVideo } from './core/media.js';
 import { showError } from './core/ui.js';
 import { canUseMT } from './lib/ffmpeg-tools.js';
@@ -35,7 +35,7 @@ import * as summary from './modules/summary/index.js';
   mountShell();
   mountHero();
   mountCompatNotice(); // 不支持或没测试过的浏览器：顶部提示改用 Chrome / Edge
-  mountGlassLight();   // 玻璃上的鼠标反光
+  mountCursorGlow();   // 工作台背景里跟着鼠标的柔光
   tech.mount();
   occlusion.mount();
   cover.mount();

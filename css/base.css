@@ -53,7 +53,7 @@
   /* 两层阴影：贴近的接触阴影 + 大而柔的投影；再加一条顶部内高光，像光从上面打下来 */
   --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), 0 1px 2px rgba(0, 0, 0, .06), 0 18px 50px rgba(0, 0, 0, .09);
   --glass-noise-op: .035;
-  --glass-lit: rgba(255, 255, 255, .5);
+  --cursor-glow: rgba(200, 240, 60, .30);   /* 工作台跟着鼠标的品牌色柔光，和首屏 Canvas 那团同色 */
   --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   --glass-blur: blur(28px) saturate(170%);
   --press: rgba(0, 0, 0, .08);
@@ -87,7 +87,7 @@
   --glass-lo: rgba(255, 255, 255, .04);
   --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 1px 2px rgba(0, 0, 0, .35), 0 18px 50px rgba(0, 0, 0, .5);
   --glass-noise-op: .05;
-  --glass-lit: rgba(255, 255, 255, .09);
+  --cursor-glow: rgba(200, 240, 60, .20);
   --brand-ink: #C8F03C;
   --brand-glow: rgba(200, 240, 60, .45);
   --press: rgba(255, 255, 255, .1);
@@ -121,6 +121,16 @@ body {
     var(--bg);
   background-attachment: fixed;
 }
+/* 工作台背景里跟着鼠标的品牌色柔光（js/core/cursor-glow.js 移动它；首屏由 Canvas 自己画，这里藏起来）
+   大小和首屏那团一样：半径是屏幕短边的 38% */
+#cursorGlow {
+  position: fixed; left: 0; top: 0; z-index: -1; pointer-events: none;
+  width: 76vmin; height: 76vmin; border-radius: 50%;
+  background: radial-gradient(closest-side, var(--cursor-glow), transparent);
+  opacity: 0; transition: opacity .6s ease; will-change: transform;
+}
+#cursorGlow.on { opacity: 1; }
+body.on-hero #cursorGlow { display: none; }
 h3 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
 code { font: 12px ui-monospace, "SF Mono", Menlo, monospace; background: var(--fill); padding: 1px 6px; border-radius: 6px; }
 a { color: var(--text); text-underline-offset: 3px; }
@@ -141,8 +151,6 @@ a { color: var(--text); text-underline-offset: 3px; }
   border-radius: 24px;
   box-shadow: var(--glass-shadow);
 }
-/* 鼠标反光：鼠标在大玻璃块上移动时，一块淡淡的反光跟着走（js/core/glass-light.js 写 --mx / --my，只在桌面端） */
-.glass.lit { background-image: radial-gradient(260px circle at var(--mx, 50%) var(--my, -30%), var(--glass-lit), transparent 70%), var(--noise); }
 /* 高光描边：左上和右下亮、中间暗，像光线打在玻璃边缘 */
 .glass::before {
   content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 0;

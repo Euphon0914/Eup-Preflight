@@ -22,6 +22,8 @@ const mouse = { x: 0.7, y: 0.4, has: false }; // 鼠标位置（画布比例）
 const brandPos = { x: 0.7, y: 0.4 };          // 品牌色那团的实际位置（向鼠标缓动）
 
 export const isRunning = () => running;
+/** 品牌色那团光现在的位置（画布比例）；离开首屏时工作台的光斑（js/core/cursor-glow.js）从这里接着走 */
+export const brandPoint = () => ({ ...brandPos });
 
 const isDark = () => document.documentElement.dataset.theme === 'dark'; // 顶栏切换键设的（js/core/prefs.js）
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
