@@ -22,7 +22,7 @@ rm -rf dist && mkdir -p "dist/site"
 cp -R index.html calibrate.html webcodecs-test.html licenses.html config css js vendor serve.py serve.json README.md \
       "启动 Eup Preflight.command" "启动 Eup Preflight（Windows）.bat" scripts dist/site/
 [ -f THIRD_PARTY_NOTICES.md ] && cp THIRD_PARTY_NOTICES.md dist/site/
-rm -f dist/site/scripts/package.sh
+rm -f dist/site/scripts/package.sh dist/site/scripts/deploy.sh
 find dist/site -name .DS_Store -delete
 
 # 离线包：外面套一层同名文件夹，解压后不会散落一地。

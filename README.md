@@ -116,6 +116,8 @@ bash scripts/package.sh
 
 生成 `dist/web`（网站本体，上传到静态托管的 `web/` 文件夹）、`dist/root`（根目录跳转页）和离线包 `dist/Eup-Preflight-v<版本>.zip`。在线版目前部署在腾讯云 CloudBase 静态网站托管上。
 
+在线版用 `bash scripts/deploy.sh` 一键上线：打包后用腾讯云 [coscli](https://github.com/tencentyun/coscli) 只上传有改动的文件，再逐个和线上比对。第一次使用要先装好 coscli，并运行 `coscli config init` 填入一个只能读写这个存储桶的子账号密钥（存在本机 `~/.cos.yaml`，不进仓库）。
+
 ## 作者
 
 **Eup** · 个人作品
