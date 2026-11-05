@@ -33,8 +33,10 @@ function mountPrivacyLines() {
   const update = () => {
     if (!box.offsetParent) return; // 首屏没显示
     if (reducedMotion()) { lines.forEach((l) => l.classList.add('lit')); return; }
-    // 每一行的中线滚到屏幕 70% 高度以上就点亮（滚过去之后保持点亮，往回滚到下面再变暗）
-    lines.forEach((l) => { const r = l.getBoundingClientRect(); l.classList.toggle('lit', r.top + r.height / 2 < innerHeight * 0.7); });
+    // 每一行的中线滚到屏幕 70% 高度以上就点亮（滚过去之后保持点亮，往回滚到下面再变暗）；
+    // 已经滚到页面底部时全部点亮——屏幕较高时最后一行到不了 70% 线
+    const atEnd = scrollY + innerHeight >= document.documentElement.scrollHeight - 4;
+    lines.forEach((l) => { const r = l.getBoundingClientRect(); l.classList.toggle('lit', atEnd || r.top + r.height / 2 < innerHeight * 0.7); });
   };
   addEventListener('scroll', update, { passive: true });
   addEventListener('resize', update);
