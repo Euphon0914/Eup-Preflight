@@ -5,6 +5,8 @@
 #   dist/Eup-Preflight-v<版本>.zip  离线包：解压后双击启动脚本即可使用
 #   dist/web    在线部署用：只含网页需要的文件，上传到静态托管的 web/ 文件夹
 #   dist/root   在线部署用：根目录的跳转页，打开域名时自动转到 web/
+#   dist/review 匿名评审版网页（竞赛评审用，去掉作者署名和联系方式，见 scripts/anonymize.py），上传到 review/ 文件夹
+#   dist/Preflight-评审版-v<版本>.zip  匿名评审版离线包（同样匿名，不带 README）
 # 用法：bash scripts/package.sh
 # 版本号取自 index.html 页脚的 data-version
 # ------------------------------------------------------------
@@ -22,25 +24,28 @@ rm -rf dist && mkdir -p "dist/site"
 cp -R index.html calibrate.html webcodecs-test.html licenses.html config css js vendor serve.py serve.json README.md \
       "启动 Eup Preflight.command" "启动 Eup Preflight（Windows）.bat" scripts dist/site/
 [ -f THIRD_PARTY_NOTICES.md ] && cp THIRD_PARTY_NOTICES.md dist/site/
-rm -f dist/site/scripts/package.sh dist/site/scripts/deploy.sh
+rm -f dist/site/scripts/package.sh dist/site/scripts/deploy.sh dist/site/scripts/anonymize.py
 find dist/site -name .DS_Store -delete
 
 # 离线包：外面套一层同名文件夹，解压后不会散落一地。
 # 用 Python 打包而不是 macOS 自带的 zip：中文文件名要带 UTF-8 标记，Windows 解压才不会乱码；同时保留可执行权限
-python3 - "$NAME" <<'PY'
+zipdir() { # zipdir <文件夹> <包名>：打成 dist/<包名>.zip
+python3 - "$1" "$2" <<'PY'
 import os, sys, zipfile
-name = sys.argv[1]
+src_dir, name = sys.argv[1], sys.argv[2]
 with zipfile.ZipFile(f'dist/{name}.zip', 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
-    for root, _, files in os.walk('dist/site'):
+    for root, _, files in os.walk(src_dir):
         for f in sorted(files):
             src = os.path.join(root, f)
-            arc = os.path.join(name, os.path.relpath(src, 'dist/site'))
+            arc = os.path.join(name, os.path.relpath(src, src_dir))
             info = zipfile.ZipInfo.from_file(src, arc)
             info.compress_type = zipfile.ZIP_DEFLATED
             info.external_attr = (0o755 if os.access(src, os.X_OK) else 0o644) << 16
             with open(src, 'rb') as fh:
                 z.writestr(info, fh.read())
 PY
+}
+zipdir dist/site "$NAME"
 
 # 在线部署版：不带本地服务器和启动脚本；静态托管不发 COOP/COEP 响应头，用不上多线程核心，省掉 31 MB
 mkdir -p dist/web dist/root
@@ -49,5 +54,12 @@ rm -rf dist/web/vendor/ffmpeg-core-mt
 find dist/web -name .DS_Store -delete
 cp deploy/root-index.html dist/root/index.html
 
+# 匿名评审版（竞赛评审材料不能出现参赛者身份信息）：网页一份，离线包一份（离线包不带 README，README 里有作者信息）
+REVIEW="Preflight-评审版-v$VER"
+python3 scripts/anonymize.py dist/web dist/review
+rm -rf dist/review-site && cp -R dist/site dist/review-site && rm -f dist/review-site/README.md
+python3 scripts/anonymize.py dist/review-site dist/review-site.tmp && rm -rf dist/review-site && mv dist/review-site.tmp dist/review-site
+zipdir dist/review-site "$REVIEW"
+
 echo "完成："
-du -sh dist/site "dist/$NAME.zip" dist/web dist/root
+du -sh dist/site "dist/$NAME.zip" dist/web dist/root dist/review "dist/$REVIEW.zip"
