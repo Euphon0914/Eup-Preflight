@@ -15,6 +15,7 @@ cd "$(dirname "$0")/.."
 COSCLI="${COSCLI:-$HOME/.local/coscli/coscli}"
 BUCKET="${BUCKET:-cos://eup}"
 SITE="${SITE:-https://eup-preflight-d6gz1q4ji14b7385a-1409272358.tcloudbaseapp.com}"
+# 比对时单个文件最多等 60 秒、失败重试 3 次（网络慢时不会一直卡住）
 [ -x "$COSCLI" ] || { echo "没有找到 coscli：$COSCLI"; exit 1; }
 [ -f "$HOME/.cos.yaml" ] || { echo "还没配置 coscli，先运行 $COSCLI config init"; exit 1; }
 
@@ -34,11 +35,11 @@ bad=0
 for dir in web review; do
   while IFS= read -r f; do
     l=$(shasum "dist/$dir/$f" | cut -c1-40)
-    r=$(curl -fsS "$SITE/$dir/$f" | shasum | cut -c1-40) || r=""
+    r=$(curl -fsS --max-time 60 --retry 3 --retry-all-errors "$SITE/$dir/$f" | shasum | cut -c1-40) || r=""
     [ "$l" = "$r" ] || { echo "  不一致：$dir/$f"; bad=1; }
   done < <(cd "dist/$dir" && find . -type f ! -path './vendor/*' | sed 's|^\./||' | sort)
 done
-l=$(shasum dist/root/index.html | cut -c1-40); r=$(curl -fsS "$SITE/index.html" | shasum | cut -c1-40) || r=""
+l=$(shasum dist/root/index.html | cut -c1-40); r=$(curl -fsS --max-time 60 --retry 3 --retry-all-errors "$SITE/index.html" | shasum | cut -c1-40) || r=""
 [ "$l" = "$r" ] || { echo "  不一致：index.html（根目录）"; bad=1; }
 
 # 线上 web/、review/ 里有、本地打包里没有的文件（已经不用的旧文件）
