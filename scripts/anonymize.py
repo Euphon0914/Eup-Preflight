@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # ------------------------------------------------------------
 # anonymize.py —— 生成匿名评审版：竞赛评审材料不能出现能识别参赛者的信息（姓名、学校、昵称、联系方式等）
-#   python3 scripts/anonymize.py <源文件夹> <输出文件夹>
+#   python3 scripts/anonymize.py <源文件夹> <输出文件夹> [--shared-vendor]
+#   --shared-vendor：不拷 vendor/，页面改为引用同一网站 web/vendor/ 里的第三方库（在线评审版用，
+#                    放在 <域名>/review/，和 web/ 同域；省得把 50 MB 第三方库再传一遍）
 # 做的事：
 #   · 整个文件夹拷一份（vendor/ 里的第三方库原样保留）
 #   · 文字文件里的产品名 “Eup Preflight” 改成 “Preflight”（Eup 是作者昵称）
@@ -12,6 +14,7 @@
 import os, re, shutil, sys
 
 src, dst = sys.argv[1], sys.argv[2]
+shared = '--shared-vendor' in sys.argv[3:]
 TEXT = {'.html', '.js', '.css', '.json', '.md', '.py', '.command', '.bat', '.txt'}
 # 页脚：署名和联系方式（index.html 里的写法，见 <footer class="sign">）
 FOOTER = [
@@ -22,7 +25,7 @@ FOOTER = [
 LEAKS = re.compile(r'\bEup\b|euphon|Euphon0914|189 ?7242 ?3878|8618972423878', re.I)
 
 shutil.rmtree(dst, ignore_errors=True)
-shutil.copytree(src, dst)
+shutil.copytree(src, dst, ignore=shutil.ignore_patterns('vendor') if shared else None)
 
 leaks = []
 for root, dirs, files in os.walk(dst):
@@ -34,6 +37,10 @@ for root, dirs, files in os.walk(dst):
             continue
         s = open(p, encoding='utf-8').read()
         s = s.replace('Eup Preflight', 'Preflight')
+        if shared:
+            # 页面里引用第三方库的写法：index.html 的 vendor/…，js/ 下的 ../../vendor/…（都相对于当前文件）
+            s = re.sub(r'(["\'])vendor/', r'\1../web/vendor/', s)
+            s = s.replace("'../../vendor/", "'../../../web/vendor/")
         if os.path.relpath(p, dst) == 'index.html':
             for pat, rep in FOOTER:
                 s, n = re.subn(pat, rep, s, flags=re.S)

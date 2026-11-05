@@ -56,7 +56,7 @@ cp deploy/root-index.html dist/root/index.html
 
 # 匿名评审版（竞赛评审材料不能出现参赛者身份信息）：网页一份，离线包一份（离线包不带 README，README 里有作者信息）
 REVIEW="Preflight-评审版-v$VER"
-python3 scripts/anonymize.py dist/web dist/review
+python3 scripts/anonymize.py dist/web dist/review --shared-vendor
 rm -rf dist/review-site && cp -R dist/site dist/review-site && rm -f dist/review-site/README.md
 python3 scripts/anonymize.py dist/review-site dist/review-site.tmp && rm -rf dist/review-site && mv dist/review-site.tmp dist/review-site
 zipdir dist/review-site "$REVIEW"
