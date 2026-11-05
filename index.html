@@ -29,7 +29,7 @@
     <div class="bar-left">
       <button class="brand" id="homeBtn" type="button" aria-label="回到首页" title="回到首页">
         <!-- 字标：Pre 细体 + flight 粗体 + 品牌色圆点（没有 logo 图形，名字本身就是标志） -->
-        <span class="brand-name"><span class="sr-only">Preflight</span><span class="wordmark" aria-hidden="true"><span class="wm-pre">Pre</span><span class="wm-flight">flight</span><span class="wm-dot"></span></span></span>
+        <span class="brand-name" translate="no"><span class="sr-only">Preflight</span><span class="wordmark" aria-hidden="true"><span class="wm-pre">Pre</span><span class="wm-flight">flight</span><span class="wm-dot"></span></span></span>
       </button>
       <!-- 首页：导入视频后也能回到首屏（看功能说明、数据隐私等），在首屏点“继续检查”回到当前视频 -->
       <button id="homeNav" class="btn ghost bar-btn" type="button" aria-label="首页">
@@ -119,7 +119,7 @@
     <div class="hero-main">
       <div class="hero-copy">
         <p class="hero-kicker">抖音 / TikTok 发片前检查 · 本机处理，不上传</p>
-        <h1 class="hero-title">发片之前，<br>先 <mark>Preflight</mark> 一遍</h1>
+        <h1 class="hero-title">发片之前，<br>先 <mark translate="no">Preflight</mark> 一遍</h1>
         <!-- 痛点：进入首屏时逐字点亮（hero.js 把文字拆成单字，读屏软件读 .sr-only 里的整句） -->
         <p class="hero-lede" id="heroLede"><span class="sr-only">字幕被按钮挡住、封面标题被裁掉、声音被平台压低——发出去才发现，就晚了。</span></p>
         <button class="btn hero-continue" id="heroContinue" type="button" hidden>继续检查 <b translate="no" id="heroContinueName"></b> →</button>
@@ -668,7 +668,7 @@
 
   <footer class="sign" data-version="1.0">
     <div class="sign-line">
-      <span class="sign-brand"><span class="sr-only">Preflight</span><span class="wordmark sm" aria-hidden="true"><span class="wm-pre">Pre</span><span class="wm-flight">flight</span><span class="wm-dot"></span></span><span>v1.0</span></span><span class="sign-dot">·</span><span>made by Eup</span><span class="sign-dot">·</span><a href="licenses.html" target="_blank" rel="noopener">开源组件与许可</a>
+      <span class="sign-brand" translate="no"><span class="sr-only">Preflight</span><span class="wordmark sm" aria-hidden="true"><span class="wm-pre">Pre</span><span class="wm-flight">flight</span><span class="wm-dot"></span></span><span>v1.0</span></span><span class="sign-dot">·</span><span>made by Eup</span><span class="sign-dot">·</span><a href="licenses.html" target="_blank" rel="noopener">开源组件与许可</a>
     </div>
     <!-- 作者联系方式，一行一项 -->
     <ul class="sign-contact">
