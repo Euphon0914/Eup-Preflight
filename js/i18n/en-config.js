@@ -264,4 +264,11 @@ export default {
   "搜索结果（电脑网页版、桌面版的多列视图）": "Search results (web and desktop app, grid view)",
   "左下角的 ♡ 点赞数": "The ♡ like count in the bottom-left corner",
   "右下角的视频时长（“10:17”这样的分:秒；超过 1 小时的“02:00:10”会往左再宽约 6%）": "The video duration in the bottom-right corner (mm:ss like “10:17”; durations over an hour like “02:00:10” extend about 6% further left)",
+  "画面黑边": "Black bars",
+  "画面无明显固定黑边（单轴黑边占比 < 6%）": "No obvious fixed black bars (< 6% on either axis)",
+  "没有检测到明显黑边。": "No obvious black bars detected.",
+  "检测到{actual}，播放时画面会被黑框挤压变小。": "Detected {actual}; the video will look squeezed inside black bars during playback.",
+  "用「裁切黑边」自动去掉画面里的黑框。": "Use “Crop black bars” to automatically remove the black borders.",
+  "经验值：视频自带黑边在手机竖屏播放时容易出现四周黑框、画面被挤压": "Rule of thumb: baked-in black bars often create four-sided borders and shrink the picture on portrait phone screens",
+  "经验值：视频自带黑边在播放器中容易出现四周黑框、画面被挤压": "Rule of thumb: baked-in black bars often create borders and shrink the picture in the player",
 };

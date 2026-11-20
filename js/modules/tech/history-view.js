@@ -15,7 +15,7 @@ import { t } from '../../core/i18n.js';
 
 // 历史表里显示的修复项简称
 const FIX_SHORT = {
-  slim: '瘦身', to_mp4: '转MP4', trim: '截断', compress: '压缩', to_cfr: '固定帧率', fps_range: '调整帧率',
+  slim: '瘦身', to_mp4: '转MP4', trim: '截断', compress: '压缩', crop_black_bars: '裁切黑边', to_cfr: '固定帧率', fps_range: '调整帧率',
   hdr_to_sdr: 'HDR→SDR', upscale: '放大', bitrate_floor: '码率下限', loudnorm: '统一音量', resample: '统一采样率',
   downmix: '下混', add_audio: '静音音轨', vertical: '横屏转竖屏',
 };

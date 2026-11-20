@@ -4,6 +4,7 @@
 import { state, notify } from './store.js';
 import { showTask, hideTask, showError, clearError, setBusy, timed, addTiming, currentMode, beginStages, stage } from './ui.js';
 import { probeFile } from '../lib/probe.js';
+import { detectBlackBars } from '../lib/black-bars.js';
 import { loadFFmpeg, ffmpegLoaded, analyzeLoudness, probeFpsFallback, terminateFFmpeg, makeTestVideo } from '../lib/ffmpeg-tools.js';
 import { rememberVideo } from '../lib/recent-videos.js';
 
@@ -20,7 +21,7 @@ export async function ensureFFmpeg() {
 }
 
 /**
- * 对一个视频 slot 做完整分析：读参数 + 响度。
+ * 对一个视频 slot 做完整分析：读参数 + 黑边检测 + 响度。
  * 原视频由 loadVideo 调用；技术体检处理完的视频也用它复检。
  */
 export async function analyzeSlot(slot, label) {
@@ -33,6 +34,22 @@ export async function analyzeSlot(slot, label) {
   slot.info = info;
   slot.loudPending = info.hasAudio;
   notify('update');
+
+  // 1.2) 检测画面固定黑边（抽 5 帧快速扫描，失败不影响后续分析）
+  if (info.hasVideo) {
+    try {
+      st('检测黑边');
+      showTask(`${label}：检测画面黑边…`);
+      const bb = await timed('检测黑边', slot.file.name, null, () => detectBlackBars(slot.file, info), '抽帧扫描');
+      info.hasBlackBars = bb.hasBlackBars;
+      info.blackBars = bb.blackBars;
+      notify('update');
+    } catch (e) {
+      console.warn('检测黑边失败', e);
+      info.hasBlackBars = false;
+      info.blackBars = null;
+    }
+  }
 
   // 1.5) mediainfo 读不到帧率时（常见于可变帧率 MKV），用 ffmpeg 读文件头补充
   if (info.hasVideo && info.frameRate == null) {

@@ -37,7 +37,7 @@ const num = (v) => {
 const gcd = (a, b) => (b ? gcd(b, a % b) : a);
 
 /** 把宽高比归一到常见比例（容差 2%），否则显示小数 */
-function normalizeAspect(w, h) {
+export function normalizeAspect(w, h) {
   if (!w || !h) return null;
   const r = w / h;
   const common = { '9:16': 9 / 16, '16:9': 16 / 9, '1:1': 1, '4:3': 4 / 3, '3:4': 3 / 4, '21:9': 21 / 9, '2.35:1': 2.35, '4:5': 4 / 5, '3:2': 3 / 2, '2:3': 2 / 3 };

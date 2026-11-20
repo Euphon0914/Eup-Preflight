@@ -70,7 +70,8 @@ export function fixTargets(platform, info) {
  */
 export function resolveOutputFloor(t, info, fixes) {
   if (!t.minKbpsFor || !info?.shortSide) return t;
-  let short = info.shortSide;
+  const crop = fixes.crop_black_bars && info.hasBlackBars && info.blackBars ? info.blackBars : null;
+  let short = crop ? Math.min(crop.w, crop.h) : info.shortSide;
   if (fixes.vertical) short = Math.min(VERTICAL_W, VERTICAL_H);
   else if (fixes.slim && t.slimShort && short > t.slimShort) short = t.slimShort;
   else if (fixes.upscale && t.minShort && short < t.minShort) short = t.minShort;
@@ -88,6 +89,12 @@ export const FIX_DEFS = [
   { id: 'to_mp4', group: '格式', title: '转成 MP4（H.264 + AAC）', desc: '兼容性最好的格式' },
   { id: 'trim', group: '格式', title: '截断时长', desc: (t) => `只保留前 ${t.maxSec} 秒`, enabled: (t) => !!t.maxSec || '规则里没有时长上限' },
   { id: 'compress', group: '格式', title: '压缩体积', desc: (t) => `压到 ${t.maxMB} MB 以内`, enabled: (t) => !!t.maxMB || '规则里没有大小上限' },
+  { id: 'crop_black_bars', group: '视频', title: '裁切黑边',
+    desc: (t, s) => {
+      const b = s?.info?.blackBars;
+      return b ? `去掉${b.sides}，裁成 ${b.w}×${b.h}（${b.aspectRatio}）有效画面` : '自动检测并裁掉画面四周的固定黑边';
+    },
+    enabled: (t, s) => (s.info.hasBlackBars && !!s.info.blackBars) || '未检测到明显黑边' },
   { id: 'to_cfr', group: '视频', title: '固定帧率', desc: '可变帧率改为固定，避免上传后卡顿、音画不同步' },
   { id: 'fps_range', group: '视频', title: '调整帧率', desc: (t) => `调到 ${t.fpsRange[0]}～${t.fpsRange[1]} fps 之间`, enabled: (t) => !!t.fpsRange || '规则里没有帧率范围' },
   { id: 'hdr_to_sdr', group: '视频', title: 'HDR 转 SDR', desc: '由浏览器做色彩转换，避免上传后发灰', enabled: (t, s) => s.info.isHDR || '不是 HDR 视频' },
@@ -99,7 +106,7 @@ export const FIX_DEFS = [
   { id: 'downmix', group: '音频', title: '下混为立体声', desc: '多声道改为双声道，手机外放人声更清楚', enabled: (t, s) => s.info.hasAudio || '没有音轨' },
   { id: 'add_audio', group: '音频', title: '添加静音音轨', desc: '视频没有音轨时补一条，避免部分平台报错', enabled: (t, s) => !s.info.hasAudio || '已有音轨' },
 ];
-const REENCODE_FIXES = ['to_cfr', 'fps_range', 'hdr_to_sdr', 'upscale', 'compress'];
+const REENCODE_FIXES = ['crop_black_bars', 'to_cfr', 'fps_range', 'hdr_to_sdr', 'upscale', 'compress'];
 
 /** 某个修复项对当前视频是否可用：true 或不可用原因 */
 export function fixAvailability(id) {
@@ -128,7 +135,7 @@ export function applySuggestedFixes() {
   const items = FIX_DEFS.map((d) => ({ d, ok: d.enabled ? d.enabled(t, o) : true, suggested: s.has(d.id) }));
   const row = ({ d, ok, suggested }) => {
     const on = ok === true;
-    const desc = on ? (typeof d.desc === 'function' ? d.desc(t) : d.desc) : ok;
+    const desc = on ? (typeof d.desc === 'function' ? d.desc(t, o) : d.desc) : ok;
     return `<label class="fix-item ${on ? '' : 'disabled'}">
       <input type="checkbox" data-fix="${d.id}" ${on && suggested ? 'checked' : ''} ${on ? '' : 'disabled'}>
       <div><div class="f-title">${esc(d.title)}</div><div class="f-desc">${esc(desc)}</div></div>
@@ -251,7 +258,7 @@ export async function doProcess(kind) {
 
 /** 是否需要重新编码视频 */
 function needsVideoEncode(info, fixes) {
-  return !!(fixes.slim || fixes.to_cfr || fixes.fps_range || fixes.upscale || fixes.bitrate_floor || fixes.compress ||
+  return !!(fixes.slim || fixes.crop_black_bars || fixes.to_cfr || fixes.fps_range || fixes.upscale || fixes.bitrate_floor || fixes.compress ||
     fixes.vertical || (fixes.hdr_to_sdr && info.isHDR) || (fixes.to_mp4 && info.videoCodec !== 'AVC'));
 }
 
@@ -353,8 +360,10 @@ async function fastPipeline(o, fixes, t, label, enc, route) {
         }
       }
       state.conversion = null;
-      const size = p.width === o.info.width && p.height === o.info.height ? `${p.width}×${p.height}` : `${o.info.width}×${o.info.height} → ${p.width}×${p.height}`;
-      plan.push(`视频（WebCodecs）：${fixes.vertical ? `横屏 ${o.info.width}×${o.info.height} → 竖屏 ${p.width}×${p.height}（上下模糊背景填充）` : size}，` +
+      const size = p.crop
+        ? `裁切${p.crop.sides} ${o.info.width}×${o.info.height} → ${p.width}×${p.height}`
+        : (p.width === o.info.width && p.height === o.info.height ? `${p.width}×${p.height}` : `${o.info.width}×${o.info.height} → ${p.width}×${p.height}`);
+      plan.push(`视频（WebCodecs）：${fixes.vertical ? `${p.crop ? `裁切${p.crop.sides}后` : ''}横屏 → 竖屏 ${p.width}×${p.height}（上下模糊背景填充）` : size}，` +
         `${p.fps ? `固定 ${p.fps} fps${p.fpsNote}` : '保持原帧率'}，H.264 目标码率 ${used.kbps} kbps（${p.how}）`);
       if (retryNote) plan.push(retryNote);
       // 安卓手机浏览器实测：转码后画面颜色明显改变（发灰、偏黄绿），在处理记录里也提醒一次
@@ -389,16 +398,19 @@ async function fastPipeline(o, fixes, t, label, enc, route) {
 
 /** 算出 WebCodecs 的输出尺寸 / 帧率 / 码率（目标值都来自平台规则） */
 function videoParams(info, fixes, t, outDuration) {
-  const short = info.shortSide;
+  const crop = fixes.crop_black_bars && info.hasBlackBars && info.blackBars ? info.blackBars : null;
+  const baseW = crop ? crop.w : info.width;
+  const baseH = crop ? crop.h : info.height;
+  const short = Math.min(baseW, baseH);
   let targetShort = short;
   if (fixes.slim && t.slimShort && short > t.slimShort) targetShort = t.slimShort;        // 瘦身：只缩小
   else if (fixes.upscale && t.minShort && short < t.minShort) targetShort = t.minShort;   // 勾了“放大”才放大
   const scale = targetShort / short;
-  const even = (x) => Math.round(x / 2) * 2;                                              // H.264 要求偶数
-  // 输出尺寸：横屏转竖屏固定 1080×1920，否则按比例缩放
-  const outW = fixes.vertical ? VERTICAL_W : even(info.width * scale);
-  const outH = fixes.vertical ? VERTICAL_H : even(info.height * scale);
-  const pixelScale = Math.sqrt((outW * outH) / (info.width * info.height)); // 用于按像素数换算码率
+  const even = (x) => Math.max(2, Math.round(x / 2) * 2);                                 // H.264 要求偶数
+  // 输出尺寸：横屏转竖屏固定 1080×1920，否则按有效画面比例缩放
+  const outW = fixes.vertical ? VERTICAL_W : even(baseW * scale);
+  const outH = fixes.vertical ? VERTICAL_H : even(baseH * scale);
+  const pixelScale = Math.sqrt((outW * outH) / (baseW * baseH)); // 用于按有效画面像素数换算码率
 
   // 帧率：重新编码一律输出固定帧率（见 outputFps）
   const { fps, note: fpsNote } = outputFps(info, fixes, t.fpsRange);
@@ -424,7 +436,7 @@ function videoParams(info, fixes, t, outDuration) {
     const cap = Math.max(300, Math.floor((t.maxMB * 8 * 1024 * 0.95) / outDuration - 192));
     if (cap < kbps) { kbps = cap; how = `压缩到 ≤ ${t.maxMB} MB`; }
   }
-  return { width: outW, height: outH, vertical: !!fixes.vertical, fps, fpsNote, kbps: Math.round(kbps), how };
+  return { width: outW, height: outH, crop, vertical: !!fixes.vertical, fps, fpsNote, kbps: Math.round(kbps), how };
 }
 
 /** 在原视频和处理后视频的同一时间点（20% / 50% / 80%）各截一帧；优先 WebCodecs，失败再用 ffmpeg */

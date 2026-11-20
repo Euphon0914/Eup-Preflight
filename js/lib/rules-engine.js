@@ -40,6 +40,7 @@ function displayActual(metric, m) {
     case 'isVFR': return a ? '可变帧率' : '固定帧率';
     case 'hasAudio': return a ? '有' : '无';
     case 'audioSilent': return a ? '全程静音' : '有声音';
+    case 'hasBlackBars': return a && m.blackBars ? `${m.blackBars.sides}（有效画面 ${m.blackBars.w}×${m.blackBars.h}）` : '无明显黑边';
     default: return Array.isArray(a) ? a.join(' / ') : String(a);
   }
 }

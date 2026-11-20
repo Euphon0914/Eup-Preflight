@@ -272,8 +272,9 @@ export async function runFix(file, info, loud, fixes, opts, onProgress) {
   // ---------- 视频 ----------
   const codec = info.videoCodec;
   // 这些修复项必须重新编码视频
+  const crop = fixes.crop_black_bars && info.hasBlackBars && info.blackBars ? info.blackBars : null;
   const needReencode = fixes.to_cfr || fixes.fps_range || fixes.hdr_to_sdr || fixes.upscale ||
-    fixes.bitrate_floor || fixes.compress || fixes.vertical || fixes.slim;
+    fixes.bitrate_floor || fixes.compress || fixes.vertical || fixes.slim || !!crop;
   // 只有“已是 H.264”或者“HEVC 且没要求转 H.264”时才能直接复制视频流（最快，无画质损失）
   const canCopyVideo = !needReencode && (codec === 'AVC' || (codec === 'HEVC' && !fixes.to_mp4));
   if (info.hasVideo && !opts.audioOnly) {
@@ -288,19 +289,28 @@ export async function runFix(file, info, loud, fixes, opts, onProgress) {
       vf.push(`fps=${outFps}`);
       args.push('-fps_mode', 'cfr', '-r', String(outFps));
       plan.push(`视频：帧率 ${info.frameRate ?? '?'}${info.isVFR ? '（可变）' : ''} → 固定 ${outFps} fps${note}`);
+      // 1.5) 裁切黑边：放在缩放和竖屏转换之前，避免把黑边一起算进目标尺寸
+      let curW = info.width, curH = info.height;
+      if (crop) {
+        vf.push(`crop=${crop.w}:${crop.h}:${crop.x}:${crop.y}`);
+        curW = crop.w;
+        curH = crop.h;
+        plan.push(`视频：裁切${crop.sides}，${info.width}×${info.height} → ${crop.w}×${crop.h}`);
+      }
+      const curShort = Math.min(curW, curH);
       // 2) 尺寸：横屏转竖屏 / 瘦身缩小到短边上限 / 放大到平台建议的短边
       //    放在 HDR 色调映射之前：先缩小，浮点色调映射的计算量能少好几倍（4K → 1080P 少 3/4）
       if (fixes.vertical) {
         vf.push(verticalBlurFilter(VERTICAL_W, VERTICAL_H));
-        plan.push(`视频：横屏 ${info.width}×${info.height} → 竖屏 ${VERTICAL_W}×${VERTICAL_H}（上下模糊背景填充）`);
-      } else if (fixes.slim && t.slimShort && info.shortSide > t.slimShort) {
+        plan.push(`视频：横屏 ${curW}×${curH} → 竖屏 ${VERTICAL_W}×${VERTICAL_H}（上下模糊背景填充）`);
+      } else if (fixes.slim && t.slimShort && curShort > t.slimShort) {
         // 只缩小不放大；短边是高还是宽取决于横竖屏
-        vf.push(info.height <= info.width ? `scale=-2:${t.slimShort}:flags=lanczos` : `scale=${t.slimShort}:-2:flags=lanczos`);
-        plan.push(`瘦身：短边 ${info.shortSide}px → ${t.slimShort}px`);
-      } else if (fixes.upscale && t.minShort && info.shortSide < t.minShort) {
+        vf.push(curH <= curW ? `scale=-2:${t.slimShort}:flags=lanczos` : `scale=${t.slimShort}:-2:flags=lanczos`);
+        plan.push(`瘦身：短边 ${curShort}px → ${t.slimShort}px`);
+      } else if (fixes.upscale && t.minShort && curShort < t.minShort) {
         // 短边是高还是宽取决于横竖屏；-2 表示按比例算并保证是偶数
-        vf.push(info.height <= info.width ? `scale=-2:${t.minShort}:flags=lanczos` : `scale=${t.minShort}:-2:flags=lanczos`);
-        plan.push(`视频：短边 ${info.shortSide}px → ${t.minShort}px（lanczos 放大，不会增加细节）`);
+        vf.push(curH <= curW ? `scale=-2:${t.minShort}:flags=lanczos` : `scale=${t.minShort}:-2:flags=lanczos`);
+        plan.push(`视频：短边 ${curShort}px → ${t.minShort}px（lanczos 放大，不会增加细节）`);
       }
       // 3) HDR → SDR：转线性光 → 浮点 → BT.709 色域 → hable 色调映射 → BT.709 传输特性
       if (fixes.hdr_to_sdr && info.isHDR) {

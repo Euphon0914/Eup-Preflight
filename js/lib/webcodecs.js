@@ -132,24 +132,38 @@ export async function canCopyToMp4(file) {
 }
 
 // ============================================================
-// 横屏转竖屏：每帧画在画布上（背景 = 同一画面铺满 + 模糊 + 压暗，前景 = 原画面完整居中）
+// 横屏转竖屏 / 裁切黑边：用 OffscreenCanvas 逐帧绘制
+//   横屏转竖屏：背景 = 同一画面铺满 + 模糊 + 压暗，前景 = 原画面完整居中（若带 crop 则先裁掉黑边）
+//   裁切黑边：只取有效画面区域（crop），并按目标尺寸输出（不拉伸变形）
 // ============================================================
 export const VERTICAL_W = 1080, VERTICAL_H = 1920;
 
-function makeVerticalProcessor(W, H) {
+function makeVerticalProcessor(W, H, crop = null) {
   const canvas = new OffscreenCanvas(W, H);
   const ctx = canvas.getContext('2d');
   // 背景先画在 1/8 大小的小画布上再模糊、放大：效果几乎一样，计算量少几十倍
   const small = new OffscreenCanvas(Math.round(W / 8), Math.round(H / 8));
   const sctx = small.getContext('2d');
   sctx.filter = 'blur(4px)';
+  const cropOpt = crop ? { crop: { left: crop.x, top: crop.y, width: crop.w, height: crop.h } } : {};
   return (sample) => {
     sctx.clearRect(0, 0, small.width, small.height);
-    sample.drawWithFit(sctx, { fit: 'cover' });          // 铺满裁切（已考虑旋转）
-    ctx.filter = 'brightness(0.75)';                     // 背景压暗一点，让前景更突出
+    sample.drawWithFit(sctx, { fit: 'cover', ...cropOpt });   // 铺满裁切（已考虑旋转）
+    ctx.filter = 'brightness(0.75)';                         // 背景压暗一点，让前景更突出
     ctx.drawImage(small, 0, 0, W, H);
     ctx.filter = 'none';
-    sample.drawWithFit(ctx, { fit: 'contain' });         // 前景完整显示、居中
+    sample.drawWithFit(ctx, { fit: 'contain', ...cropOpt }); // 前景完整显示、居中
+    return canvas;
+  };
+}
+
+function makeCropProcessor(crop, W, H) {
+  const canvas = new OffscreenCanvas(W, H);
+  const ctx = canvas.getContext('2d');
+  const region = { left: crop.x, top: crop.y, width: crop.w, height: crop.h };
+  return (sample) => {
+    ctx.clearRect(0, 0, W, H);
+    sample.drawWithFit(ctx, { fit: 'fill', crop: region });  // 只取有效区域并缩放到目标偶数尺寸
     return canvas;
   };
 }
@@ -158,10 +172,11 @@ function makeVerticalProcessor(W, H) {
 // 转码
 // ============================================================
 /**
- * 缩放 / 横屏转竖屏 + 固定帧率 + H.264 目标码率，输出 MP4。音频是 AAC 就直接复制，否则转 AAC。
+ * 缩放 / 裁切黑边 / 横屏转竖屏 + 固定帧率 + H.264 目标码率，输出 MP4。音频是 AAC 就直接复制，否则转 AAC。
  * @param {File} file
  * @param {object} p
  *   width/height 输出显示尺寸（偶数）；vertical=true 时改为横屏转竖屏（输出 1080×1920，忽略 width/height）；
+ *   crop { x, y, w, h }（可选）有效画面裁切区域（像素，基于显示尺寸）；
  *   fps 不传则保持原帧率和时间轴；kbps 目标码率；trimEnd 只保留前 N 秒；
  *   noAudio=true 只输出视频（音频另由 ffmpeg 处理后再合并）；hw 编码偏好；
  *   out: { dir:'tmp'|'outputs', name, displayName } 输出位置
@@ -173,15 +188,17 @@ export async function transcodeWithWebCodecs(file, p, onProgress, hooks = {}) {
   const { Output, Conversion } = await lib();
   const input = await openInput(file);
   const v = await input.getPrimaryVideoTrack();
-  // 防护：输出方向必须和输入的显示方向一致，否则 fit: 'fill' 会把画面拉伸变形
-  if (!p.vertical && v && (p.width > p.height) !== (v.displayWidth > v.displayHeight) && p.width !== p.height) {
+  // 防护：未裁切且未转竖屏时，输出方向必须和输入的显示方向一致，否则 fit: 'fill' 会把画面拉伸变形
+  if (!p.vertical && !p.crop && v && (p.width > p.height) !== (v.displayWidth > v.displayHeight) && p.width !== p.height) {
     throw new Error(`输出尺寸 ${p.width}×${p.height} 与输入显示方向 ${v.displayWidth}×${v.displayHeight} 不一致，已停止以免画面变形`);
   }
   const out = await createOutputTarget(p.out?.dir || 'tmp', p.out?.name || `wc_${Date.now()}.mp4`);
   const output = new Output({ format: await mp4Format(out.onDisk), target: out.target });
   const size = p.vertical
-    ? { process: makeVerticalProcessor(VERTICAL_W, VERTICAL_H), processedWidth: VERTICAL_W, processedHeight: VERTICAL_H }
-    : { width: p.width, height: p.height, fit: 'fill' };
+    ? { process: makeVerticalProcessor(VERTICAL_W, VERTICAL_H, p.crop), processedWidth: VERTICAL_W, processedHeight: VERTICAL_H }
+    : p.crop
+      ? { process: makeCropProcessor(p.crop, p.width, p.height), processedWidth: p.width, processedHeight: p.height }
+      : { width: p.width, height: p.height, fit: 'fill' };
   let conv;
   try {
     conv = await Conversion.init({

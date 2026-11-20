@@ -17,11 +17,11 @@
     "              从小到大取第一个“≤ upTo”的档，最后一档不写 upTo 表示以上全部；说明文字里可用 {tier} 显示档位名称",
     "  passMsg / failMsg  通过 / 不满足时的一句话说明；suggest 不满足时的修复建议",
     "              三者都可用占位符：{actual} 实测值，{value} 要求值，{tier} 分档名称",
-    "  fix         （可选）对应的一键修复项：to_mp4 / to_cfr / fps_range / loudnorm / hdr_to_sdr / upscale /",
+    "  fix         （可选）对应的一键修复项：to_mp4 / crop_black_bars / to_cfr / fps_range / loudnorm / hdr_to_sdr / upscale /",
     "              bitrate_floor / compress / trim / resample / downmix / add_audio / slim；修复目标值取自该规则的 check.value",
     "  source / date  来源与核实日期。以“官方：”开头的来自平台官方页面；“经验值（待核实）”为平台未公开的常见经验值；“占位（待核实）”为尚未核实的占位数值",
     "可用 op：in, notIn, eq, ne, gte, lte, gt, lt, between（value 为 [最小, 最大]）, isTrue, isFalse",
-    "可用 metric：container, videoCodec, width, height, shortSide, longSide, aspectRatio, orientation,",
+    "可用 metric：container, videoCodec, width, height, shortSide, longSide, aspectRatio, orientation, hasBlackBars,",
     "  frameRate, isVFR, videoBitrateKbps, durationSec, fileSizeMB, isHDR, hdrFormat, colorPrimaries,",
     "  hasAudio, audioSilent, audioCodec, audioBitrateKbps, sampleRate, channels, loudnessLUFS, truePeakDBTP, loudnessRangeLU",
     "单位：码率 kbps，时长 秒，文件大小 MB，采样率 Hz，响度 LUFS，真峰值 dBTP",
@@ -115,6 +115,19 @@
             "suggest": "想铺满屏幕，可以用「横屏转竖屏」，或剪成 9:16 竖屏。",
             "source": "经验值：9:16 竖屏在抖音全屏铺满",
             "date": "2026-10-23"
+          },
+          {
+            "id": "blackBars",
+            "item": "画面黑边",
+            "requirement": "画面无明显固定黑边（单轴黑边占比 < 6%）",
+            "type": "advice",
+            "check": { "metric": "hasBlackBars", "op": "isFalse" },
+            "passMsg": "没有检测到明显黑边。",
+            "failMsg": "检测到{actual}，播放时画面会被黑框挤压变小。",
+            "suggest": "用「裁切黑边」自动去掉画面里的黑框。",
+            "fix": "crop_black_bars",
+            "source": "经验值：视频自带黑边在手机竖屏播放时容易出现四周黑框、画面被挤压",
+            "date": "2026-11-20"
           },
           {
             "id": "frameRate",
@@ -421,6 +434,19 @@
             "date": "2026-10-26"
           },
           {
+            "id": "blackBars",
+            "item": "画面黑边",
+            "requirement": "画面无明显固定黑边（单轴黑边占比 < 6%）",
+            "type": "advice",
+            "check": { "metric": "hasBlackBars", "op": "isFalse" },
+            "passMsg": "没有检测到明显黑边。",
+            "failMsg": "检测到{actual}，播放时画面会被黑框挤压变小。",
+            "suggest": "用「裁切黑边」自动去掉画面里的黑框。",
+            "fix": "crop_black_bars",
+            "source": "经验值：视频自带黑边在手机竖屏播放时容易出现四周黑框、画面被挤压",
+            "date": "2026-11-20"
+          },
+          {
             "id": "frameRate",
             "item": "流畅度（帧率）",
             "requirement": "23 ~ 60 fps",
@@ -716,6 +742,19 @@
             "failMsg": "画面比例为 {actual}，可正常上传；在 B站横屏播放器里会有黑边。",
             "source": "经验值：B站播放器以 16:9 为主",
             "date": "2026-10-23"
+          },
+          {
+            "id": "blackBars",
+            "item": "画面黑边",
+            "requirement": "画面无明显固定黑边（单轴黑边占比 < 6%）",
+            "type": "advice",
+            "check": { "metric": "hasBlackBars", "op": "isFalse" },
+            "passMsg": "没有检测到明显黑边。",
+            "failMsg": "检测到{actual}，播放时画面会被黑框挤压变小。",
+            "suggest": "用「裁切黑边」自动去掉画面里的黑框。",
+            "fix": "crop_black_bars",
+            "source": "经验值：视频自带黑边在播放器中容易出现四周黑框、画面被挤压",
+            "date": "2026-11-20"
           },
           {
             "id": "frameRate",
